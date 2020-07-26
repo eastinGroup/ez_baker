@@ -6,7 +6,13 @@ class Scene_Visible():
         pass
 
     def __enter__(self):
-        bpy.ops.object.select_all(action="DESELECT")
+        self.active_obj = bpy.context.view_layer.objects.active
+        if bpy.ops.object.mode_set.poll():
+            bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+
+        if bpy.context.space_data.local_view:
+            bpy.ops.view3d.localview()
+        
 
         # we need to traverse the tree from child to parent or else the exclude property can be missed
         layers_in_hierarchy = reversed(list(traverse_tree(bpy.context.view_layer.layer_collection, exclude_parent=True)))
@@ -29,12 +35,18 @@ class Scene_Visible():
             obj['__orig_hide_select__'] = obj.hide_select
             obj['__orig_collection__'] = obj.users_collection[0].name if obj.users_collection else '__NONE__'
             obj['__orig_hide_vl__'] = obj.hide_get()
+            obj['__orig_select__'] = obj.select_get()
 
             obj.hide_viewport = False
             obj.hide_select = False
             obj.hide_set(False)
+        
+        bpy.ops.object.select_all(action='DESELECT')
 
     def __exit__(self, type, value, traceback):
+        if bpy.ops.object.mode_set.poll():
+            bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+        bpy.ops.object.select_all(action='DESELECT')
         # now restore original values
         for obj in bpy.data.objects:
             if obj.name is not obj['__orig_name__']:
@@ -42,11 +54,14 @@ class Scene_Visible():
             obj.hide_viewport = obj['__orig_hide__']
             obj.hide_select = obj['__orig_hide_select__']
             obj.hide_set(bool(obj['__orig_hide_vl__']))
+            obj.select_set(bool(obj['__orig_select__']))
 
             del obj['__orig_name__']
             del obj['__orig_hide__']
             del obj['__orig_hide_select__']
+            del obj['__orig_hide_vl__']
             del obj['__orig_collection__']
+            del obj['__orig_select__']
 
         for collection in bpy.data.collections:
             collection.hide_viewport = collection['__orig_hide__']
@@ -62,20 +77,32 @@ class Scene_Visible():
             del bpy.data.collections[layer_collection.name]['__orig_exclude__']
             del bpy.data.collections[layer_collection.name]['__orig_hide_lc__']
         
-        # deselect_all
-        if bpy.ops.object.mode_set.poll():
-            bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-        bpy.ops.object.select_all(action='DESELECT')
-        bpy.context.view_layer.objects.active = None
+        bpy.context.view_layer.objects.active = self.active_obj
 
 class Custom_Render_Settings():
     def __init__(self):
-        self.orig_render = bpy.context.scene.render.engine
+        pass
+
+    def collect_attributes(self, obj):
+        return {x.identifier: getattr(obj, x.identifier) for x in obj.bl_rna.properties if not x.is_readonly}
 
     def __enter__(self):
-        pass
+        self.bake = self.collect_attributes(bpy.context.scene.render.bake)
+        self.view_settings = self.collect_attributes(bpy.context.scene.view_settings)
+        self.image_settings = self.collect_attributes(bpy.context.scene.render.image_settings)
+        self.render = self.collect_attributes(bpy.context.scene.render)
+        self.cycles = self.collect_attributes(bpy.context.scene.cycles)
+
+    def restore_attributes(self, obj, orig_attribs):
+        for id, value in orig_attribs.items():
+            setattr(obj, id, value)
+
     def __exit__(self, type, value, traceback):
-        bpy.context.scene.render.engine = self.orig_render
+        self.restore_attributes(bpy.context.scene.view_settings, self.view_settings)
+        self.restore_attributes(bpy.context.scene.render.image_settings, self.image_settings)
+        self.restore_attributes(bpy.context.scene.render, self.render)
+        self.restore_attributes(bpy.context.scene.cycles, self.cycles)
+        self.restore_attributes(bpy.context.scene.render.bake, self.bake)
 
 class Bake_Setup():
     def __init__(self, baker, map, high, low):

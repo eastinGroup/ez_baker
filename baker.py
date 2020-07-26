@@ -1,19 +1,18 @@
 import subprocess
 import pathlib
+import os
 
 import bpy
 
-from .bake_group import EZB_Bake_Group
+from . import handlers
 from . import bake_maps
+from . import bake_settings
+
+from .bake_group import EZB_Bake_Group
 from .bake_maps import EZB_Maps
 from .contexts import Scene_Visible, Custom_Render_Settings, Bake_Setup
-
-from . import bake_settings
-import os
-
 from .settings import mode_group_types, file_formats_enum
 
-from . import handlers
 
 def set_path(self, value):
     # checks if the provided path is inside a subdirectory of the current file to save it as a relative path
@@ -126,14 +125,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
 
         return ans
 
-    def setup_settings(self):
-        bake_options = bpy.context.scene.render.bake
-        bpy.context.scene.render.engine = 'CYCLES'
-        bake_options.use_selected_to_active = True
-        
-        
-        bake_options.margin = self.padding
-        bake_options.use_clear = False
+    
 
     def create_bake_material(self, material):
         temp_material = None
@@ -243,6 +235,18 @@ class EZB_Baker(bpy.types.PropertyGroup):
                         continue
         return ans
 
+
+    def setup_settings(self):
+        bake_options = bpy.context.scene.render.bake
+        bpy.context.scene.render.engine = 'CYCLES'
+        bpy.context.scene.cycles.progressive = 'PATH'
+        bake_options.use_selected_to_active = True
+        #bpy.context.scene.cycles.use_adaptive_sampling = False
+        #bpy.context.scene.cycles.sampling_pattern = 'SOBOL'
+
+        bake_options.margin = self.padding
+        bake_options.use_clear = False
+
     def bake(self):
         #args = [bpy.app.binary_path, "-b",]
         #subprocess.call(args)
@@ -272,24 +276,18 @@ class EZB_Baker(bpy.types.PropertyGroup):
         textures = []
         for x in self.materials:
             for y in x.images:
-                textures.append(y.image)
+                if y.image:
+                    textures.append(y.image)
 
-        orig_view_transform = bpy.context.scene.view_settings.view_transform
-        orig_file_format = bpy.context.scene.render.image_settings.file_format
+        with Custom_Render_Settings():
+            bpy.context.scene.view_settings.view_transform = 'Standard'
+            
+            for x in textures:
+                path_full = os.path.join(bpy.path.abspath(self.path), x.name) + file_formats_enum[orig_file_format]
+                directory = os.path.dirname(path_full)
+                pathlib.Path(directory).mkdir(parents=True, exist_ok=True)
 
-        bpy.context.scene.view_settings.view_transform = 'Standard'
-        
-        for x in textures:
-            path_full = os.path.join(bpy.path.abspath(self.path), x.name) + file_formats_enum[orig_file_format]
-            directory = os.path.dirname(path_full)
-            pathlib.Path(directory).mkdir(parents=True, exist_ok=True)
-
-            x.save_render(path_full, scene=bpy.context.scene)
-
-        bpy.context.scene.view_settings.view_transform = orig_view_transform
-        bpy.context.scene.render.image_settings.file_format = orig_file_format
-
-        
+                x.save_render(path_full, scene=bpy.context.scene)
 
 classes = [
     EZB_Stored_Image, 

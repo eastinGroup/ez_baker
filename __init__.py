@@ -14,17 +14,17 @@ from bpy.props import (
 from .settings import mode_group_types
 
 bl_info = {
-    "name": "EZ Bake",
+    "name": "EZ Baker",
     "description": "Bake textures by grouping objects",
     "author": "AquaticNightmare",
     "blender": (2, 83, 0),
     "version": (0, 0, 1),
     "category": "3D View",
-    "location": "3D View > Tools Panel > EZ Bake",
+    "location": "3D View > Tools Panel > EZ Baker",
     "warning": "",
-    "wiki_url": "https://gitlab.com/AquaticNightmare/ez_bake",
-    "doc_url": "https://gitlab.com/AquaticNightmare/ez_bake",
-    "tracker_url": "https://gitlab.com/AquaticNightmare/ez_bake/-/issues",
+    "wiki_url": "https://gitlab.com/AquaticNightmare/ez_baker",
+    "doc_url": "https://gitlab.com/AquaticNightmare/ez_baker",
+    "tracker_url": "https://gitlab.com/AquaticNightmare/ez_baker/-/issues",
 }
 class EZB_preferences(bpy.types.AddonPreferences):
     bl_idname = __name__

@@ -6,6 +6,7 @@ import bpy
 from .bake_group import EZB_Bake_Group
 from . import bake_maps
 from .bake_maps import EZB_Maps
+from .contexts import Scene_Visible, Custom_Render_Settings, Bake_Setup
 
 from . import bake_settings
 import os
@@ -229,12 +230,6 @@ class EZB_Baker(bpy.types.PropertyGroup):
                 if x.temp_material == mat_slot.material:
                     mat_slot.material = x.material
 
-    def store_orig_settings(self):
-        self.orig_render = bpy.context.scene.render.engine
-
-    def restore_orig_settings(self):
-        bpy.context.scene.render.engine = self.orig_render
-
     def get_troublesome_objects(self):
         ans = set()
         for group in self.bake_groups:
@@ -253,44 +248,26 @@ class EZB_Baker(bpy.types.PropertyGroup):
         #subprocess.call(args)
         print('BAKING: {}'.format(self.key))
         bake_textures.clear()
-        self.store_orig_settings()
 
-        for map in self.get_active_maps():
-            self.setup_settings()
-            map.setup_settings()
-            for group in self.bake_groups:
-                group.setup_settings()
-                high = group.objects_high
-                low = group.objects_low
-                for x in low:
-                    if bpy.ops.object.mode_set.poll():
-                        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-                    bpy.ops.object.select_all(action='DESELECT')
-                    x.select_set(True)
-                    self.setup_bake_material(x, map)
-                    for y in high:
-                        y.select_set(True)
-                    bpy.context.view_layer.objects.active = x
-                    cage = bpy.context.scene.objects.get(x.name+bpy.context.scene.EZB_Settings.suffix_cage)
-                    bpy.context.scene.render.bake.cage_object = cage
+        with Scene_Visible():
+            with Custom_Render_Settings():
+                for map in self.get_active_maps():
+                    self.setup_settings()
+                    map.setup_settings()
+                    for group in self.bake_groups:
+                        group.setup_settings()
+                        high = group.objects_high
+                        low = group.objects_low
+                        for x in low:
+                            with Bake_Setup(self, map, high, x) as map_id:
+                                print('{} :: {}'.format(x.name, map_id))
+                                bpy.ops.object.bake(type=map_id)
 
-                    bpy.ops.object.bake(type=map.id)
+                    for x in bake_textures:
+                        x.pack()
+                        #save() 3 if filepathh is set
+                    self.clear_temp_materials()
 
-                    print('RESTORING...')
-                    
-                    self.restore_original_materials(x)
-
-        for x in bake_textures:
-            x.pack()
-            #save() 3 if filepathh is set
-        self.clear_temp_materials()
-        self.restore_orig_settings()
-
-        if bpy.ops.object.mode_set.poll():
-            bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-        bpy.ops.object.select_all(action='DESELECT')
-        bpy.context.view_layer.objects.active = None
-    
     def export(self):
         textures = []
         for x in self.materials:
@@ -301,7 +278,6 @@ class EZB_Baker(bpy.types.PropertyGroup):
         orig_file_format = bpy.context.scene.render.image_settings.file_format
 
         bpy.context.scene.view_settings.view_transform = 'Standard'
-
         
         for x in textures:
             path_full = os.path.join(bpy.path.abspath(self.path), x.name) + file_formats_enum[orig_file_format]

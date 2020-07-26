@@ -30,6 +30,11 @@ class EZB_Settings(bpy.types.PropertyGroup):
     suffix_low: bpy.props.StringProperty(default="_low")
     suffix_cage: bpy.props.StringProperty(default="_cage")
 
+    save_type: bpy.props.EnumProperty(items=[
+        ('PACK', 'Internally', 'Pack images inside the .blend file'),
+        ('EXTERNAL', 'Externally', 'Save images to an external file')
+    ])
+
     preview_group_objects_high: bpy.props.CollectionProperty(type=EZB_preview_group_object)
     preview_group_objects_low: bpy.props.CollectionProperty(type=EZB_preview_group_object)
 
@@ -47,14 +52,15 @@ class EZB_PT_core_panel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        box = layout.box()
-
-        col = box.column(align=False)
-        
+        col = layout.column(align=False)
+        col.use_property_split = True
+        col.use_property_decorate = False  # No animation.
 
         col.prop(context.scene.EZB_Settings, "suffix_high", text="High")
         col.prop(context.scene.EZB_Settings, "suffix_low", text="Low")
         col.prop(context.scene.EZB_Settings, "suffix_cage", text="Cage")
+
+        col.prop(context.scene.EZB_Settings, "save_type", text="Save images")
 
 class EZB_UL_preview_group_objects(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):

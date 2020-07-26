@@ -10,20 +10,26 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
     
     cage_displacement: bpy.props.FloatProperty(name='Cage Displacement',default=1)
 
+    def _remove_numbering(self, name):
+        if name[-3:].isdigit() and name[-4] == '.':
+            name = name[:-4]
+        return name
+
+
     def _get_objects(self, suffix):
         suffix = suffix.lower()
 
         objects = []
         if self.mode_group == 'COLLECTION':
             for x in traverse_tree(bpy.context.scene.collection, exclude_parent=True):
-                if x.name.lower() == self.key.lower() + suffix:
+                if self._remove_numbering(x.name.lower()) == self.key.lower() + suffix:
                     for y in traverse_tree(x):
                         objects.extend(y.objects[:])
                     break
 
         elif self.mode_group == 'NAME':
             for x in bpy.context.scene.objects:
-                if x.name.lower() == self.key.lower() + suffix:
+                if self._remove_numbering(x.name.lower()) == self.key.lower() + suffix:
                     objects.append(x)
                 
         return objects

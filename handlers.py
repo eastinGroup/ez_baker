@@ -4,9 +4,9 @@ def update_group_objects(scene):
     #print('UPDATING...')
     #bpy.app.handlers.depsgraph_update_post.remove(update_group_objects)
 
-    if scene.EZB_Settings.baker_index < len(scene.EZB_Settings.bakers) and len(scene.EZB_Settings.bakers) > 0:
+    if scene.EZB_Settings.baker_index >= 0 and scene.EZB_Settings.baker_index < len(scene.EZB_Settings.bakers) and len(scene.EZB_Settings.bakers) > 0:
         baker = scene.EZB_Settings.bakers[scene.EZB_Settings.baker_index]
-        if len(baker.bake_groups) > baker.bake_group_index:
+        if len(baker.bake_groups) > baker.bake_group_index and baker.bake_group_index >= 0:
             bake_group = baker.bake_groups[baker.bake_group_index]
 
             try:

@@ -102,6 +102,30 @@ e.g. "test_low" and "test_high" objects"""
         new_bake_group.mode_group = group
         return {'FINISHED'}
 
+class EZB_OT_create_possible_bake_groups(bpy.types.Operator):
+    """Create all possible bake groups"""
+    bl_idname = "ezb.create_possible_bake_groups"
+    bl_label = "Create Bake Groups"
+    
+    @classmethod
+    def poll(cls, context):
+        ezb_settings = bpy.context.scene.EZB_Settings
+        return True
+
+    def execute(self, context):
+        baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
+        possible_bake_groups = get_possible_bake_groups(self, context)
+        for x in possible_bake_groups:
+            new_bake_group = baker.bake_groups.add()
+            group, name = x[0].split('___')
+            new_bake_group.key = name
+            new_bake_group.mode_group = group
+        
+        index=len(baker.bake_groups) - 1
+        baker.bake_group_index = index
+
+        return {'FINISHED'}
+
 class EZB_OT_remove_bake_group(bpy.types.Operator):
     """Remove Bake Group"""
     bl_idname = "ezb.remove_bake_group"
@@ -371,6 +395,7 @@ classes = [
     EZB_OT_show_image,
     EZB_OT_select_texture_size,
     EZB_OT_select_object,
+    EZB_OT_create_possible_bake_groups,
 ]
 
 def register():

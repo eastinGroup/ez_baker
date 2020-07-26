@@ -129,10 +129,11 @@ class EZB_PT_bake_groups_panel(bpy.types.Panel):
             col = layout.column(align=True)
             col.template_list("EZB_UL_bake_groups", "", baker, "bake_groups", baker, "bake_group_index", rows=2)
             row2 = col.row(align=True)
+            row2.operator('ezb.create_possible_bake_groups', text='', icon='IMPORT')
             row2.operator_menu_enum('ezb.new_bake_group', 'name' ,text='Add Bake Group', icon='ADD')
             row2.operator('ezb.remove_bake_group', text='', icon='REMOVE')
 
-            if len(baker.bake_groups) > baker.bake_group_index:
+            if len(baker.bake_groups) > baker.bake_group_index and baker.bake_group_index >= 0:
                 bake_group = baker.bake_groups[baker.bake_group_index]
                 bake_group.draw(layout, context)
 

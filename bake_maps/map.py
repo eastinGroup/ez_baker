@@ -19,12 +19,17 @@ class EZB_Map:
 
     suffix: bpy.props.StringProperty(default='')
 
+    samples: bpy.props.IntProperty(default=1)
+
+    background_color = [0.0, 0.0, 0.0, 0.0]
+
     def __lt__(self, other):
         return self.label < other.label
 
     def setup_settings(self):
         bake_options = bpy.context.scene.render.bake
         bpy.context.scene.cycles.bake_type = self.id
+        bpy.context.scene.cycles.samples = self.samples
 
         for x in self.copy_settings:
             setattr(bake_options, x, getattr(self.settings, x))

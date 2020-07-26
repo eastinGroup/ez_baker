@@ -11,6 +11,8 @@ class EZB_Map_Normal(bpy.types.PropertyGroup, EZB_Map):
 
     suffix: bpy.props.StringProperty(default='_N')
 
+    background_color = [0.5, 0.5, 1.0, 1.0]
+
     def _draw_info(self, layout):
         
 

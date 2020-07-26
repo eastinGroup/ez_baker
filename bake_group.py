@@ -6,7 +6,7 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
     # group name
     # default cage info (displacement)
     key: bpy.props.StringProperty()
-    mode_group: bpy.props.EnumProperty(items=mode_group_types, name="Group By", default=bpy.context.preferences.addons[__name__.split('.')[0]].preferences.mode_group)
+    mode_group: bpy.props.EnumProperty(items=mode_group_types, name="Group By")
     
     cage_displacement: bpy.props.FloatProperty(name='Cage Displacement',default=1)
 
@@ -32,38 +32,28 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
         ezb_settings = bpy.context.scene.EZB_Settings
         row = layout.row(align=True)
         
-        row.prop(
-            ezb_settings,
-            'show_bake_group_objects',
-            icon="TRIA_DOWN" if ezb_settings.show_bake_group_objects else "TRIA_RIGHT",
-            icon_only=True,
-            text='',
-            emboss=False
-        )
         row.prop(self, 'cage_displacement')
 
-        if ezb_settings.show_bake_group_objects:
-            row = layout.row(align=True)
-            box1 = row.box()
-            box1.label(text= 'HIGH')
-            col1 = box1.column(align=True)
-            high = self.objects_high
-            for x in high:
-                sub_row = col1.row()
-                sub_row.operator('ezb.select_object', text= '', icon='RESTRICT_SELECT_OFF').name = x.name
-                sub_row.label(text=x.name)
-                
-            box2 = row.box()
-            box2.label(text= 'LOW')
-            col2 = box2.column(align=True)
-            low = self.objects_low
-            for x in low:
-                sub_row = col2.row()
-                sub_row.operator('ezb.select_object', text= '', icon='RESTRICT_SELECT_OFF').name = x.name
-                sub_row.label(text=x.name)
-                cage = context.scene.objects.get(x.name + ezb_settings.suffix_cage)
-                if cage:
-                    sub_row.operator('ezb.select_object', text= '', icon='SELECT_SET').name = cage.name
+        row = layout.split(factor=0.5,align=True)
+        row.template_list(
+            "EZB_UL_preview_group_objects", 
+            "", 
+            ezb_settings, 
+            "preview_group_objects_high", 
+            ezb_settings, 
+            "preview_group_objects_high_index", 
+            rows=2, 
+            sort_lock = False
+        )
+        row.template_list(
+            "EZB_UL_preview_group_objects", 
+            "", ezb_settings, 
+            "preview_group_objects_low", 
+            ezb_settings, 
+            "preview_group_objects_low_index", 
+            rows=2, 
+            sort_lock = False
+        )
 
     def setup_settings(self):
         bake_options = bpy.context.scene.render.bake

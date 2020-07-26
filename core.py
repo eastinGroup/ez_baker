@@ -16,19 +16,27 @@ from . import baker
 from . import bake_group
 from . import operators
 from . import bake_maps
+from . import handlers
 
-
+class EZB_preview_group_object(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty()
+    cage: bpy.props.StringProperty()
 
 class EZB_Settings(bpy.types.PropertyGroup):
     bakers: bpy.props.CollectionProperty(type=baker.EZB_Baker)
-    baker_index: bpy.props.IntProperty()
+    baker_index: bpy.props.IntProperty(update=handlers.update_group_objects_on_index_change)
 
     suffix_high: bpy.props.StringProperty(default="_high")
     suffix_low: bpy.props.StringProperty(default="_low")
     suffix_cage: bpy.props.StringProperty(default="_cage")
 
-    mode_group: bpy.props.EnumProperty(items=mode_group_types, name="Group By", default=bpy.context.preferences.addons[__name__.split('.')[0]].preferences.mode_group)
-    show_bake_group_objects: bpy.props.BoolProperty()
+    preview_group_objects_high: bpy.props.CollectionProperty(type=EZB_preview_group_object)
+    preview_group_objects_low: bpy.props.CollectionProperty(type=EZB_preview_group_object)
+
+    preview_group_objects_high_index: bpy.props.IntProperty()
+    preview_group_objects_low_index: bpy.props.IntProperty()
+
+
 
 class EZB_PT_core_panel(bpy.types.Panel):
     bl_idname = "EZB_PT_core_panel"
@@ -47,32 +55,30 @@ class EZB_PT_core_panel(bpy.types.Panel):
         col.prop(context.scene.EZB_Settings, "suffix_high", text="High")
         col.prop(context.scene.EZB_Settings, "suffix_low", text="Low")
         col.prop(context.scene.EZB_Settings, "suffix_cage", text="Cage")
-        col.prop(context.scene.EZB_Settings, "mode_group", text="Group by")
 
+class EZB_UL_preview_group_objects(bpy.types.UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        sub_row = layout.row()
+        sub_row.operator('ezb.select_object', text= '', icon='RESTRICT_SELECT_OFF').name = item.name
+        sub_row.label(text=item.name)
+        if item.cage:
+            sub_row.operator('ezb.select_object', text= '', icon='SELECT_SET').name = item.cage
 
 class EZB_UL_bakers(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        col = layout.column()
-        row = col.row()
+        row = layout.row()
         row.prop(item, 'key', text='', icon="RENDERLAYERS", emboss=False)
 
-    def invoke(self, context, event):
-        pass
 
 class EZB_UL_bake_groups(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        col = layout.column()
-        row = col.row()
+        row = layout.row()
         icon = next(x[3] for x in mode_group_types if x[0] == item.mode_group)
         row.prop(item, 'key', text='', icon=icon, emboss=False)
         high_objs = item.objects_high
         low_objs = item.objects_low
         row.operator('ezb.show_high_objects',text='High: {}'.format(len(high_objs)), emboss=False).index = index
         row.operator('ezb.show_low_objects',text='Low: {}'.format(len(low_objs)), emboss=False).index = index
-
-
-    def invoke(self, context, event):
-        pass
 
 
 class EZB_PT_files_panel(bpy.types.Panel):
@@ -121,9 +127,8 @@ class EZB_PT_bake_groups_panel(bpy.types.Panel):
             baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
 
             col = layout.column(align=True)
-            col.template_list("EZB_UL_bake_groups", "", baker, "bake_groups", baker, "bake_group_index", rows=3)
+            col.template_list("EZB_UL_bake_groups", "", baker, "bake_groups", baker, "bake_group_index", rows=2)
             row2 = col.row(align=True)
-            row2.prop(context.scene.EZB_Settings, "mode_group", text="", icon_only=True)
             row2.operator_menu_enum('ezb.new_bake_group', 'name' ,text='Add Bake Group', icon='ADD')
             row2.operator('ezb.remove_bake_group', text='', icon='REMOVE')
 
@@ -171,7 +176,18 @@ class EZB_PT_output_panel(bpy.types.Panel):
                 x.draw(col, context)
 
 
-classes = [EZB_Settings, EZB_UL_bakers,  EZB_UL_bake_groups, EZB_PT_core_panel, EZB_PT_files_panel, EZB_PT_bake_groups_panel, EZB_PT_maps_panel, EZB_PT_output_panel]
+classes = [
+    EZB_preview_group_object, 
+    EZB_Settings, 
+    EZB_UL_bakers,  
+    EZB_UL_bake_groups, 
+    EZB_PT_core_panel, 
+    EZB_PT_files_panel, 
+    EZB_PT_bake_groups_panel, 
+    EZB_PT_maps_panel, 
+    EZB_PT_output_panel,
+    EZB_UL_preview_group_objects
+]
 
 
 def register():
@@ -181,6 +197,7 @@ def register():
     bake_group.register()
     baker.register()
     
+    
     from bpy.utils import register_class
 
     for cls in classes:
@@ -188,15 +205,20 @@ def register():
 
     bpy.types.Scene.EZB_Settings = bpy.props.PointerProperty(type=EZB_Settings)
 
+    handlers.register()
+
 
 def unregister():
     from bpy.utils import unregister_class
+
+    handlers.unregister()
 
     for cls in reversed(classes):
         unregister_class(cls)
 
     del bpy.types.Scene.EZB_Settings
 
+    
     baker.unregister()
     bake_group.unregister()
     operators.unregister()

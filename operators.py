@@ -43,10 +43,9 @@ def get_possible_bake_groups(self, context):
     global last_bake_groups
     ezb_settings = bpy.context.scene.EZB_Settings
     baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
-    group_by = ezb_settings.mode_group
     ans = set()
 
-    def is_group_valid(orig_name):
+    def is_group_valid(orig_name, type):
         name = orig_name.lower()
         suffix_high = ezb_settings.suffix_high.lower()
         suffix_low = ezb_settings.suffix_low.lower()
@@ -56,33 +55,32 @@ def get_possible_bake_groups(self, context):
         elif name.endswith(suffix_low):
             group_name = name[:-(len(suffix_low))]
 
-        if group_name and group_name not in [x.key for x in baker.bake_groups]:
-            return group_name
-        return ''
+        if group_name:
+            for i, group in enumerate([x for x in baker.bake_groups]):
+                if group_name == group.key and type == group.mode_group:
+                    return ''
 
-    if group_by == 'COLLECTION':
-        for x in traverse_tree(bpy.context.scene.collection, exclude_parent=True):
-            group_name = is_group_valid(x.name)
+        return group_name
+        
+
+    for x in traverse_tree(bpy.context.scene.collection, exclude_parent=True):
+        group_name = is_group_valid(x.name, 'COLLECTION')
+        if group_name:
+            ans.add((group_name,'COLLECTION', 'GROUP'))    
+
+    for x in bpy.context.scene.objects:
+        if x.type == 'MESH':
+            group_name = is_group_valid(x.name, 'NAME')
             if group_name:
-                ans.add(group_name)
-                  
-    elif group_by == 'NAME':
-        for x in bpy.context.scene.objects:
-            if x.type == 'MESH':
-                group_name = is_group_valid(x.name)
-                if group_name:
-                    ans.add(group_name)
+                ans.add((group_name, 'NAME', 'OUTLINER_OB_MESH'))
     ans = list(ans)
-    ans.sort()
-    last_bake_groups = [(x,x,x,'',i) for i,x in enumerate(ans)]
+    last_bake_groups = [(x[1]+'___'+x[0],x[0],x[0],x[2],i) for i,x in enumerate(ans)]
     return last_bake_groups
 
 class EZB_OT_new_bake_group(bpy.types.Operator):
-    """
-Bake groups are created by searching the scene for objects or collections that match the naming patterns in the settings panel.
-Set the "Group by" option to "Name" and create two object:
-test_high and test_low
-    """
+    """Bake groups are created by searching the scene for objects or collections that match the naming patterns in the settings panel.
+So you need Collections or Objects already created. 
+e.g. "test_low" and "test_high" objects"""
     bl_idname = "ezb.new_bake_group"
     bl_label = "New Bake Group"
     
@@ -99,8 +97,9 @@ test_high and test_low
         new_bake_group=baker.bake_groups.add()
         index=len(baker.bake_groups) - 1
         baker.bake_group_index = index
-        new_bake_group.key=self.name
-        new_bake_group.mode_group = bpy.context.scene.EZB_Settings.mode_group
+        group, name = self.name.split('___')
+        new_bake_group.key = name
+        new_bake_group.mode_group = group
         return {'FINISHED'}
 
 class EZB_OT_remove_bake_group(bpy.types.Operator):
@@ -116,6 +115,9 @@ class EZB_OT_remove_bake_group(bpy.types.Operator):
     def execute(self, context):
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
         baker.bake_groups.remove(baker.bake_group_index)
+
+        if baker.bake_group_index >= len(baker.bake_groups):
+            baker.bake_group_index = len(baker.bake_groups)-1
         return {'FINISHED'}
 
 
@@ -192,8 +194,11 @@ class EZB_OT_bake(bpy.types.Operator):
         for group in baker.bake_groups:
             if not group.objects_low:
                 return 'Some bake groups have no low objects assigned'
+        for group in baker.bake_groups:
+            if not group.objects_high:
+                return 'Some bake groups have no high objects assigned'
         if not baker.bake_groups:
-            return 'You need to create a bake group first\nMake sure you have the "group by" option set to "Name" \nHave one object named "example_low" and another one named "example_high"\nYou will now be able to add the bake group with the dropdown'
+            return 'You need to create a bake group first\nMake sure you have one object (or collection) named "example_low" and another one named "example_high"\nYou will now be able to add the bake group with the dropdown'
         return 'Bake'
 
     @classmethod
@@ -206,6 +211,9 @@ class EZB_OT_bake(bpy.types.Operator):
             return False
         for group in baker.bake_groups:
             if not group.objects_low:
+                return False
+        for group in baker.bake_groups:
+            if not group.objects_high:
                 return False
         if not baker.bake_groups:
             return False
@@ -272,7 +280,7 @@ class EZB_OT_export(bpy.types.Operator):
                 break
         if not images_correct:
             return 'There are no images to export, make sure you bake the textures before exporting'
-        return 'Bake'
+        return 'Export'
 
     @classmethod
     def poll(cls, context):

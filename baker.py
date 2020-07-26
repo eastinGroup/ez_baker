@@ -1,3 +1,6 @@
+import subprocess
+import pathlib
+
 import bpy
 
 from .bake_group import EZB_Bake_Group
@@ -8,6 +11,8 @@ from . import bake_settings
 import os
 
 from .settings import mode_group_types, file_formats_enum
+
+from . import handlers
 
 def set_path(self, value):
     # checks if the provided path is inside a subdirectory of the current file to save it as a relative path
@@ -59,15 +64,13 @@ class EZB_Stored_Material(bpy.types.PropertyGroup):
                 row.label(text='{}:'.format(x.map_name))
                 row.operator('ezb.show_image', text='{}'.format(x.image.name), icon='FILE_IMAGE').image = x.image.name
 
-
-
 class EZB_Baker(bpy.types.PropertyGroup):
     key: bpy.props.StringProperty(default='')
 
     mode_group: bpy.props.EnumProperty(items=mode_group_types, name="Group By", default='NAME')
 
     bake_groups: bpy.props.CollectionProperty(type=EZB_Bake_Group)
-    bake_group_index: bpy.props.IntProperty()
+    bake_group_index: bpy.props.IntProperty(update=handlers.update_group_objects_on_index_change)
 
     maps: bpy.props.PointerProperty(type=EZB_Maps)
 
@@ -129,7 +132,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
         
         
         bake_options.margin = self.padding
-        bake_options.use_clear = True
+        bake_options.use_clear = False
 
     def create_bake_material(self, material):
         temp_material = None
@@ -171,6 +174,9 @@ class EZB_Baker(bpy.types.PropertyGroup):
                     existing_image = bpy.data.images.get(new_name)
 
                     new_image = bpy.data.images.new(new_name, width = self.width, height = self.height)
+                    pixels = [map.background_color for i in range(0, self.width*self.height)]
+                    pixels = [chan for px in pixels for chan in px]
+                    new_image.pixels = pixels
 
                     if existing_image:
                         existing_image.name = '___TEMP___'
@@ -243,6 +249,8 @@ class EZB_Baker(bpy.types.PropertyGroup):
         return ans
 
     def bake(self):
+        #args = [bpy.app.binary_path, "-b",]
+        #subprocess.call(args)
         print('BAKING: {}'.format(self.key))
         bake_textures.clear()
         self.store_orig_settings()
@@ -267,8 +275,6 @@ class EZB_Baker(bpy.types.PropertyGroup):
                     bpy.context.scene.render.bake.cage_object = cage
 
                     bpy.ops.object.bake(type=map.id)
-
-                    bpy.context.scene.render.bake.use_clear = False
 
                     print('RESTORING...')
                     
@@ -296,11 +302,13 @@ class EZB_Baker(bpy.types.PropertyGroup):
 
         bpy.context.scene.view_settings.view_transform = 'Standard'
 
+        
         for x in textures:
-            folderpath = self.path
-            filename = x.name + file_formats_enum[orig_file_format]
-            path = os.path.join(folderpath, filename)
-            x.save_render(path, scene=bpy.context.scene)
+            path_full = os.path.join(bpy.path.abspath(self.path), x.name) + file_formats_enum[orig_file_format]
+            directory = os.path.dirname(path_full)
+            pathlib.Path(directory).mkdir(parents=True, exist_ok=True)
+
+            x.save_render(path_full, scene=bpy.context.scene)
 
         bpy.context.scene.view_settings.view_transform = orig_view_transform
         bpy.context.scene.render.image_settings.file_format = orig_file_format

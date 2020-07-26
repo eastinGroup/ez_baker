@@ -13,7 +13,6 @@ from bpy.props import (
 
 from .settings import mode_group_types
 
-
 bl_info = {
     "name": "EZ Bake",
     "description": "Bake textures by grouping objects",
@@ -27,17 +26,10 @@ bl_info = {
     "doc_url": "https://gitlab.com/AquaticNightmare/ez_bake",
     "tracker_url": "https://gitlab.com/AquaticNightmare/ez_bake/-/issues",
 }
-
-
 class EZB_preferences(bpy.types.AddonPreferences):
     bl_idname = __name__
-
-    mode_group: bpy.props.EnumProperty(items=mode_group_types, name="Group By", default='NAME')
-
     def draw(self, context):
         layout = self.layout
-
-        layout.prop(self, 'mode_group')
 
 def register():
     from bpy.utils import register_class
@@ -49,7 +41,6 @@ def register():
     # to make sure it uses the correct variables when registering modifiers, otherwise errors will happen during development
     imp.reload(core)
     core.register()
-
 
 def unregister():
     from bpy.utils import unregister_class

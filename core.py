@@ -41,6 +41,16 @@ class EZB_Settings(bpy.types.PropertyGroup):
     preview_group_objects_high_index: bpy.props.IntProperty()
     preview_group_objects_low_index: bpy.props.IntProperty()
 
+    tile_size: bpy.props.EnumProperty(
+        items=[
+            ('1/4', '1/4', '1/8'),
+            ('1/4', '1/4', '1/4'),
+            ('1/2', '1/2', '1/2'),
+            ('x1', 'x1', 'x1'),
+        ],
+        default='x1'
+    )
+
 
 class EZB_PT_core_panel(bpy.types.Panel):
     bl_idname = "EZB_PT_core_panel"
@@ -58,12 +68,15 @@ class EZB_PT_core_panel(bpy.types.Panel):
         col.prop(context.scene.EZB_Settings, "suffix_high", text="High")
         col.prop(context.scene.EZB_Settings, "suffix_low", text="Low")
         col.prop(context.scene.EZB_Settings, "suffix_cage", text="Cage")
+        col.prop(context.scene.EZB_Settings, "tile_size", text="Tile Size")
 
         row = col.row()
         row.enabled=False
         row.prop(context.scene.EZB_Settings, "save_type", text="Save images")
 
         layout.template_image_settings(bpy.context.scene.render.image_settings, color_management=False)
+
+        
 
 
 class EZB_UL_preview_group_objects(bpy.types.UIList):

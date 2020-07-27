@@ -3,8 +3,6 @@ from .settings import mode_group_types
 from .utilities import traverse_tree
 
 def update_cage(self, context):
-    bpy.context.space_data.shading.type = 'SOLID'
-    bpy.context.space_data.shading.color_type = 'OBJECT'
 
     def get_copy_cage(obj):
         cage = bpy.context.scene.objects.get(obj.name + bpy.context.scene.EZB_Settings.suffix_cage)
@@ -29,6 +27,8 @@ def update_cage(self, context):
         bpy.data.meshes.remove(mesh, do_unlink=True)
 
     if self.preview_cage:
+        bpy.context.space_data.shading.type = 'SOLID'
+        bpy.context.space_data.shading.color_type = 'OBJECT'
 
         copy_objects = [get_copy_cage(x) for x in self.objects_low]
         copy_objects_data = [x.data for x in copy_objects]

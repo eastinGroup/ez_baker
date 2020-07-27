@@ -242,6 +242,17 @@ class EZB_Baker(bpy.types.PropertyGroup):
         bpy.context.scene.render.engine = 'CYCLES'
         bpy.context.scene.cycles.progressive = 'PATH'
         bake_options.use_selected_to_active = True
+        tile_size_relative = 1
+        if bpy.context.scene.EZB_Settings.tile_size == '1/8':
+            tile_size_relative = 0.125
+        if bpy.context.scene.EZB_Settings.tile_size == '1/4':
+            tile_size_relative = 0.25
+        elif bpy.context.scene.EZB_Settings.tile_size == '1/2':
+            tile_size_relative = 0.5
+        elif bpy.context.scene.EZB_Settings.tile_size == 'x1':
+            tile_size_relative = 1
+        bpy.context.scene.render.tile_x = int(self.width * tile_size_relative)
+        bpy.context.scene.render.tile_y = int(self.height * tile_size_relative)
         #bpy.context.scene.cycles.use_adaptive_sampling = False
         #bpy.context.scene.cycles.sampling_pattern = 'SOBOL'
 

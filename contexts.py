@@ -30,7 +30,6 @@ class Scene_Visible():
             collection.hide_viewport = False
 
         for obj in bpy.data.objects:
-            obj['__orig_name__'] = obj.name
             obj['__orig_hide__'] = obj.hide_viewport
             obj['__orig_hide_select__'] = obj.hide_select
             obj['__orig_collection__'] = obj.users_collection[0].name if obj.users_collection else '__NONE__'
@@ -49,14 +48,11 @@ class Scene_Visible():
         bpy.ops.object.select_all(action='DESELECT')
         # now restore original values
         for obj in bpy.data.objects:
-            if obj.name is not obj['__orig_name__']:
-                obj.name = obj['__orig_name__']
             obj.hide_viewport = obj['__orig_hide__']
             obj.hide_select = obj['__orig_hide_select__']
             obj.hide_set(bool(obj['__orig_hide_vl__']))
             obj.select_set(bool(obj['__orig_select__']))
 
-            del obj['__orig_name__']
             del obj['__orig_hide__']
             del obj['__orig_hide_select__']
             del obj['__orig_hide_vl__']

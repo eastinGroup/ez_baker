@@ -2,13 +2,70 @@ import bpy
 from .settings import mode_group_types
 from .utilities import traverse_tree
 
+def update_cage(self, context):
+    bpy.context.space_data.shading.type = 'SOLID'
+    bpy.context.space_data.shading.color_type = 'OBJECT'
+
+    def get_copy_cage(obj):
+        cage = bpy.context.scene.objects.get(obj.name + bpy.context.scene.EZB_Settings.suffix_cage)
+        if cage:
+            cage = cage.copy()
+            cage_data = cage.data.copy()
+            cage.data = cage_data
+        else:
+            cage = obj.copy()
+            cage_data = cage.data.copy()
+            cage.data = cage_data
+
+            mod = cage.modifiers.new('DISPLACE', type='DISPLACE')
+            mod.mid_level = 0
+            mod.strength = self.cage_displacement
+        bpy.context.scene.collection.objects.link(cage)
+        return cage
+
+    if self.preview_cage_object:
+        mesh = self.preview_cage_object.data
+        bpy.data.objects.remove(self.preview_cage_object, do_unlink=True)
+        bpy.data.meshes.remove(mesh, do_unlink=True)
+
+    if self.preview_cage:
+
+        copy_objects = [get_copy_cage(x) for x in self.objects_low]
+        copy_objects_data = [x.data for x in copy_objects]
+
+        if bpy.ops.object.mode_set.poll():
+            bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+        bpy.ops.object.select_all(action='DESELECT')
+        for x in copy_objects:
+            x.select_set(True)
+            bpy.context.view_layer.objects.active=x
+        if len(copy_objects) >1:
+            bpy.ops.object.join()
+            
+
+        self.preview_cage_object = bpy.context.view_layer.objects.active
+        self.preview_cage_object.name = self.key + '_preview_cage'
+        self.preview_cage_object.color = (1, 0, 0, 0.3)
+        self.preview_cage_object.display_type='SOLID'
+        bpy.ops.object.convert(target='MESH')
+
+        for i in reversed(range(0, len(copy_objects) - 1)):
+            bpy.data.meshes.remove(copy_objects_data[i], do_unlink=True)
+
+        bpy.context.view_layer.objects.active = None
+
+
 class EZB_Bake_Group(bpy.types.PropertyGroup):
     # group name
     # default cage info (displacement)
     key: bpy.props.StringProperty()
     mode_group: bpy.props.EnumProperty(items=mode_group_types, name="Group By")
     
-    cage_displacement: bpy.props.FloatProperty(name='Cage Displacement',default=1)
+    cage_displacement: bpy.props.FloatProperty(name='Cage Displacement', default=1, update=update_cage)
+
+    preview_cage: bpy.props.BoolProperty(update=update_cage)
+    preview_cage_object: bpy.props.PointerProperty(type=bpy.types.Object)
+
 
     def _remove_numbering(self, name):
         if name[-3:].isdigit() and name[-4] == '.':

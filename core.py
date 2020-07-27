@@ -42,7 +42,6 @@ class EZB_Settings(bpy.types.PropertyGroup):
     preview_group_objects_low_index: bpy.props.IntProperty()
 
 
-
 class EZB_PT_core_panel(bpy.types.Panel):
     bl_idname = "EZB_PT_core_panel"
     bl_label = "Settings"
@@ -63,6 +62,8 @@ class EZB_PT_core_panel(bpy.types.Panel):
         row = col.row()
         row.enabled=False
         row.prop(context.scene.EZB_Settings, "save_type", text="Save images")
+
+        layout.template_image_settings(bpy.context.scene.render.image_settings, color_management=False)
 
 
 class EZB_UL_preview_group_objects(bpy.types.UIList):
@@ -88,6 +89,14 @@ class EZB_UL_bake_groups(bpy.types.UIList):
         low_objs = item.objects_low
         row.operator('ezb.show_high_objects',text='High: {}'.format(len(high_objs)), emboss=False).index = index
         row.operator('ezb.show_low_objects',text='Low: {}'.format(len(low_objs)), emboss=False).index = index
+        row.prop(
+            item, 
+            'preview_cage',
+            text='cage',
+            icon="HIDE_OFF" if item.preview_cage else "HIDE_ON",
+            icon_only=True,
+            emboss=False
+            )
 
 
 class EZB_PT_files_panel(bpy.types.Panel):

@@ -44,6 +44,7 @@ for x in bpy.types.BakeSettings.bl_rna.properties:
         settings_annotations[x.identifier] = (bpy.props.EnumProperty, {'name':x.name,'items': [(y.identifier, y.name, y.description) for y in x.enum_items], 'default': default})
     else:
         print(x.type)
+
 print(settings_annotations.keys())
 bake_settings = type("bake_settings", (bpy.types.PropertyGroup,), {'__annotations__': settings_annotations})
 

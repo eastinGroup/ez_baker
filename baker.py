@@ -103,6 +103,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
         row.prop(self, 'height', text='height')
         row = col.row(align=True)
         row.prop(self, 'padding', text='padding')
+        
         row = layout.row(align=True)
         if self.path == "":
             row.alert = True

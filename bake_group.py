@@ -45,6 +45,7 @@ def update_cage(self, context):
 
         self.preview_cage_object = bpy.context.view_layer.objects.active
         self.preview_cage_object.name = self.key + '_preview_cage'
+        self.preview_cage_object.data.name = self.key + '_preview_cage'
         self.preview_cage_object.color = (1, 0, 0, 0.3)
         self.preview_cage_object.display_type='SOLID'
         bpy.ops.object.convert(target='MESH')

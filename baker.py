@@ -178,8 +178,15 @@ class EZB_Baker(bpy.types.PropertyGroup):
                     new_name = material.name + map.suffix
                     existing_image = bpy.data.images.get(new_name)
 
-                    new_image = bpy.data.images.new(new_name, width = self.width, height = self.height)
-                    pixels = [map.background_color for i in range(0, self.width*self.height)]
+                    supersampling = 1
+                    if self.supersampling == 'x1':
+                        supersampling = 1
+                    elif self.supersampling == 'x2':
+                        supersampling = 2
+                    elif self.supersampling == 'x4':
+                        supersampling = 4
+                    new_image = bpy.data.images.new(new_name, width = self.width*supersampling, height = self.height*supersampling)
+                    pixels = [map.background_color for i in range(0, self.width*supersampling*self.height*supersampling)]
                     pixels = [chan for px in pixels for chan in px]
                     new_image.pixels = pixels
 
@@ -262,12 +269,21 @@ class EZB_Baker(bpy.types.PropertyGroup):
             tile_size_relative = 0.5
         elif bpy.context.scene.EZB_Settings.tile_size == 'x1':
             tile_size_relative = 1
-        bpy.context.scene.render.tile_x = int(self.width * tile_size_relative)
-        bpy.context.scene.render.tile_y = int(self.height * tile_size_relative)
+        
+        supersampling = 1
+        if self.supersampling == 'x1':
+            supersampling = 1
+        elif self.supersampling == 'x2':
+            supersampling = 2
+        elif self.supersampling == 'x4':
+            supersampling = 4
+
+        bpy.context.scene.render.tile_x = int(self.width * tile_size_relative * supersampling)
+        bpy.context.scene.render.tile_y = int(self.height * tile_size_relative * supersampling)
         #bpy.context.scene.cycles.use_adaptive_sampling = False
         #bpy.context.scene.cycles.sampling_pattern = 'SOBOL'
 
-        bake_options.margin = self.padding
+        bake_options.margin = self.padding * supersampling
         bake_options.use_clear = False
 
     def bake(self):
@@ -289,8 +305,17 @@ class EZB_Baker(bpy.types.PropertyGroup):
                             with map.context(self, map, high, x) as map_id:
                                 print('{} :: {}'.format(x.name, map_id))
                                 bpy.ops.object.bake(type=map_id)
-
+                    
+                    supersampling = 1
+                    if self.supersampling == 'x1':
+                        supersampling = 1
+                    elif self.supersampling == 'x2':
+                        supersampling = 2
+                    elif self.supersampling == 'x4':
+                        supersampling = 4
                     for x in bake_textures:
+                        if supersampling != 1:
+                            x.scale(self.width, self.height)
                         x.pack()
                         #save() 3 if filepathh is set
                     self.clear_temp_materials()

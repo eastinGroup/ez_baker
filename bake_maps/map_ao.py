@@ -3,6 +3,7 @@ from .map import EZB_Map
 
 class EZB_Map_AO(bpy.types.PropertyGroup, EZB_Map):
     id = 'AO'
+    pass_name = 'AO'
     label = 'Ambient Occlusion'
 
     suffix: bpy.props.StringProperty(default='_AO')

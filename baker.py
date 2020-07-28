@@ -10,7 +10,7 @@ from . import bake_settings
 
 from .bake_group import EZB_Bake_Group
 from .bake_maps import EZB_Maps
-from .contexts import Scene_Visible, Custom_Render_Settings, Bake_Setup
+from .contexts import Scene_Visible, Custom_Render_Settings
 from .settings import mode_group_types, file_formats_enum
 
 
@@ -92,6 +92,14 @@ class EZB_Baker(bpy.types.PropertyGroup):
     width: bpy.props.IntProperty(default=1024)
 
     padding: bpy.props.IntProperty(default=16)
+    supersampling: bpy.props.EnumProperty(
+        items=[
+            ('x1', 'x1', 'x1'),
+            ('x2', 'x2', 'x2'),
+            ('x4', 'x4', 'x4'),
+        ],
+        default= 'x1'
+    )
 
     def draw(self, layout, context):
         ezb_settings = bpy.context.scene.EZB_Settings
@@ -99,8 +107,11 @@ class EZB_Baker(bpy.types.PropertyGroup):
         col = layout.column(align=True)
         row = col.row(align=True)
         row.operator_menu_enum('ezb.select_texture_size', 'size', text='', icon='DOWNARROW_HLT')
-        row.prop(self, 'width', text='width')
-        row.prop(self, 'height', text='height')
+        split = row.split(align=True, factor =0.85)
+        row2 = split.row(align=True)
+        row2.prop(self, 'width', text='width')
+        row2.prop(self, 'height', text='height')
+        split.prop(self, 'supersampling', text='')
         row = col.row(align=True)
         row.prop(self, 'padding', text='padding')
         
@@ -275,7 +286,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
                         high = group.objects_high
                         low = group.objects_low
                         for x in low:
-                            with Bake_Setup(self, map, high, x) as map_id:
+                            with map.context(self, map, high, x) as map_id:
                                 print('{} :: {}'.format(x.name, map_id))
                                 bpy.ops.object.bake(type=map_id)
 

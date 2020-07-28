@@ -39,8 +39,7 @@ class EZB_OT_remove_baker(bpy.types.Operator):
 
 last_bake_groups = None
 
-def get_possible_bake_groups(self, context):
-    global last_bake_groups
+def get_possible_bake_groups(objects):
     ezb_settings = bpy.context.scene.EZB_Settings
     baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
     ans = set()
@@ -65,15 +64,20 @@ def get_possible_bake_groups(self, context):
 
     for x in traverse_tree(bpy.context.scene.collection, exclude_parent=True):
         group_name = is_group_valid(x.name, 'COLLECTION')
-        if group_name:
+        if group_name and any(obj in objects for obj in x):
             ans.add((group_name,'COLLECTION', 'GROUP'))    
 
-    for x in bpy.context.scene.objects:
+    for x in objects:
         if x.type == 'MESH':
             group_name = is_group_valid(x.name, 'NAME')
             if group_name:
                 ans.add((group_name, 'NAME', 'OUTLINER_OB_MESH'))
-    ans = list(ans)
+
+    return ans
+
+def get_possible_bake_groups_enums(self, context):
+    global last_bake_groups
+    ans = list(get_possible_bake_groups(bpy.context.scene.objects))
     last_bake_groups = [(x[1]+'___'+x[0],x[0],x[0],x[2],i) for i,x in enumerate(ans)]
     return last_bake_groups
 
@@ -85,7 +89,7 @@ e.g. "test_low" and "test_high" objects"""
     bl_label = "New Bake Group"
     
 
-    name: bpy.props.EnumProperty(items=get_possible_bake_groups)
+    name: bpy.props.EnumProperty(items=get_possible_bake_groups_enums)
 
     @classmethod
     def poll(cls, context):
@@ -106,6 +110,13 @@ class EZB_OT_create_possible_bake_groups(bpy.types.Operator):
     """Create all possible bake groups"""
     bl_idname = "ezb.create_possible_bake_groups"
     bl_label = "Create Bake Groups"
+
+    gather_from: bpy.props.EnumProperty(
+        items=[
+            ('SELECTION', 'From Selection', 'Add all posible bake groups from the selected objects'),
+            ('SCENE', 'From Scene', 'Add all posible bake groups from the current scene'),
+        ]
+    )
     
     @classmethod
     def poll(cls, context):
@@ -114,10 +125,12 @@ class EZB_OT_create_possible_bake_groups(bpy.types.Operator):
 
     def execute(self, context):
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
-        possible_bake_groups = get_possible_bake_groups(self, context)
-        for x in possible_bake_groups:
+        if self.gather_from == 'SELECTION':
+            possible_bake_groups = get_possible_bake_groups([x for x in bpy.context.scene.objects if x.select_get()])
+        elif self.gather_from == 'SCENE':
+            possible_bake_groups = get_possible_bake_groups(bpy.context.scene.objects[:])
+        for name, group, icon in possible_bake_groups:
             new_bake_group = baker.bake_groups.add()
-            group, name = x[0].split('___')
             new_bake_group.key = name
             new_bake_group.mode_group = group
         

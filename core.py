@@ -51,6 +51,13 @@ class EZB_Settings(bpy.types.PropertyGroup):
         default='x1'
     )
 
+    device: bpy.props.EnumProperty(
+        items=[
+            ('CPU', 'CPU', 'CPU'),
+            ('GPU', 'GPU', 'GPU')
+        ]
+    )
+
 
 class EZB_PT_core_panel(bpy.types.Panel):
     bl_idname = "EZB_PT_core_panel"
@@ -69,6 +76,7 @@ class EZB_PT_core_panel(bpy.types.Panel):
         col.prop(context.scene.EZB_Settings, "suffix_low", text="Low")
         col.prop(context.scene.EZB_Settings, "suffix_cage", text="Cage")
         col.prop(context.scene.EZB_Settings, "tile_size", text="Tile Size")
+        col.prop(context.scene.EZB_Settings, "device", text="Render")
 
         row = col.row()
         row.enabled=False

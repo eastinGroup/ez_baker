@@ -264,7 +264,7 @@ class EZB_OT_bake(bpy.types.Operator):
 last_maps = None
 def get_possible_maps(self, context):
     global last_maps
-    last_maps = [(x.id, x.label, x.label, '', i) for i, x in enumerate(bake_maps.maps)]
+    last_maps = [(x.id, x.label, x.label, x.icon, i) for i, x in enumerate(bake_maps.maps)]
     return last_maps
 
 

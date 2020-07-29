@@ -38,7 +38,7 @@ class EZB_Map:
 
     active: bpy.props.BoolProperty(default=False)
     show_info: bpy.props.BoolProperty(default=False)
-
+    icon='TEXTURE'
     settings: bpy.props.PointerProperty(type=bake_settings.bake_settings)
 
     copy_settings = []
@@ -68,6 +68,15 @@ class EZB_Map:
     def _draw_info(self, layout):
         pass
 
+    def draw_prop_with_warning(self, layout, obj, prop_name, max_limit):
+        row = layout.row()
+        if getattr(obj, prop_name) >= max_limit:
+            row.alert=True
+            
+        row.prop(obj, prop_name, toggle=True)
+        if row.alert:
+            row.label(text='', icon= 'ERROR')
+
     def draw(self, layout):
         row = layout.row(align=True)
         row.prop(
@@ -79,7 +88,7 @@ class EZB_Map:
             emboss=False
         )
 
-        row.label(text="{}".format(self.label), icon='TEXTURE')
+        row.label(text="{}".format(self.label), icon=self.icon)
 
         row = row.row(align=True)
         row.enabled = self.active

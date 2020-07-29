@@ -95,8 +95,8 @@ class EZB_Baker(bpy.types.PropertyGroup):
     supersampling: bpy.props.EnumProperty(
         items=[
             ('x1', 'x1', 'x1'),
-            ('x2', 'x2', 'x2'),
             ('x4', 'x4', 'x4'),
+            ('x16', 'x16', 'x16'),
         ],
         default= 'x1'
     )
@@ -181,12 +181,14 @@ class EZB_Baker(bpy.types.PropertyGroup):
                     supersampling = 1
                     if self.supersampling == 'x1':
                         supersampling = 1
-                    elif self.supersampling == 'x2':
-                        supersampling = 2
                     elif self.supersampling == 'x4':
+                        supersampling = 2
+                    elif self.supersampling == 'x16':
                         supersampling = 4
-                    new_image = bpy.data.images.new(new_name, width = self.width*supersampling, height = self.height*supersampling)
-                    pixels = [map.background_color for i in range(0, self.width*supersampling*self.height*supersampling)]
+                    width = self.width*supersampling
+                    height = self.height*supersampling
+                    new_image = bpy.data.images.new(new_name, width = width, height = height)
+                    pixels = [map.background_color for i in range(0, width*height)]
                     pixels = [chan for px in pixels for chan in px]
                     new_image.pixels = pixels
 
@@ -258,6 +260,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
     def setup_settings(self):
         bake_options = bpy.context.scene.render.bake
         bpy.context.scene.render.engine = 'CYCLES'
+        bpy.context.scene.cycles.device = bpy.context.scene.EZB_Settings.device
         bpy.context.scene.cycles.progressive = 'PATH'
         bake_options.use_selected_to_active = True
         tile_size_relative = 1
@@ -273,9 +276,9 @@ class EZB_Baker(bpy.types.PropertyGroup):
         supersampling = 1
         if self.supersampling == 'x1':
             supersampling = 1
-        elif self.supersampling == 'x2':
-            supersampling = 2
         elif self.supersampling == 'x4':
+            supersampling = 2
+        elif self.supersampling == 'x16':
             supersampling = 4
 
         bpy.context.scene.render.tile_x = int(self.width * tile_size_relative * supersampling)
@@ -293,8 +296,10 @@ class EZB_Baker(bpy.types.PropertyGroup):
         bake_textures.clear()
 
         with Scene_Visible():
+            print('GATHERING SETTINGS...')
             with Custom_Render_Settings():
                 for map in self.get_active_maps():
+                    print('SETUP: {}'.format(map.id))
                     self.setup_settings()
                     map.setup_settings()
                     for group in self.bake_groups:
@@ -303,22 +308,23 @@ class EZB_Baker(bpy.types.PropertyGroup):
                         low = group.objects_low
                         for x in low:
                             with map.context(self, map, high, x) as map_id:
-                                print('{} :: {}'.format(x.name, map_id))
+                                print('{} :: {}'.format(x.name, map.id))
                                 bpy.ops.object.bake(type=map_id)
-                    
-                    supersampling = 1
-                    if self.supersampling == 'x1':
-                        supersampling = 1
-                    elif self.supersampling == 'x2':
-                        supersampling = 2
-                    elif self.supersampling == 'x4':
-                        supersampling = 4
-                    for x in bake_textures:
-                        if supersampling != 1:
-                            x.scale(self.width, self.height)
-                        x.pack()
-                        #save() 3 if filepathh is set
+                                print('FINISHED BAKE')
                     self.clear_temp_materials()
+                    
+                supersampling = 1
+                if self.supersampling == 'x1':
+                    supersampling = 1
+                elif self.supersampling == 'x4':
+                    supersampling = 2
+                elif self.supersampling == 'x16':
+                    supersampling = 4
+                for x in bake_textures:
+                    x.scale(self.width, self.height)
+                    x.pack()
+                    #save() 3 if filepathh is set
+                
 
     def export(self):
         textures = []

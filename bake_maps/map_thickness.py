@@ -33,8 +33,8 @@ class Map_Context_Thickness(Map_Context):
             #bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
 
-            for i in reversed(range(0, len(self.dup_objects[i].material_slots))):
-                self.dup_objects[i].active_material_index = i
+            for j in reversed(range(0, len(self.dup_objects[i].material_slots))):
+                self.dup_objects[i].active_material_index = j
                 bpy.ops.object.material_slot_remove()
 
             bpy.ops.object.material_slot_add()
@@ -58,13 +58,19 @@ class Map_Context_Thickness(Map_Context):
         super().__exit__(type, value, traceback)
 
 
-class EZB_Map_AO(bpy.types.PropertyGroup, EZB_Map):
+class EZB_Map_Thickness(bpy.types.PropertyGroup, EZB_Map):
     id = 'THICKNESS'
     pass_name = 'EMIT'
     label = 'Thickness'
+    icon = 'META_DATA'
 
     suffix: bpy.props.StringProperty(default='_THCK')
 
     background_color = [0.5, 0.5, 0.5, 1.0]
 
     context = Map_Context_Thickness
+
+    samples: bpy.props.IntProperty(name='Samples', default=6)
+
+    def _draw_info(self, layout):
+        self.draw_prop_with_warning(layout, self, 'samples', 16)

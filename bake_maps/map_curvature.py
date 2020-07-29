@@ -34,8 +34,8 @@ class Map_Context_Curvature(Map_Context):
             #bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 
 
-            for i in reversed(range(0, len(self.dup_objects[i].material_slots))):
-                self.dup_objects[i].active_material_index = i
+            for j in reversed(range(0, len(self.dup_objects[i].material_slots))):
+                self.dup_objects[i].active_material_index = j
                 bpy.ops.object.material_slot_remove()
 
             bpy.ops.object.material_slot_add()
@@ -63,14 +63,15 @@ class EZB_Map_AO(bpy.types.PropertyGroup, EZB_Map):
     id = 'CURVATURE'
     pass_name = 'EMIT'
     label = 'Curvature'
+    icon='SPHERECURVE'
 
     suffix: bpy.props.StringProperty(default='_CURV')
-
-    samples: bpy.props.IntProperty(name='Samples', default=8)
+    active: bpy.props.BoolProperty(default=True)
 
     background_color = [0.5, 0.5, 0.5, 1.0]
 
     context = Map_Context_Curvature
 
     def _draw_info(self, layout):
-        layout.prop(self, 'samples', toggle=True)
+        #TODO: add contrat prop
+        pass

@@ -5,6 +5,7 @@ class EZB_Map_Diffuse(bpy.types.PropertyGroup, EZB_Map):
     id = 'DIFFUSE'
     pass_name = 'DIFFUSE'
     label = 'Diffuse'
+    icon='COLOR'
 
     copy_settings = ['use_pass_direct', 'use_pass_indirect', 'use_pass_color']
 

@@ -1,5 +1,5 @@
 import bpy
-from .map import EZB_Map, Map_Context
+from .map import EZB_Map_Blender, Map_Context
 
 class Map_Context_Thickness(Map_Context):
     def __init__(self, baker, map, high, low):
@@ -48,6 +48,8 @@ class Map_Context_Thickness(Map_Context):
         return super().__enter__()
 
     def __exit__(self, type, value, traceback):
+        super().__exit__(type, value, traceback)
+
         for x in self.dup_objects:
             bpy.data.objects.remove(x, do_unlink=True)
         for x in self.dup_meshes:
@@ -55,10 +57,8 @@ class Map_Context_Thickness(Map_Context):
 
         bpy.data.materials.remove(self.thickness_mat, do_unlink=True)
 
-        super().__exit__(type, value, traceback)
 
-
-class EZB_Map_Thickness(bpy.types.PropertyGroup, EZB_Map):
+class EZB_Map_Thickness(bpy.types.PropertyGroup, EZB_Map_Blender):
     id = 'THICKNESS'
     pass_name = 'EMIT'
     label = 'Thickness'

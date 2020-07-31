@@ -3,7 +3,7 @@ from .utilities import traverse_tree
 from . import bake_maps
 
 class EZB_OT_new_baker(bpy.types.Operator):
-    """New Baker"""
+    """Create a new Baker"""
     bl_idname = "ezb.new_baker"
     bl_label = "New Baker"
 
@@ -219,7 +219,8 @@ class EZB_OT_bake(bpy.types.Operator):
     @classmethod
     def description(cls, context, properties):
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
-        if not any(getattr(baker.maps, x.id).active for x in bake_maps.maps):
+        device = baker.get_device
+        if not any(getattr(device.maps, x.id).active for x in device.maps.maps):
             return 'No maps to bake. Add a map with the "add map" dropdown'
         troublesome_objects = baker.get_troublesome_objects()
         if troublesome_objects:
@@ -241,7 +242,8 @@ class EZB_OT_bake(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
-        available_maps = any(getattr(baker.maps, x.id).active for x in bake_maps.maps)
+        device = baker.get_device
+        available_maps = any(getattr(device.maps, x.id).active for x in device.maps.maps)
         if not available_maps:
             return False
         if baker.get_troublesome_objects():
@@ -263,8 +265,10 @@ class EZB_OT_bake(bpy.types.Operator):
 
 last_maps = None
 def get_possible_maps(self, context):
+    baker = bpy.context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
+    device = baker.get_device
     global last_maps
-    last_maps = [(x.id, x.label, x.label, x.icon, i) for i, x in enumerate(bake_maps.maps)]
+    last_maps = [(x.id, x.label, x.label, x.icon, i) for i, x in enumerate(device.maps.maps)]
     return last_maps
 
 
@@ -277,7 +281,8 @@ class EZB_OT_add_map(bpy.types.Operator):
 
     def execute(self, context):
         baker = bpy.context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
-        map = getattr(baker.maps, self.map)
+        device = baker.get_device
+        map = getattr(device.maps, self.map)
         map.active=True
         map.show_info=True
         return {'FINISHED'}

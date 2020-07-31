@@ -3,7 +3,6 @@ from .settings import mode_group_types
 from .utilities import traverse_tree
 
 def update_cage(self, context):
-
     def get_copy_cage(obj):
         cage = bpy.context.scene.objects.get(obj.name + bpy.context.scene.EZB_Settings.suffix_cage)
         if cage:
@@ -72,7 +71,6 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
         if name[-3:].isdigit() and name[-4] == '.':
             name = name[:-4]
         return name
-
 
     def _get_objects(self, suffix):
         suffix = suffix.lower()

@@ -1,6 +1,8 @@
 import bpy
 
+
 def update_group_objects(scene):
+    """Updates the low and high objects lists when the scene changes"""
     #print('UPDATING...')
     #bpy.app.handlers.depsgraph_update_post.remove(update_group_objects)
 

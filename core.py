@@ -11,12 +11,14 @@ from bpy.props import (
 )
 
 from .settings import mode_group_types
-from . import bake_settings
+from . import outputs
 from . import baker
 from . import bake_group
 from . import operators
 from . import bake_maps
+from . import devices
 from . import handlers
+
 
 class EZB_preview_group_object(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty()
@@ -41,22 +43,7 @@ class EZB_Settings(bpy.types.PropertyGroup):
     preview_group_objects_high_index: bpy.props.IntProperty()
     preview_group_objects_low_index: bpy.props.IntProperty()
 
-    tile_size: bpy.props.EnumProperty(
-        items=[
-            ('1/4', '1/4', '1/8'),
-            ('1/4', '1/4', '1/4'),
-            ('1/2', '1/2', '1/2'),
-            ('x1', 'x1', 'x1'),
-        ],
-        default='x1'
-    )
-
-    device: bpy.props.EnumProperty(
-        items=[
-            ('CPU', 'CPU', 'CPU'),
-            ('GPU', 'GPU', 'GPU')
-        ]
-    )
+    
 
 
 class EZB_PT_core_panel(bpy.types.Panel):
@@ -75,8 +62,6 @@ class EZB_PT_core_panel(bpy.types.Panel):
         col.prop(context.scene.EZB_Settings, "suffix_high", text="High")
         col.prop(context.scene.EZB_Settings, "suffix_low", text="Low")
         col.prop(context.scene.EZB_Settings, "suffix_cage", text="Cage")
-        col.prop(context.scene.EZB_Settings, "tile_size", text="Tile Size")
-        col.prop(context.scene.EZB_Settings, "device", text="Render")
 
         row = col.row()
         row.enabled=False
@@ -85,8 +70,6 @@ class EZB_PT_core_panel(bpy.types.Panel):
         layout.template_image_settings(bpy.context.scene.render.image_settings, color_management=False)
 
         
-
-
 class EZB_UL_preview_group_objects(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         sub_row = layout.row()
@@ -120,8 +103,8 @@ class EZB_UL_bake_groups(bpy.types.UIList):
             )
 
 
-class EZB_PT_files_panel(bpy.types.Panel):
-    bl_idname = "EZB_PT_files_panel"
+class EZB_PT_baker_panel(bpy.types.Panel):
+    bl_idname = "EZB_PT_baker_panel"
     bl_label = "Bakers"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -145,7 +128,40 @@ class EZB_PT_files_panel(bpy.types.Panel):
 
         if bpy.context.scene.EZB_Settings.baker_index < len(bakers) and len(bakers) > 0:
             baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
-            baker.draw(layout, context)
+
+            col = layout.column(align=True)
+            row = col.row(align=True)
+            row.operator_menu_enum('ezb.select_texture_size', 'size', text='', icon='DOWNARROW_HLT')
+            split = row.split(align=True, factor =0.85)
+            row2 = split.row(align=True)
+            row2.prop(baker, 'width', text='width')
+            row2.prop(baker, 'height', text='height')
+            split.prop(baker, 'supersampling', text='')
+            
+            row = col.row(align=True)
+            row.prop(baker, 'padding', text='padding')
+
+
+            row = col.row(align=True)
+            if baker.path == "":
+                row.alert = True
+            row.prop(baker, "path", text="")
+            if baker.path != "":
+                row = row.row(align=True)
+                row.operator("wm.path_open", text="", icon='FILE_TICK').filepath = baker.path
+
+            
+            layout.prop(baker, 'device_type', text='')
+            
+            col = layout.column(align=False)
+            col.use_property_split = True
+            col.use_property_decorate = False  # No animation.
+            baker.get_device.draw(col, context)
+            
+            row=layout.split(factor=0.75, align=True)
+            
+            row.operator('ezb.bake', text = 'Bake', icon='IMPORT')
+            row.operator('ezb.export', text = 'Export', icon='EXPORT')
             
 
         layout.separator()
@@ -222,7 +238,7 @@ classes = [
     EZB_UL_bakers,  
     EZB_UL_bake_groups, 
     EZB_PT_core_panel, 
-    EZB_PT_files_panel, 
+    EZB_PT_baker_panel, 
     EZB_PT_bake_groups_panel, 
     EZB_PT_maps_panel, 
     EZB_PT_output_panel,
@@ -231,9 +247,10 @@ classes = [
 
 
 def register():
-    bake_settings.register()
+    outputs.register()
     operators.register()
     bake_maps.register()
+    devices.register()
     bake_group.register()
     baker.register()
     
@@ -262,5 +279,6 @@ def unregister():
     baker.unregister()
     bake_group.unregister()
     operators.unregister()
+    devices.unregister()
     bake_maps.unregister()
-    bake_settings.unregister()
+    outputs.unregister()

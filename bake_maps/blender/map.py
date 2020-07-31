@@ -20,7 +20,7 @@ class Map_Context():
         for x in self.high:
             x.select_set(True)
 
-        self.baker.setup_bake_material(self.low, self.map)
+        self.baker.get_device.setup_bake_material(self.low, self.baker, self.map)
         cage = bpy.context.scene.objects.get(self.low.name + bpy.context.scene.EZB_Settings.suffix_cage)
         bpy.context.scene.render.bake.cage_object = cage
 
@@ -29,8 +29,8 @@ class Map_Context():
     def __exit__(self, type, value, traceback):
         for i, x in enumerate(self.original_materials_low):
             self.low.material_slots[i].material = x
-        for obj, mats in self.original_materials_high:
-            for i, x in enumerate(obj):
+        for obj, mats in self.original_materials_high.items():
+            for i, x in enumerate(mats):
                 obj.material_slots[i].material = x
 
 class EZB_Map_Blender(EZB_Map):

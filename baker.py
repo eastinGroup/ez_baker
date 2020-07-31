@@ -35,8 +35,8 @@ class EZB_Baker(bpy.types.PropertyGroup):
 
     device_type: bpy.props.EnumProperty(
         items=[
-            ('BLENDER', 'Blender', 'Blender'),
-            ('HANDPLANE', 'Handplane', 'Handplane'),
+            ('BLENDER', 'Blender', 'Blender', 'BLENDER', 0),
+            ('HANDPLANE', 'Handplane', 'Handplane', 'MESH_MONKEY', 1),
         ]
     )
     devices: bpy.props.PointerProperty(type=devices.EZB_Devices)
@@ -66,12 +66,34 @@ class EZB_Baker(bpy.types.PropertyGroup):
        items=[
            ('TARGA', 'TGA', 'Export images as .tga'),
            ('PNG', 'PNG', 'Export images as .png'),
-       ] 
-    ) 
+           ('TIFF', 'TIFF', 'Export images as .tiff'),
+       ],
+       default='PNG',
+       name='Format'
+    )
+    color_mode: bpy.props.EnumProperty(
+       items=[
+           ('BW', 'BW', 'Black and white'),
+           ('RGB', 'RGB', 'Red, green, blue'),
+           ('RGBA', 'RGBA', 'Red, green, blue, alpha'),
+       ],
+       default='RGB',
+       name='Mode'
+    )
+    color_depth: bpy.props.EnumProperty(
+       items=[
+           ('8', '8', '8'),
+           ('16', '16', '16'),
+       ],
+       default='8',
+       name='Depth'
+    )
 
     materials: bpy.props.CollectionProperty(type=EZB_Stored_Material)
 
     def get_image(self, map, material):
+        found_material = None
+        found_image = None
         for x in self.materials:
             if x.material == material:
                 found_material = x
@@ -95,7 +117,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
             existing_image = bpy.data.images.get(new_name)
             supersampling = self.get_supersampling
             new_image = bpy.data.images.new(new_name, width = self.width*supersampling, height = self.height*supersampling)
-            pixels = [map.background_color for i in range(0, width*height)]
+            pixels = [map.background_color for i in range(0, self.width*supersampling*self.height*supersampling)]
             pixels = [chan for px in pixels for chan in px]
             new_image.pixels = pixels
 
@@ -111,8 +133,8 @@ class EZB_Baker(bpy.types.PropertyGroup):
             found_image.image = new_image
             bake_textures.append(new_image)
 
-            return new_image
-        return old_image
+            return found_image
+        return found_image
 
 
     def get_troublesome_objects(self):
@@ -161,6 +183,13 @@ class EZB_Baker(bpy.types.PropertyGroup):
 
         with Custom_Render_Settings():
             bpy.context.scene.view_settings.view_transform = 'Standard'
+
+            bpy.context.scene.render.image_settings.image_format = self.image_format
+            bpy.context.scene.render.image_settings.color_mode = self.color_mode
+            bpy.context.scene.render.image_settings.color_depth = self.color_depth
+            bpy.context.scene.render.image_settings.compression = 0
+            bpy.context.scene.render.image_settings.tiff_codec = 'DEFLATE'
+
             
             for x in textures:
                 path_full = os.path.join(bpy.path.abspath(self.path), x.name) + file_formats_enum[orig_file_format]

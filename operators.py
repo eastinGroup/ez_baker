@@ -218,6 +218,8 @@ class EZB_OT_bake(bpy.types.Operator):
 
     @classmethod
     def description(cls, context, properties):
+        if not (bpy.context.scene.EZB_Settings.baker_index > 0 and len(bpy.context.scene.EZB_Settings.bakers) > bpy.context.scene.EZB_Settings.baker_index):
+            return 'No baker selected'
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
         device = baker.get_device
         if not any(getattr(device.maps, x.id).active for x in device.maps.maps):
@@ -241,6 +243,8 @@ class EZB_OT_bake(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
+        if not (bpy.context.scene.EZB_Settings.baker_index >= 0 and len(bpy.context.scene.EZB_Settings.bakers) > bpy.context.scene.EZB_Settings.baker_index):
+            return False
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
         device = baker.get_device
         available_maps = any(getattr(device.maps, x.id).active for x in device.maps.maps)
@@ -309,6 +313,8 @@ class EZB_OT_export(bpy.types.Operator):
 
     @classmethod
     def description(cls, context, properties):
+        if not (bpy.context.scene.EZB_Settings.baker_index >= 0 and len(bpy.context.scene.EZB_Settings.bakers) > bpy.context.scene.EZB_Settings.baker_index):
+            return 'No baker selected'
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
         if not baker.path:
             return 'Export Path not set'
@@ -326,6 +332,8 @@ class EZB_OT_export(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
+        if not (bpy.context.scene.EZB_Settings.baker_index > 0 and len(bpy.context.scene.EZB_Settings.bakers) > bpy.context.scene.EZB_Settings.baker_index):
+            return False
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
         if not baker.path:
             return False

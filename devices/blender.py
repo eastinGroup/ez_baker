@@ -1,6 +1,7 @@
 import bpy
 from .base import EZB_Device
 from ..bake_maps import EZB_Maps_Blender
+from ..contexts import Scene_Visible, Custom_Render_Settings
 
 temp_materials = {}
 bake_textures = []
@@ -27,8 +28,11 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
     )
 
     def draw(self, layout, context):
-        layout.prop(self, 'device', text='Render')
-        layout.prop(self, 'tile_size', text='Tile Size')
+        col = layout.column(align=True)
+        row=col.row(align=True)
+        row.prop(self, 'device', text='Render', expand=True)
+        row=col.row(align=True)
+        row.prop(self, 'tile_size', text='Tile Size', expand=True)
 
     def setup_settings(self, baker):
         bake_options = bpy.context.scene.render.bake
@@ -48,11 +52,17 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         
         supersampling = baker.get_supersampling
 
-        bpy.context.scene.render.tile_x = int(self.width * tile_size_relative * supersampling)
-        bpy.context.scene.render.tile_y = int(self.height * tile_size_relative * supersampling)
+        bpy.context.scene.render.tile_x = int(baker.width * tile_size_relative * supersampling)
+        bpy.context.scene.render.tile_y = int(baker.height * tile_size_relative * supersampling)
 
-        bake_options.margin = self.padding * supersampling
+        bake_options.margin = baker.padding * supersampling
         bake_options.use_clear = False
+    
+    def clear_temp_materials(self):
+        for orig_mat, temp_mat in temp_materials.items():
+            bpy.data.materials.remove(temp_mat, do_unlink=True)
+
+        temp_materials.clear()
 
     def create_bake_material(self, baker, map, material):
         found_image = baker.get_image(map, material)
@@ -60,7 +70,6 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         if material not in temp_materials:
             temp_material = bpy.data.materials.new(material.name + '__temp')
             temp_materials[material] = temp_material
-            found_material.temp_material = temp_material
             temp_material.use_nodes = True
         else:
             temp_material = temp_materials[material]
@@ -71,6 +80,8 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
             node = material_nodes.new("ShaderNodeTexImage")
             node.name = map.id
             node.image = found_image.image
+
+        return temp_material
     
     def setup_bake_material(self, object, current_baker, current_map):
         for mat_slot in object.material_slots:
@@ -81,9 +92,6 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
             mat_slot.material = temp_mat
 
     def bake(self, baker):
-        print('BAKING: {}'.format(self.key))
-
-
         temp_materials.clear()
         bake_textures.clear()
 
@@ -102,7 +110,7 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
                                 print('{} :: {}'.format(x.name, map.id))
                                 bpy.ops.object.bake(type=map_id)
                                 print('FINISHED BAKE')
-                    baker.clear_temp_materials()
+                self.clear_temp_materials()
                     
         for x in bake_textures:
             x.scale(baker.width, baker.height)

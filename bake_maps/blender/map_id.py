@@ -48,6 +48,7 @@ class Map_Context_ID(Map_Context):
         for i, obj in enumerate(self.dup_objects):
             obj.data = self.dup_meshes[i]
             for mat_slot in obj.material_slots:
+                print(mat_slot)
                 if mat_slot.material not in self.materials:
                     self.materials[mat_slot.material] = self.create_mat()
                 mat_slot.material = self.materials[mat_slot.material]
@@ -58,6 +59,7 @@ class Map_Context_ID(Map_Context):
         super().__init__(baker, map, self.dup_objects, low)
 
     def create_mat(self):
+        print('newmat')
         id_mat = bpy.data.materials.new('BAKETHICKNESS')
         id_mat.use_nodes = True
         color_node = id_mat.node_tree.nodes.new('ShaderNodeRGB')

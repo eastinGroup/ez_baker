@@ -66,9 +66,6 @@ class EZB_PT_core_panel(bpy.types.Panel):
         row = col.row()
         row.enabled=False
         row.prop(context.scene.EZB_Settings, "save_type", text="Save images")
-
-        layout.template_image_settings(bpy.context.scene.render.image_settings, color_management=False)
-
         
 class EZB_UL_preview_group_objects(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
@@ -117,6 +114,13 @@ class EZB_PT_baker_panel(bpy.types.Panel):
 
         bakers = [x for x in ezb_settings.bakers]
 
+        row=layout.split(factor=0.75, align=True)
+        row.scale_y = 1.5
+
+            
+        row.operator('ezb.bake', text = 'Bake', icon='IMPORT')
+        row.operator('ezb.export', text = 'Export', icon='EXPORT')
+
         row = layout.row(align=False)
 
         row.template_list("EZB_UL_bakers", "", ezb_settings, "bakers", ezb_settings, "baker_index", rows=2)
@@ -127,21 +131,12 @@ class EZB_PT_baker_panel(bpy.types.Panel):
         baker_index = bpy.context.scene.EZB_Settings.baker_index
 
         if bpy.context.scene.EZB_Settings.baker_index < len(bakers) and len(bakers) > 0:
+            layout = layout.box()
             baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
 
             col = layout.column(align=True)
-            row = col.row(align=True)
-            row.operator_menu_enum('ezb.select_texture_size', 'size', text='', icon='DOWNARROW_HLT')
-            split = row.split(align=True, factor =0.85)
-            row2 = split.row(align=True)
-            row2.prop(baker, 'width', text='width')
-            row2.prop(baker, 'height', text='height')
-            split.prop(baker, 'supersampling', text='')
-            
-            row = col.row(align=True)
-            row.prop(baker, 'padding', text='padding')
 
-
+            # Path settings
             row = col.row(align=True)
             if baker.path == "":
                 row.alert = True
@@ -150,21 +145,38 @@ class EZB_PT_baker_panel(bpy.types.Panel):
                 row = row.row(align=True)
                 row.operator("wm.path_open", text="", icon='FILE_TICK').filepath = baker.path
 
+            # texture size
+            row = col.row(align=True)
+            row.operator_menu_enum('ezb.select_texture_size', 'size', text='', icon='DOWNARROW_HLT')
+            split = row.split(align=True, factor =0.85)
+            row2 = split.row(align=True)
+            row2.prop(baker, 'width', text='Width')
+            row2.prop(baker, 'height', text='Height')
+            split.prop(baker, 'supersampling', text='')
             
-            layout.prop(baker, 'device_type', text='')
+            row = col.row(align=True)
+            row.prop(baker, 'padding', text='Padding', expand=True)
+
+            col.prop(baker, 'image_format', text='Format', icon='IMAGE_DATA')
+            
+            col2 = layout.column(align=True)
+            col2.use_property_split = True
+            col2.use_property_decorate = False
+            row=col2.row(align=True)
+            row.prop(baker, 'color_mode', expand=True,)
+            if not baker.image_format == 'TARGA':
+                row=col2.row(align=True)
+                row.prop(baker, 'color_depth', expand=True)
+
+            
+            layout.prop(baker, 'device_type', text='Bake with')
             
             col = layout.column(align=False)
             col.use_property_split = True
-            col.use_property_decorate = False  # No animation.
+            col.use_property_decorate = False
             baker.get_device.draw(col, context)
             
-            row=layout.split(factor=0.75, align=True)
-            
-            row.operator('ezb.bake', text = 'Bake', icon='IMPORT')
-            row.operator('ezb.export', text = 'Export', icon='EXPORT')
-            
 
-        layout.separator()
 
 
 class EZB_PT_bake_groups_panel(bpy.types.Panel):

@@ -218,27 +218,16 @@ class EZB_OT_bake(bpy.types.Operator):
 
     @classmethod
     def description(cls, context, properties):
-        if not (bpy.context.scene.EZB_Settings.baker_index > 0 and len(bpy.context.scene.EZB_Settings.bakers) > bpy.context.scene.EZB_Settings.baker_index):
+        if not (bpy.context.scene.EZB_Settings.baker_index >= 0 and len(bpy.context.scene.EZB_Settings.bakers) > bpy.context.scene.EZB_Settings.baker_index):
             return 'No baker selected'
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
         device = baker.get_device
-        if not any(getattr(device.maps, x.id).active for x in device.maps.maps):
-            return 'No maps to bake. Add a map with the "add map" dropdown'
-        troublesome_objects = baker.get_troublesome_objects()
-        if troublesome_objects:
-            ans = 'Some objects have incorrect or missing materials:\n'
-            for x in troublesome_objects:
-                ans += x
-                ans += '\n'
+        ans = baker.check_for_errors()
+        if ans:
             return ans
-        for group in baker.bake_groups:
-            if not group.objects_low:
-                return 'Some bake groups have no low objects assigned'
-        for group in baker.bake_groups:
-            if not group.objects_high:
-                return 'Some bake groups have no high objects assigned'
-        if not baker.bake_groups:
-            return 'You need to create a bake group first\nMake sure you have one object (or collection) named "example_low" and another one named "example_high"\nYou will now be able to add the bake group with the dropdown'
+        ans = device.check_for_errors()
+        if ans:
+            return ans
         return 'Bake'
 
     @classmethod
@@ -247,18 +236,11 @@ class EZB_OT_bake(bpy.types.Operator):
             return False
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
         device = baker.get_device
-        available_maps = any(getattr(device.maps, x.id).active for x in device.maps.maps)
-        if not available_maps:
+        ans = baker.check_for_errors()
+        if ans:
             return False
-        if baker.get_troublesome_objects():
-            return False
-        for group in baker.bake_groups:
-            if not group.objects_low:
-                return False
-        for group in baker.bake_groups:
-            if not group.objects_high:
-                return False
-        if not baker.bake_groups:
+        ans = device.check_for_errors()
+        if ans:
             return False
         return True
 

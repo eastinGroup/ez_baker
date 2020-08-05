@@ -1,5 +1,6 @@
 import bpy
 import bpy.utils.previews
+import os
 
 from bpy.props import (
     StringProperty,
@@ -28,8 +29,20 @@ bl_info = {
 }
 class EZB_preferences(bpy.types.AddonPreferences):
     bl_idname = __name__
+
+    def set_abs_handplane_path(self, value):
+        new_path = os.path.abspath(bpy.path.abspath(value))
+        self.abs_handplane_path = new_path
+    
+    def get_abs_handplane_path(self):
+        return self.abs_handplane_path
+    
+    abs_handplane_path: StringProperty (default='C:\\Program Files\\Handplane3D LLC\\Handplane Baker\\')
+    handplane_path: bpy.props.StringProperty(subtype='DIR_PATH', set=set_abs_handplane_path, get=get_abs_handplane_path)
+
     def draw(self, context):
         layout = self.layout
+        layout.prop(self, 'handplane_path')
 
 def register():
     from bpy.utils import register_class

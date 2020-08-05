@@ -64,9 +64,9 @@ class EZB_Baker(bpy.types.PropertyGroup):
     )
     image_format: bpy.props.EnumProperty(
        items=[
-           ('TARGA', 'TGA', 'Export images as .tga'),
+           ('TGA', 'TGA', 'Export images as .tga'),
            ('PNG', 'PNG', 'Export images as .png'),
-           ('TIFF', 'TIFF', 'Export images as .tiff'),
+           ('TIF', 'TIF', 'Export images as .tif'),
        ],
        default='PNG',
        name='Format'
@@ -90,6 +90,9 @@ class EZB_Baker(bpy.types.PropertyGroup):
     )
 
     materials: bpy.props.CollectionProperty(type=EZB_Stored_Material)
+
+    def get_abs_export_path(self):
+        return os.path.abspath(bpy.path.abspath(self.path))
 
     def get_image(self, map, material):
         found_material = None
@@ -149,6 +152,30 @@ class EZB_Baker(bpy.types.PropertyGroup):
                         ans.add(x.name)
                         continue
         return ans
+
+    def check_for_errors(self):
+        troublesome_objects = self.get_troublesome_objects()
+        if troublesome_objects:
+            ans = 'Some objects have incorrect or missing materials:\n'
+            for x in troublesome_objects:
+                ans += x
+                ans += '\n'
+            return ans
+        for group in self.bake_groups:
+            if not group.objects_low:
+                return 'Some bake groups have no low objects assigned'
+        for group in self.bake_groups:
+            if not group.objects_high:
+                return 'Some bake groups have no high objects assigned'
+        if not self.bake_groups:
+            return 'You need to create a bake group first\nMake sure you have one object (or collection) named "example_low" and another one named "example_high"\nYou will now be able to add the bake group with the dropdown'
+
+        if not self.path:
+            return 'No export path set'
+        
+        for group in self.bake_groups:
+            if group.key == '' or ' ' in group.key or ',' in group.key:
+                return 'Invalid bake group name {}'.format(group.key)
 
 
     @property

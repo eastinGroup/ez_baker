@@ -59,7 +59,7 @@ class Map_Context_Curvature(Map_Context):
         bpy.data.materials.remove(self.curv_mat, do_unlink=True)
 
 
-class EZB_Map_AO(bpy.types.PropertyGroup, EZB_Map_Blender):
+class EZB_Map_Curvature(bpy.types.PropertyGroup, EZB_Map_Blender):
     id = 'CURVATURE'
     pass_name = 'EMIT'
     label = 'Curvature'

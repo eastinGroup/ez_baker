@@ -10,6 +10,7 @@ class EZB_Map:
 
     suffix: bpy.props.StringProperty(default='_TEST')
 
+    # "less than", for ordering lists of this class
     def __lt__(self, other):
         return self.label < other.label
 

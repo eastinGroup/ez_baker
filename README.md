@@ -1,5 +1,4 @@
 # EZ Baker
-
 This addon was created to offer an easier alternative to blender's default bake system.
 
 ## Baker

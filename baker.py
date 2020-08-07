@@ -51,8 +51,8 @@ class EZB_Baker(bpy.types.PropertyGroup):
         set=set_path
     )
 
-    height: bpy.props.IntProperty(default=1024)
-    width: bpy.props.IntProperty(default=1024)
+    height: bpy.props.IntProperty(default=512)
+    width: bpy.props.IntProperty(default=512)
     padding: bpy.props.IntProperty(default=16)
     supersampling: bpy.props.EnumProperty(
         items=[
@@ -146,8 +146,12 @@ class EZB_Baker(bpy.types.PropertyGroup):
             del_mat = True
             for j in reversed(range(0, len(mat.images))):
                 img = mat.images[j]
-                if img.image in bake_textures:
-                    del_mat = False
+                if hasattr(self.get_device.maps, img.map_name):
+                    map = getattr(self.get_device.maps, img.map_name)
+                    if img.image in bake_textures or (map.active and not map.bake):
+                        del_mat = False
+                    else:
+                        mat.images.remove(j)
                 else:
                     mat.images.remove(j)
             if del_mat:
@@ -178,13 +182,13 @@ class EZB_Baker(bpy.types.PropertyGroup):
             if not group.objects_low:
                 return 'Some bake groups have no low objects assigned'
         for group in self.bake_groups:
-            if not group.objects_high:
+            if not group.objects_high and not group.use_low_to_low:
                 return 'Some bake groups have no high objects assigned'
         if not self.bake_groups:
             return 'You need to create a bake group first\nMake sure you have one object (or collection) named "example_low" and another one named "example_high"\nYou will now be able to add the bake group with the dropdown'
 
         if not self.path:
-            return 'No export path set'
+            return 'No export path set in the Baker Settings panel'
         
         for group in self.bake_groups:
             if group.key == '' or ' ' in group.key or ',' in group.key:
@@ -224,7 +228,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
         with Custom_Render_Settings():
             bpy.context.scene.view_settings.view_transform = 'Standard'
 
-            bpy.context.scene.render.image_settings.image_format = self.image_format
+            bpy.context.scene.render.image_settings.file_format = self.image_format
             bpy.context.scene.render.image_settings.color_mode = self.color_mode
             bpy.context.scene.render.image_settings.color_depth = self.color_depth
             bpy.context.scene.render.image_settings.compression = 0
@@ -232,7 +236,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
 
             
             for x in textures:
-                path_full = os.path.join(bpy.path.abspath(self.path), x.name) + file_formats_enum[orig_file_format]
+                path_full = os.path.join(bpy.path.abspath(self.path), x.name) + file_formats_enum[self.image_format]
                 directory = os.path.dirname(path_full)
                 pathlib.Path(directory).mkdir(parents=True, exist_ok=True)
 

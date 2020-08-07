@@ -7,36 +7,36 @@ class EZB_Device:
         pass
 
     def get_active_maps(self):
-        ans = []
         for bake_map in self.maps.maps:
             map = getattr(self.maps, bake_map.id)
             if map.active:
-                ans.append(map)
+                yield map
 
-        return ans
-
-    def get_all_maps(self):
-        ans = []
+    def get_bakeable_maps(self):
         for bake_map in self.maps.maps:
             map = getattr(self.maps, bake_map.id)
-            ans.append(map)
+            if map.active and map.bake:
+                yield map
 
-        return ans
+
+    def get_all_maps(self):
+        for bake_map in self.maps.maps:
+            map = getattr(self.maps, bake_map.id)
+            yield map
+
 
     def get_inactive_maps(self):
-        ans = []
         for bake_map in self.maps.maps:
             map = getattr(self.maps, bake_map.id)
             if not map.active:
-                ans.append(map)
+                yield map
 
-        return ans
 
     def bake(self, baker):
         pass
 
 
     def check_for_errors(self):
-        if not any(getattr(self.maps, x.id).active for x in self.maps.maps):
-            return 'No maps to bake. Add a map with the "add map" dropdown'
+        if not any(True for x in self.get_bakeable_maps()):
+            return 'No maps to bake. Add a map with the "add map" dropdown. And make sure at least one of the maps is marked to be baked (eye icon)'
         return None

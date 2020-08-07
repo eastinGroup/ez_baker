@@ -5,6 +5,7 @@ class EZB_Map:
 
     icon='TEXTURE'
     active: bpy.props.BoolProperty(default=False)
+    bake: bpy.props.BoolProperty(default=True)
     show_info: bpy.props.BoolProperty(default=False)
     background_color = [0.0, 0.0, 0.0, 0.0]
 
@@ -30,8 +31,10 @@ class EZB_Map:
         row = layout.row(align=True)
         split = row.split(factor=0.5, align=True)
         row1 = split.row(align=True)
+        row1.enabled=self.bake
         row1.alignment='LEFT'
         #row.alignment = 'LEFT'
+        
         row1.prop(
             self,
             'show_info',
@@ -52,15 +55,25 @@ class EZB_Map:
         )
 
         row2 = split.row(align=True)
-        row2.enabled = self.active
-        row2.alignment = 'RIGHT'
         
-        row2.prop(self, "suffix", text="", emboss=True)
+        row2.alignment = 'RIGHT'
+        row3 = row2.row(align=True)
+        row3.enabled = self.bake
+        row3.prop(self, "suffix", text="", emboss=True)
+
+        row2.prop(
+            self,
+            'bake',
+            icon="HIDE_OFF" if self.bake else "HIDE_ON",
+            icon_only=True,
+            text='',
+            emboss=False
+        )
 
         row2.prop(self, "active", text="", icon='X', icon_only=True, emboss=False)
         # r.operator("wm.url_open", text="", icon='QUESTION').url = self.url
 
-        if(self.active and self.show_info):
+        if(self.active and self.show_info and self.bake):
             row = layout.row()
             row.separator()
             row.separator()

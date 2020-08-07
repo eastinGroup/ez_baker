@@ -9,9 +9,9 @@ class EZB_Map_Diffuse(bpy.types.PropertyGroup, EZB_Map_Blender):
     suffix: bpy.props.StringProperty(default='_D')
     samples: bpy.props.IntProperty(name='Samples', default=128)
 
-    use_pass_direct: bpy.props.BoolProperty(default=False, name='Direct')
-    use_pass_indirect: bpy.props.BoolProperty(default=False, name='Indirect')
-    use_pass_color: bpy.props.BoolProperty(default=True, name='Color')
+    use_pass_direct: bpy.props.BoolProperty(default=False, name='Direct', description='Bake direct light')
+    use_pass_indirect: bpy.props.BoolProperty(default=False, name='Indirect', description='Bake indirect light')
+    use_pass_color: bpy.props.BoolProperty(default=True, name='Color', description='Bake the surface color')
     
     def setup_settings(self):
         super().setup_settings()

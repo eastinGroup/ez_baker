@@ -58,8 +58,8 @@ class Write_Wrapper():
     def __exit__(self, type, value, traceback):
         custom_write(self.file, self.end_line, self.tabs, self.end)
 
-def export_obj (meshes_folder, obj, type):
-    mesh_filepath = os.path.join(meshes_folder, obj.name + '.fbx')
+def export_obj (meshes_folder, obj, name, t_space, modifiers):
+    mesh_filepath = os.path.join(meshes_folder, name + '.fbx')
     
     ctx = bpy.context.copy()
     ctx['selected_objects'] = [obj]
@@ -79,11 +79,11 @@ def export_obj (meshes_folder, obj, type):
         use_custom_props=False, 
         path_mode='STRIP', 
         batch_mode='OFF', 
-        use_mesh_modifiers=False, 
-        use_mesh_modifiers_render=False, 
+        use_mesh_modifiers=modifiers, 
+        use_mesh_modifiers_render=modifiers, 
         mesh_smooth_type='FACE', 
         use_mesh_edges=False, 
-        use_tspace= False if type == 'HP' else True, 
+        use_tspace = t_space,
         use_armature_deform_only=False, 
         add_leaf_bones=False, 
         primary_bone_axis='-Y', 
@@ -112,13 +112,13 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
 
     def bake(self, baker):
         super().bake(baker)
-        mode = 'BAKE'
 
         device = baker.get_device
         scene = bpy.context.scene
         prefs = bpy.context.preferences.addons[__package__.split('.')[0]].preferences
 
         file_name = baker.key
+        export_folder = baker.get_abs_export_path()
         root_folder = os.path.join(baker.get_abs_export_path(), file_name)
         os.makedirs(root_folder, exist_ok=True)
 
@@ -131,8 +131,8 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
         texture_format = baker.image_format.lower()
         bit_depth = int(baker.color_depth)
 
-        textures_path = os.path.join(root_folder, 'textures')
-        os.makedirs(textures_path, exist_ok=True)
+        textures_path = export_folder
+        #os.makedirs(textures_path, exist_ok=True)
         
         # Write data out (2 integers)
         with open (project_file_path, "w") as file:
@@ -146,10 +146,11 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
                             custom_write(file, 'String name = "{}";'.format(bake_group.key), 3)
                             custom_write(file, 'HighPolyModelConfiguration highModels', 3)
                             with Write_Wrapper(file, '[', ']', 3):
-                                models = bake_group.objects_high
+                                models = bake_group.objects_high if not bake_group.use_low_to_low else bake_group.objects_low
                                 for model in models:
                                     with Write_Wrapper(file, '{', '}', 4):
-                                        write_value(file, 'Filename', 'model', export_obj(meshes_folder, model, 'HP'), 4) 
+                                        name = model.name if not bake_group.use_low_to_low else '__' + model.name + '__'
+                                        write_value(file, 'Filename', 'model', export_obj(meshes_folder, model, name, t_space=False, modifiers=True), 4) 
                                         write_value(file, 'bool', 'overrideMaterial', False, 4) 
                                         write_value(file, 'int32', 'material', 0, 4)
                                         write_value(file, 'bool', 'isFloater', False, 4)
@@ -161,8 +162,8 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
                                 for model in models:
                                     with Write_Wrapper(file, '{', '}', 4):
                                         cage = bpy.context.scene.objects.get(model.name + bpy.context.scene.EZB_Settings.suffix_cage)
-                                        cage_path = '' if not cage else export_obj(meshes_folder, cage, 'C')
-                                        write_value(file, 'Filename', 'model', export_obj(meshes_folder, model, 'LP'), 4) 
+                                        cage_path = '' if not cage else export_obj(meshes_folder, cage, cage.name, t_space=True, modifiers=True)
+                                        write_value(file, 'Filename', 'model', export_obj(meshes_folder, model, model.name, t_space=True, modifiers=not bake_group.use_low_to_low), 4) 
                                         write_value(file, 'Filename', 'cageModel', cage_path, 4) 
                                         write_value(file, 'bool', 'overrideCageOffset', False, 4) 
                                         write_value(file, 'float', 'autoCageOffset', bake_group.cage_displacement, 4)
@@ -241,7 +242,7 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
                             enabled = True
                             suffix = '_'
                             try:
-                                map = next(x for x in device.get_active_maps() if x.pass_name == map_name)
+                                map = next(x for x in device.get_bakeable_maps() if x.pass_name == map_name)
                                 suffix = map.suffix
                             except StopIteration:
                                 enabled = False
@@ -252,30 +253,23 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
                 tangent_space = next(x[1] for x in tangent_space_enum if x[0] == device.maps.NORMAL.tangent_space)
                 write_value(file, 'String', 'tangentSpace', tangent_space, 0)
                       
-        if mode == 'GO_TO':
-            # start handplane
-            handplane_user = os.path.join(prefs.handplane_path, 'handplane.exe')
-            subprocess.Popen (handplane_user)
-            # open explorer and select handplane file 
-            subprocess.Popen (r'explorer /select,' + project_file_path)
-            
-        elif mode == 'BAKE':
-            # bake with handplane
-            handplane_cmd = os.path.join(prefs.handplane_path, 'handplaneCmd.exe')
+        # bake with handplane
+        handplane_cmd = os.path.join(prefs.handplane_path, 'handplaneCmd.exe')
 
-            subprocess.run (handplane_cmd + ' /project ' + project_file_path)
+        subprocess.run (handplane_cmd + ' /project ' + project_file_path)
 
-            # open explorer at baked textures
-            for map in self.get_active_maps():
-                img_path = os.path.join(textures_path, baker.key+map.suffix+file_formats_enum[baker.image_format])
-                img = baker.get_image(map, baker.key)
-                img.image.source = 'FILE'
-                img.image.filepath = img_path
-                img.image.reload()
+        # open explorer at baked textures
+        for map in self.get_bakeable_maps():
+            img_path = os.path.join(textures_path, baker.key+map.suffix+file_formats_enum[baker.image_format])
+            img = baker.get_image(map, baker.key)
+            img.image.source = 'FILE'
+            img.image.filepath = img_path
+            img.image.reload()
+            img.image.pack()
 
-                pass
+            pass
 
-            baker.clear_outputs()
+        baker.clear_outputs()
 
 
     def check_for_errors(self):

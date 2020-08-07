@@ -66,7 +66,6 @@ class EZB_Map_Curvature(bpy.types.PropertyGroup, EZB_Map_Blender):
     icon='SPHERECURVE'
 
     suffix: bpy.props.StringProperty(default='_CURV')
-    active: bpy.props.BoolProperty(default=True)
 
     background_color = [0.5, 0.5, 0.5, 1.0]
 

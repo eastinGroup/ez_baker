@@ -39,7 +39,6 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         bpy.context.scene.render.engine = 'CYCLES'
         bpy.context.scene.cycles.device = self.device
         bpy.context.scene.cycles.progressive = 'PATH'
-        bake_options.use_selected_to_active = True
         tile_size_relative = 1
         if self.tile_size == '1/8':
             tile_size_relative = 0.125
@@ -98,7 +97,7 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
 
         with Scene_Visible():
             with Custom_Render_Settings():
-                for map in self.get_active_maps():
+                for map in self.get_bakeable_maps():
                     print('SETUP: {}'.format(map.id))
                     self.setup_settings(baker)
                     map.setup_settings()
@@ -108,7 +107,7 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
                         low = group.objects_low
                         for x in low:
                             with map.context(baker, map, high, x) as map_id:
-                                print('{} :: {}'.format(x.name, map.id))
+                                print('{} :: {} ...'.format(x.name, map.id))
                                 bpy.ops.object.bake(type=map_id)
                                 print('FINISHED BAKE')
                 self.clear_temp_materials()

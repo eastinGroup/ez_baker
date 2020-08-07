@@ -66,6 +66,7 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
     preview_cage: bpy.props.BoolProperty(update=update_cage)
     preview_cage_object: bpy.props.PointerProperty(type=bpy.types.Object)
 
+    use_low_to_low: bpy.props.BoolProperty(default=False, name='Use Low as High', description='Uses the object with all modifiers applied as the "high" and the same object without modifiers as the "low"')
 
     def _remove_numbering(self, name):
         if name[-3:].isdigit() and name[-4] == '.':
@@ -92,22 +93,34 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
 
     def draw(self, layout, context):
         ezb_settings = bpy.context.scene.EZB_Settings
-        row = layout.row(align=True)
-        
+        col = layout.column(align=True)
+        row = col.row(align=True)
+        row.prop(
+            self, 
+            'preview_cage',
+            text='',
+            icon="HIDE_OFF" if self.preview_cage else "HIDE_ON",
+            icon_only=True,
+            emboss=False
+            )
         row.prop(self, 'cage_displacement')
+        row = col.row(align=True)
+        row.prop(self, 'use_low_to_low', text='Bake Low to Low')
 
-        row = layout.split(factor=0.5,align=True)
-        row.template_list(
-            "EZB_UL_preview_group_objects", 
-            "", 
-            ezb_settings, 
-            "preview_group_objects_high", 
-            ezb_settings, 
-            "preview_group_objects_high_index", 
-            rows=2, 
-            sort_lock = False
-        )
-        row.template_list(
+        
+        if not self.use_low_to_low:
+            layout = layout.split(factor=0.5,align=True)
+            layout.template_list(
+                "EZB_UL_preview_group_objects", 
+                "", 
+                ezb_settings, 
+                "preview_group_objects_high", 
+                ezb_settings, 
+                "preview_group_objects_high_index", 
+                rows=2, 
+                sort_lock = False
+            )
+        layout.template_list(
             "EZB_UL_preview_group_objects", 
             "", ezb_settings, 
             "preview_group_objects_low", 
@@ -121,9 +134,12 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
         bake_options = bpy.context.scene.render.bake
         bake_options.use_cage = True
         bake_options.cage_extrusion = self.cage_displacement
+        bake_options.use_selected_to_active = not self.use_low_to_low
 
     @property
     def objects_high(self):
+        if self.use_low_to_low:
+            return []
         return self._get_objects(bpy.context.scene.EZB_Settings.suffix_high)
 
     @property

@@ -32,6 +32,11 @@ class EZB_OT_remove_baker(bpy.types.Operator):
 
     def execute(self, context):
         ezb_settings = bpy.context.scene.EZB_Settings
+
+        baker = ezb_settings.bakers[ezb_settings.baker_index]
+        for bake_group in baker.bake_groups:
+            bake_group.preview_cage = False
+
         ezb_settings.bakers.remove(ezb_settings.baker_index)
         if ezb_settings.baker_index >= len(ezb_settings.bakers):
             ezb_settings.baker_index = len(ezb_settings.bakers)-1
@@ -151,6 +156,8 @@ class EZB_OT_remove_bake_group(bpy.types.Operator):
 
     def execute(self, context):
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
+
+        baker.bake_groups[baker.bake_group_index].preview_cage = False
         baker.bake_groups.remove(baker.bake_group_index)
 
         if baker.bake_group_index >= len(baker.bake_groups):
@@ -314,7 +321,7 @@ class EZB_OT_export(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if not (bpy.context.scene.EZB_Settings.baker_index > 0 and len(bpy.context.scene.EZB_Settings.bakers) > bpy.context.scene.EZB_Settings.baker_index):
+        if not (bpy.context.scene.EZB_Settings.baker_index >= 0 and len(bpy.context.scene.EZB_Settings.bakers) > bpy.context.scene.EZB_Settings.baker_index):
             return False
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
         if not baker.path:

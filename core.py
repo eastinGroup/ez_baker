@@ -1,4 +1,5 @@
 import bpy
+import textwrap 
 
 from bpy.props import (
     StringProperty,
@@ -71,7 +72,7 @@ class EZB_UL_preview_group_objects(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         sub_row = layout.row()
         sub_row.operator('ezb.select_object', text= '', icon='RESTRICT_SELECT_OFF').name = item.name
-        sub_row.label(text=item.name)
+        sub_row.label(text=item.name, icon='MESH_CUBE')
         if item.cage:
             sub_row.operator('ezb.select_object', text= '', icon='SELECT_SET').name = item.cage
 
@@ -113,13 +114,23 @@ class EZB_PT_baker_panel(bpy.types.Panel):
         ezb_settings = bpy.context.scene.EZB_Settings
 
         bakers = [x for x in ezb_settings.bakers]
-
-        row=layout.split(factor=0.75, align=True)
+        row = layout.row(align=True)
+        split=row.split(factor=0.75, align=True)
         row.scale_y = 1.5
 
             
-        row.operator('ezb.bake', text = 'Bake', icon='IMPORT')
-        row.operator('ezb.export', text = 'Export', icon='EXPORT')
+        bake_op = split.operator('ezb.bake', text = 'Bake', icon='IMPORT')
+        split.operator('ezb.export', text = 'Export', icon='EXPORT')
+
+        path = ''
+        row = row.row(align=True)
+        row.enabled = False
+        if (bpy.context.scene.EZB_Settings.baker_index < len(bpy.context.scene.EZB_Settings.bakers) and len(bpy.context.scene.EZB_Settings.bakers) > 0):
+            baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
+            path = baker.path
+            row.enabled = bool(baker.path)
+        
+        row.operator("wm.path_open", text="", icon='FOLDER_REDIRECT').filepath = path
 
         row = layout.row(align=False)
 
@@ -127,6 +138,18 @@ class EZB_PT_baker_panel(bpy.types.Panel):
         col=row.column(align=False)
         col.operator('ezb.new_baker',text='', icon='ADD')
         col.operator('ezb.remove_baker', text='', icon='REMOVE')
+
+
+        tooltip = operators.EZB_OT_bake.description(context, bake_op)
+        if tooltip != 'Bake':
+            text_wrap = textwrap.TextWrapper(width=50) #50 = maximum length       
+            text_list = text_wrap.wrap(text=tooltip) 
+
+            #Now in the panel:
+            for text in text_list: 
+                row = layout.row(align = True)
+                row.alignment = 'CENTER'
+                row.label(text=text)
 
 class EZB_PT_baker_settings_panel(bpy.types.Panel):
     bl_idname = "EZB_PT_baker_settings_panel"
@@ -155,7 +178,7 @@ class EZB_PT_baker_settings_panel(bpy.types.Panel):
         row.prop(baker, "path", text="")
         if baker.path != "":
             row = row.row(align=True)
-            row.operator("wm.path_open", text="", icon='FILE_TICK').filepath = baker.path
+            row.operator("wm.path_open", text="", icon='FOLDER_REDIRECT').filepath = baker.path
 
         # texture size
         row = col.row(align=True)
@@ -266,10 +289,10 @@ classes = [
     EZB_preview_group_object, 
     EZB_Settings, 
     EZB_UL_bakers,
-    EZB_PT_baker_settings_panel,
     EZB_UL_bake_groups, 
     EZB_PT_core_panel, 
-    EZB_PT_baker_panel, 
+    EZB_PT_baker_panel,
+    EZB_PT_baker_settings_panel,
     EZB_PT_bake_groups_panel, 
     EZB_PT_maps_panel, 
     EZB_PT_output_panel,

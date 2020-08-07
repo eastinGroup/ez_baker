@@ -17,7 +17,7 @@ class EZB_OT_new_baker(bpy.types.Operator):
         new_baker=ezb_settings.bakers.add()
         index=len(ezb_settings.bakers) - 1
         ezb_settings.baker_index = index
-        new_baker.key='Baker {}'.format(index)
+        new_baker.key='Baker_{}'.format(index)
         return {'FINISHED'}
 
 class EZB_OT_remove_baker(bpy.types.Operator):
@@ -254,7 +254,7 @@ def get_possible_maps(self, context):
     baker = bpy.context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
     device = baker.get_device
     global last_maps
-    last_maps = [(x.id, x.label, x.label, x.icon, i) for i, x in enumerate(device.maps.maps)]
+    last_maps = [(x.id, x.label, x.label, x.icon, i) for i, x in enumerate(device.get_inactive_maps())]
     return last_maps
 
 

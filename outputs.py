@@ -7,6 +7,7 @@ class EZB_Stored_Image(bpy.types.PropertyGroup):
 class EZB_Stored_Material(bpy.types.PropertyGroup):
     """Stores all the images created by the baker, for easily previewing them and exporting"""
     material: bpy.props.PointerProperty(type=bpy.types.Material)
+    material_name: bpy.props.StringProperty()
     images: bpy.props.CollectionProperty(type=EZB_Stored_Image)
     show_info:bpy.props.BoolProperty(default=True)
 
@@ -21,7 +22,7 @@ class EZB_Stored_Material(bpy.types.PropertyGroup):
             text='',
             emboss=False
         )
-        row.label(text="{}".format(self.material.name), icon='MATERIAL')
+        row.label(text="{}".format(self.material_name), icon='MATERIAL')
         if self.show_info:
             row = box.row()
             row.separator()

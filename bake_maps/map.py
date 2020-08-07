@@ -28,7 +28,11 @@ class EZB_Map:
 
     def draw(self, layout):
         row = layout.row(align=True)
-        row.prop(
+        split = row.split(factor=0.5, align=True)
+        row1 = split.row(align=True)
+        row1.alignment='LEFT'
+        #row.alignment = 'LEFT'
+        row1.prop(
             self,
             'show_info',
             icon="TRIA_DOWN" if self.show_info else "TRIA_RIGHT",
@@ -37,15 +41,23 @@ class EZB_Map:
             emboss=False
         )
 
-        row.label(text="{}".format(self.label), icon=self.icon)
+        #row.label(text="{}".format(self.label), icon=self.icon)
+        row1.prop(
+            self,
+            'show_info',
+            icon=self.icon,
+            icon_only=False,
+            text=self.label,
+            emboss=False
+        )
 
-        row = row.row(align=True)
-        row.enabled = self.active
-        row.alignment = 'RIGHT'
+        row2 = split.row(align=True)
+        row2.enabled = self.active
+        row2.alignment = 'RIGHT'
         
-        row.prop(self, "suffix", text="", emboss=True)
+        row2.prop(self, "suffix", text="", emboss=True)
 
-        row.prop(self, "active", text="", icon='X', icon_only=True, emboss=False)
+        row2.prop(self, "active", text="", icon='X', icon_only=True, emboss=False)
         # r.operator("wm.url_open", text="", icon='QUESTION').url = self.url
 
         if(self.active and self.show_info):

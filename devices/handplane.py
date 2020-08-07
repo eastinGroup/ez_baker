@@ -5,6 +5,7 @@ import bpy
 from .base import EZB_Device
 from ..bake_maps import EZB_Maps_Handplane
 from ..bake_maps.handplane.map_normal import tangent_space_enum
+from ..settings import file_formats_enum
 
 maps = [
     'normal_ts', 
@@ -102,18 +103,22 @@ def export_obj (meshes_folder, obj, type):
 class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
     name = "handplane"
     maps: bpy.props.PointerProperty(type=EZB_Maps_Handplane)
+    use_dither: bpy.props.BoolProperty(default=True)
 
     def draw(self, layout, context):
-        pass
+        col = layout.column(align=True)
+        row=col.row(align=True)
+        row.prop(self, 'use_dither', text='Use Dither', expand=True)
 
     def bake(self, baker):
+        super().bake(baker)
         mode = 'BAKE'
 
         device = baker.get_device
         scene = bpy.context.scene
         prefs = bpy.context.preferences.addons[__package__.split('.')[0]].preferences
 
-        file_name = baker.name
+        file_name = baker.key
         root_folder = os.path.join(baker.get_abs_export_path(), file_name)
         os.makedirs(root_folder, exist_ok=True)
 
@@ -165,28 +170,28 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
                             # misc
                             write_value(file, 'int32', 'material', 0, 2)
                             write_value(file, 'bool', 'isolateAO', False, 2)
-                            write_value(file, 'float', 'autoCageOffset', bake_group.cage_displacement, 2)
+                            write_value(file, 'float', 'autoCageOffset', bake_group.cage_displacement*100, 2)
 
                 ###BAKE SETTINGS
-                write_value(file, 'float', 'aoSampleRadius', 1.0, 0) 
-                write_value(file, 'int32', 'aoSampleCount', 20, 0)
-                write_value(file, 'float', 'thicknessSampleRadius', 1.0, 0) 
-                write_value(file, 'int32', 'thicknessSampleCount', 20, 0)
+                write_value(file, 'float', 'aoSampleRadius', device.maps.AO.sample_radius, 0) 
+                write_value(file, 'int32', 'aoSampleCount', device.maps.AO.sample_count, 0)
+                write_value(file, 'float', 'thicknessSampleRadius', device.maps.THICKNESS.sample_radius, 0) 
+                write_value(file, 'int32', 'thicknessSampleCount', device.maps.THICKNESS.sample_count, 0)
                 write_value(file, 'bool', 'volumetricGradientCubeFit', False, 0)
-                write_value(file, 'float', 'heightMapScale', 1.0, 0)
-                write_value(file, 'float', 'heightMapOffset', 0.0, 0)
-                write_value(file, 'bool', 'curvatureUseRaySampling', False, 0)
-                write_value(file, 'float', 'curvatureSampleRadius', 0.05, 0)
-                write_value(file, 'int32', 'curvatureSampleCount', 20, 0)
-                write_value(file, 'int32', 'curvaturePixelRadius', 4, 0)
-                write_value(file, 'bool', 'curvatureAutoNormalize', True, 0)
-                write_value(file, 'float', 'curvatureMaxAngle', 100.0, 0)
-                write_value(file, 'float', 'curvatureOutputGamma', 1.0, 0)
-                write_value(file, 'float', 'cavitySensitivity', 0.75, 0)
-                write_value(file, 'float', 'cavityBias', 0.015, 0)
-                write_value(file, 'int32', 'cavityPixelRadius', 4, 0)
-                write_value(file, 'float', 'cavityOutputGamma', 1.0, 0)
-                write_value(file, 'KernelType', 'cavityKernelType', 'ConstantDisk', 0)
+                write_value(file, 'float', 'heightMapScale', device.maps.HEIGHT.scale, 0)
+                write_value(file, 'float', 'heightMapOffset', device.maps.HEIGHT.offset, 0)
+                write_value(file, 'bool', 'curvatureUseRaySampling', device.maps.CURVATURE.use_ray_sampling, 0)
+                write_value(file, 'float', 'curvatureSampleRadius', device.maps.CURVATURE.sample_radius, 0)
+                write_value(file, 'int32', 'curvatureSampleCount', device.maps.CURVATURE.sample_count, 0)
+                write_value(file, 'int32', 'curvaturePixelRadius', device.maps.CURVATURE.pixel_radius, 0)
+                write_value(file, 'bool', 'curvatureAutoNormalize', device.maps.CURVATURE.auto_normalize, 0)
+                write_value(file, 'float', 'curvatureMaxAngle', device.maps.CURVATURE.max_angle, 0)
+                write_value(file, 'float', 'curvatureOutputGamma', device.maps.CURVATURE.gamma, 0)
+                write_value(file, 'float', 'cavitySensitivity', device.maps.CAVITY.sensitivity, 0)
+                write_value(file, 'float', 'cavityBias', device.maps.CAVITY.bias, 0)
+                write_value(file, 'int32', 'cavityPixelRadius', device.maps.CAVITY.pixel_radius, 0)
+                write_value(file, 'float', 'cavityOutputGamma', device.maps.CAVITY.gamma, 0)
+                write_value(file, 'KernelType', 'cavityKernelType', device.maps.CAVITY.kernel_type, 0)
                 write_value(file, 'int32', 'textureSpaceAOPixelRadius', 10, 0)
                 write_value(file, 'float', 'textureSpaceAOOutputGamma', 1.0, 0)
                 write_value(file, 'float', 'textureSpaceAOSampleCoveragePercentage', 100.0, 0)
@@ -225,8 +230,8 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
                 write_value(file, 'int32', 'outputWidth', baker.width, 0)
                 write_value(file, 'int32', 'outputHeight', baker.height, 0)
                 write_value(file, 'int32', 'outputPadding', baker.padding, 0)
-                write_value(file, 'int32', 'outputSuperSample', baker.get_supersampling, 0)
-                write_value(file, 'bool', 'outputDither', True, 0)
+                write_value(file, 'int32', 'outputSuperSample', baker.get_supersampling * baker.get_supersampling, 0)
+                write_value(file, 'bool', 'outputDither', device.use_dither, 0)
                 
                 ###IMAGE OUTPUTS
                 custom_write(file, 'ImageOutput outputs', 1)
@@ -234,7 +239,7 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
                     for map_name in maps:
                         with Write_Wrapper(file, '{', '}', 2, True):
                             enabled = True
-                            suffix = '_aa'
+                            suffix = '_'
                             try:
                                 map = next(x for x in device.get_active_maps() if x.pass_name == map_name)
                                 suffix = map.suffix
@@ -257,18 +262,35 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
         elif mode == 'BAKE':
             # bake with handplane
             handplane_cmd = os.path.join(prefs.handplane_path, 'handplaneCmd.exe')
+
             subprocess.run (handplane_cmd + ' /project ' + project_file_path)
+
             # open explorer at baked textures
-            if scene.gyaz_hpb.texture_folder_popup:
-                textures_folder = os.path.abspath ( bpy.path.abspath (root_folder + '/textures') )
-                subprocess.Popen('explorer ' + textures_folder)
+            for map in self.get_active_maps():
+                img_path = os.path.join(textures_path, baker.key+map.suffix+file_formats_enum[baker.image_format])
+                img = baker.get_image(map, baker.key)
+                img.image.source = 'FILE'
+                img.image.filepath = img_path
+                img.image.reload()
+
+                pass
+
+            baker.clear_outputs()
+
 
     def check_for_errors(self):
         ans = super().check_for_errors()
         if ans:
             return ans
-        
-        if not bpy.context.preferences.addons[__package__.split('.')[0]].preferences.handplane_path:
+
+        prefs = bpy.context.preferences.addons[__package__.split('.')[0]].preferences
+
+        if not prefs.handplane_path:
             return 'No Handplane path set in the addon preferences'
+
+        handplane_path = os.path.join(prefs.handplane_path, 'handplaneCmd.exe')
+
+        if not os.path.isfile(handplane_path):
+            return 'Handplane path in the addon preferences is incorrect'
 
         return None

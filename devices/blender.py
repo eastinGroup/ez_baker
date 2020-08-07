@@ -65,7 +65,7 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         temp_materials.clear()
 
     def create_bake_material(self, baker, map, material):
-        found_image = baker.get_image(map, material)
+        found_image = baker.get_image(map, material.name)
         temp_material = None
         if material not in temp_materials:
             temp_material = bpy.data.materials.new(material.name + '__temp')
@@ -92,6 +92,7 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
             mat_slot.material = temp_mat
 
     def bake(self, baker):
+        super().bake(baker)
         temp_materials.clear()
         bake_textures.clear()
 
@@ -116,4 +117,4 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
             x.scale(baker.width, baker.height)
             x.pack()
                     #save() 3 if filepathh is set
-        pass
+        baker.clear_outputs()

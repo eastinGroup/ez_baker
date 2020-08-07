@@ -94,15 +94,15 @@ class EZB_Baker(bpy.types.PropertyGroup):
     def get_abs_export_path(self):
         return os.path.abspath(bpy.path.abspath(self.path))
 
-    def get_image(self, map, material):
+    def get_image(self, map, material_name):
         found_material = None
         found_image = None
         for x in self.materials:
-            if x.material == material:
+            if x.material_name == material_name:
                 found_material = x
         if not found_material:
             found_material = self.materials.add()
-            found_material.material = material
+            found_material.material_name = material_name
         
         for image in found_material.images:
             if image.map_name == map.id:
@@ -116,7 +116,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
         if old_image not in bake_textures:
             if old_image:
                 old_image.name = '__delete'
-            new_name = material.name + map.suffix
+            new_name = material_name + map.suffix
             existing_image = bpy.data.images.get(new_name)
             supersampling = self.get_supersampling
             new_image = bpy.data.images.new(new_name, width = self.width*supersampling, height = self.height*supersampling)
@@ -139,7 +139,20 @@ class EZB_Baker(bpy.types.PropertyGroup):
             return found_image
         return found_image
 
-
+    def clear_outputs(self):
+        # clear unnecessary maps
+        for i in reversed(range(0, len(self.materials))):
+            mat = self.materials[i]
+            del_mat = True
+            for j in reversed(range(0, len(mat.images))):
+                img = mat.images[j]
+                if img.image in bake_textures:
+                    del_mat = False
+                else:
+                    mat.images.remove(j)
+            if del_mat:
+                self.materials.remove(i)
+            
     def get_troublesome_objects(self):
         ans = set()
         for group in self.bake_groups:

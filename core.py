@@ -128,55 +128,65 @@ class EZB_PT_baker_panel(bpy.types.Panel):
         col.operator('ezb.new_baker',text='', icon='ADD')
         col.operator('ezb.remove_baker', text='', icon='REMOVE')
 
+class EZB_PT_baker_settings_panel(bpy.types.Panel):
+    bl_idname = "EZB_PT_baker_settings_panel"
+    bl_label = "Baker Settings"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "EZ Baker"
+
+    def draw(self, context):
+        layout = self.layout
+        ezb_settings = bpy.context.scene.EZB_Settings
+        bakers = [x for x in ezb_settings.bakers]
         baker_index = bpy.context.scene.EZB_Settings.baker_index
 
-        if bpy.context.scene.EZB_Settings.baker_index < len(bakers) and len(bakers) > 0:
-            layout = layout.box()
-            baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
+        if not(bpy.context.scene.EZB_Settings.baker_index < len(bakers) and len(bakers) > 0):
+            layout.label(text='Select or create a Baker in the "Bakers" panel')
+            return
+        baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
 
-            col = layout.column(align=True)
+        col = layout.column(align=True)
 
-            # Path settings
-            row = col.row(align=True)
-            if baker.path == "":
-                row.alert = True
-            row.prop(baker, "path", text="")
-            if baker.path != "":
-                row = row.row(align=True)
-                row.operator("wm.path_open", text="", icon='FILE_TICK').filepath = baker.path
+        # Path settings
+        row = col.row(align=True)
+        if baker.path == "":
+            row.alert = True
+        row.prop(baker, "path", text="")
+        if baker.path != "":
+            row = row.row(align=True)
+            row.operator("wm.path_open", text="", icon='FILE_TICK').filepath = baker.path
 
-            # texture size
-            row = col.row(align=True)
-            row.operator_menu_enum('ezb.select_texture_size', 'size', text='', icon='DOWNARROW_HLT')
-            split = row.split(align=True, factor =0.85)
-            row2 = split.row(align=True)
-            row2.prop(baker, 'width', text='Width')
-            row2.prop(baker, 'height', text='Height')
-            split.prop(baker, 'supersampling', text='')
-            
-            row = col.row(align=True)
-            row.prop(baker, 'padding', text='Padding', expand=True)
+        # texture size
+        row = col.row(align=True)
+        row.operator_menu_enum('ezb.select_texture_size', 'size', text='', icon='DOWNARROW_HLT')
+        split = row.split(align=True, factor =0.85)
+        row2 = split.row(align=True)
+        row2.prop(baker, 'width', text='Width')
+        row2.prop(baker, 'height', text='Height')
+        split.prop(baker, 'supersampling', text='')
+        
+        row = col.row(align=True)
+        row.prop(baker, 'padding', text='Padding', expand=True)
 
-            col.prop(baker, 'image_format', text='Format', icon='IMAGE_DATA')
-            
-            col2 = layout.column(align=True)
-            col2.use_property_split = True
-            col2.use_property_decorate = False
+        col.prop(baker, 'image_format', text='Format', icon='IMAGE_DATA')
+        
+        col2 = layout.column(align=True)
+        col2.use_property_split = True
+        col2.use_property_decorate = False
+        row=col2.row(align=True)
+        row.prop(baker, 'color_mode', expand=True,)
+        if not baker.image_format == 'TARGA':
             row=col2.row(align=True)
-            row.prop(baker, 'color_mode', expand=True,)
-            if not baker.image_format == 'TARGA':
-                row=col2.row(align=True)
-                row.prop(baker, 'color_depth', expand=True)
+            row.prop(baker, 'color_depth', expand=True)
 
-            
-            layout.prop(baker, 'device_type', text='Bake with')
-            
-            col = layout.column(align=False)
-            col.use_property_split = True
-            col.use_property_decorate = False
-            baker.get_device.draw(col, context)
-            
-
+        
+        layout.prop(baker, 'device_type', text='Bake with')
+        
+        col = layout.column(align=False)
+        col.use_property_split = True
+        col.use_property_decorate = False
+        baker.get_device.draw(col, context)
 
 
 class EZB_PT_bake_groups_panel(bpy.types.Panel):
@@ -190,19 +200,21 @@ class EZB_PT_bake_groups_panel(bpy.types.Panel):
         layout = self.layout
 
         ezb_settings = bpy.context.scene.EZB_Settings
-        if bpy.context.scene.EZB_Settings.baker_index < len(ezb_settings.bakers) and len(ezb_settings.bakers) > 0:
-            baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
+        if not(bpy.context.scene.EZB_Settings.baker_index < len(ezb_settings.bakers) and len(ezb_settings.bakers) > 0):
+            layout.label(text='Select or create a Baker in the "Bakers" panel')
+            return
+        baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
 
-            col = layout.column(align=True)
-            col.template_list("EZB_UL_bake_groups", "", baker, "bake_groups", baker, "bake_group_index", rows=2)
-            row2 = col.row(align=True)
-            row2.operator_menu_enum('ezb.create_possible_bake_groups', 'gather_from', text='', icon='IMPORT')
-            row2.operator_menu_enum('ezb.new_bake_group', 'name' ,text='Add Bake Group', icon='ADD')
-            row2.operator('ezb.remove_bake_group', text='', icon='REMOVE')
+        col = layout.column(align=True)
+        col.template_list("EZB_UL_bake_groups", "", baker, "bake_groups", baker, "bake_group_index", rows=2)
+        row2 = col.row(align=True)
+        row2.operator_menu_enum('ezb.create_possible_bake_groups', 'gather_from', text='', icon='IMPORT')
+        row2.operator_menu_enum('ezb.new_bake_group', 'name' ,text='Add Bake Group', icon='ADD')
+        row2.operator('ezb.remove_bake_group', text='', icon='REMOVE')
 
-            if len(baker.bake_groups) > baker.bake_group_index and baker.bake_group_index >= 0:
-                bake_group = baker.bake_groups[baker.bake_group_index]
-                bake_group.draw(layout, context)
+        if len(baker.bake_groups) > baker.bake_group_index and baker.bake_group_index >= 0:
+            bake_group = baker.bake_groups[baker.bake_group_index]
+            bake_group.draw(layout, context)
 
 
 class EZB_PT_maps_panel(bpy.types.Panel):
@@ -216,14 +228,13 @@ class EZB_PT_maps_panel(bpy.types.Panel):
         layout = self.layout
 
         ezb_settings = bpy.context.scene.EZB_Settings
-        if bpy.context.scene.EZB_Settings.baker_index < len(ezb_settings.bakers) and len(ezb_settings.bakers) > 0:
-            baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
-            col = layout.column(align=True)
-            col.operator_menu_enum('ezb.add_map', 'map', text='Add Map', icon='ADD')
-            bake_maps.draw(col, context, baker)
-        else:
-            pass
-            #layout.label(text='')
+        if not(bpy.context.scene.EZB_Settings.baker_index < len(ezb_settings.bakers) and len(ezb_settings.bakers) > 0):
+            layout.label(text='Select or create a Baker in the "Bakers" panel')
+            return
+        baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
+        col = layout.column(align=True)
+        col.operator_menu_enum('ezb.add_map', 'map', text='Add Map', icon='ADD')
+        bake_maps.draw(col, context, baker)
 
 
 class EZB_PT_output_panel(bpy.types.Panel):
@@ -237,17 +248,25 @@ class EZB_PT_output_panel(bpy.types.Panel):
         layout = self.layout
 
         ezb_settings = bpy.context.scene.EZB_Settings
-        if bpy.context.scene.EZB_Settings.baker_index < len(ezb_settings.bakers) and len(ezb_settings.bakers) > 0:
-            baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
-            col = layout.column()
-            for x in baker.materials:
-                x.draw(col, context)
+        if not(bpy.context.scene.EZB_Settings.baker_index < len(ezb_settings.bakers) and len(ezb_settings.bakers) > 0):
+            layout.label(text='Select or create a Baker in the "Bakers" panel')
+            return
+
+        baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
+
+        if not baker.materials:
+            layout.label(text='Bake in the "Bakers" panel to see the output images in this panel')
+            return
+        col = layout.column()
+        for x in baker.materials:
+            x.draw(col, context)
 
 
 classes = [
     EZB_preview_group_object, 
     EZB_Settings, 
-    EZB_UL_bakers,  
+    EZB_UL_bakers,
+    EZB_PT_baker_settings_panel,
     EZB_UL_bake_groups, 
     EZB_PT_core_panel, 
     EZB_PT_baker_panel, 

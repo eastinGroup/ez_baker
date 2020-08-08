@@ -261,7 +261,17 @@ def get_possible_maps(self, context):
     baker = bpy.context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
     device = baker.get_device
     global last_maps
-    last_maps = [(x.id, x.label, x.label, x.icon, i) for i, x in enumerate(device.get_inactive_maps())]
+    ordered_maps = {}
+    for i, x in enumerate(device.get_inactive_maps()):
+        if x.category not in ordered_maps:
+            ordered_maps[x.category] = set()
+        ordered_maps[x.category].add((x.id, x.label, x.label, x.icon, i+1))
+    last_maps = []
+    for category, maps in ordered_maps.items():
+        last_maps.append(("", category, "description", "NONE", 0))
+        for map in maps:
+            last_maps.append(map)
+
     return last_maps
 
 

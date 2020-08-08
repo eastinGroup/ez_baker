@@ -2,6 +2,7 @@ import bpy
 class EZB_Map:
     id = 'DEFAULT'
     label = 'Default'
+    category = 'Surface'
 
     icon='TEXTURE'
     active: bpy.props.BoolProperty(default=False)

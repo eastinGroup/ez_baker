@@ -6,6 +6,7 @@ class EZB_Map_AO(bpy.types.PropertyGroup, EZB_Map_Blender):
     pass_name = 'AO'
     label = 'Ambient Occlusion'
     icon='SHADING_RENDERED'
+    category = 'Lighting'
 
     suffix: bpy.props.StringProperty(default='_AO')
     samples: bpy.props.IntProperty(name='Samples', default=128)

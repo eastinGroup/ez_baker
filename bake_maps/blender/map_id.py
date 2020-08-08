@@ -90,6 +90,7 @@ class EZB_Map_ID(bpy.types.PropertyGroup, EZB_Map_Blender):
     pass_name = 'EMIT'
     label = 'ID'
     icon = 'RNA'
+    category = 'Mesh'
 
     suffix: bpy.props.StringProperty(default='_ID')
 

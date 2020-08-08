@@ -130,7 +130,7 @@ class EZB_PT_baker_panel(bpy.types.Panel):
             path = baker.path
             row.enabled = bool(baker.path)
         
-        row.operator("wm.path_open", text="", icon='FOLDER_REDIRECT').filepath = path
+        row.operator("wm.path_open", text="", icon='FILE_FOLDER').filepath = path
 
         row = layout.row(align=False)
 
@@ -178,7 +178,7 @@ class EZB_PT_baker_settings_panel(bpy.types.Panel):
         row.prop(baker, "path", text="")
         if baker.path != "":
             row = row.row(align=True)
-            row.operator("wm.path_open", text="", icon='FOLDER_REDIRECT').filepath = baker.path
+            row.operator("wm.path_open", text="", icon='FILE_FOLDER').filepath = baker.path
 
         # texture size
         row = col.row(align=True)

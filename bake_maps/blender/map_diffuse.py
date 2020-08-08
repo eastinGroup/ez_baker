@@ -6,6 +6,8 @@ class EZB_Map_Diffuse(bpy.types.PropertyGroup, EZB_Map_Blender):
     pass_name = 'DIFFUSE'
     label = 'Diffuse'
     icon='COLOR'
+    category = 'Surface'
+
     suffix: bpy.props.StringProperty(default='_D')
     samples: bpy.props.IntProperty(name='Samples', default=128)
 

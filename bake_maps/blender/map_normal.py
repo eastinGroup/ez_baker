@@ -23,6 +23,7 @@ class EZB_Map_Normal(bpy.types.PropertyGroup, EZB_Map_Blender):
     pass_name = 'NORMAL'
     label = 'Normal'
     icon = 'NORMALS_FACE'
+    category = 'Mesh'
 
     suffix: bpy.props.StringProperty(default='_N')
     active: bpy.props.BoolProperty(default=True)

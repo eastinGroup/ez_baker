@@ -6,6 +6,7 @@ class EZB_Map_Shadow(bpy.types.PropertyGroup, EZB_Map_Blender):
     pass_name = 'SHADOW'
     label = 'Shadow'
     icon = 'OUTLINER_OB_LIGHT'
+    category = 'Lighting'
 
     suffix: bpy.props.StringProperty(default='_SH')
 

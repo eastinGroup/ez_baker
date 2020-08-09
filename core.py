@@ -20,6 +20,9 @@ from . import bake_maps
 from . import devices
 from . import handlers
 
+open_folder_icon = 'FILE_FOLDER'
+if bpy.app.version >= (2, 83, 0):
+    open_folder_icon = 'FOLDER_REDIRECT'
 
 class EZB_preview_group_object(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty()
@@ -91,6 +94,15 @@ class EZB_UL_bake_groups(bpy.types.UIList):
         low_objs = item.objects_low
         row.operator('ezb.show_high_objects',text='High: {}'.format(len(high_objs)), emboss=False).index = index
         row.operator('ezb.show_low_objects',text='Low: {}'.format(len(low_objs)), emboss=False).index = index
+        '''
+        # for not storing the undo step, but it can crash blender
+        row.operator(
+                'ezb.show_cage', 
+                text='cage',
+                icon="HIDE_OFF" if item.preview_cage else "HIDE_ON",
+                emboss=False
+                )
+        '''
         row.prop(
             item, 
             'preview_cage',
@@ -130,7 +142,7 @@ class EZB_PT_baker_panel(bpy.types.Panel):
             path = baker.path
             row.enabled = bool(baker.path)
         
-        row.operator("wm.path_open", text="", icon='FILE_FOLDER').filepath = path
+        row.operator("wm.path_open", text="", icon=open_folder_icon).filepath = path
 
         row = layout.row(align=False)
 
@@ -178,7 +190,7 @@ class EZB_PT_baker_settings_panel(bpy.types.Panel):
         row.prop(baker, "path", text="")
         if baker.path != "":
             row = row.row(align=True)
-            row.operator("wm.path_open", text="", icon='FILE_FOLDER').filepath = baker.path
+            row.operator("wm.path_open", text="", icon=open_folder_icon).filepath = baker.path
 
         # texture size
         row = col.row(align=True)

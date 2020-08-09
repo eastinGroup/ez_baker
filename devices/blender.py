@@ -67,17 +67,18 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         found_image = baker.get_image(map, material.name)
         temp_material = None
         if material not in temp_materials:
-            temp_material = bpy.data.materials.new(material.name + '__temp')
+            temp_material = material.copy()
+            temp_material.name = material.name + '__temp'
             temp_materials[material] = temp_material
             temp_material.use_nodes = True
         else:
             temp_material = temp_materials[material]
     
         material_nodes = temp_material.node_tree.nodes
-        node = material_nodes.get(map.id)
+        node = material_nodes.get(f'__{map.id}__')
         if not node:
             node = material_nodes.new("ShaderNodeTexImage")
-            node.name = map.id
+            node.name = f'__{map.id}__'
             node.image = found_image.image
 
         return temp_material
@@ -86,7 +87,7 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         for mat_slot in object.material_slots:
             temp_mat = self.create_bake_material(current_baker, current_map, mat_slot.material)
 
-            active_node = temp_mat.node_tree.nodes.get(current_map.id)
+            active_node = temp_mat.node_tree.nodes.get(f'__{current_map.id}__')
             temp_mat.node_tree.nodes.active = active_node
             mat_slot.material = temp_mat
 

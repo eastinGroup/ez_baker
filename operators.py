@@ -1,6 +1,7 @@
 import bpy
 from .utilities import traverse_tree
 from . import bake_maps
+from . import bake_group
 
 class EZB_OT_new_baker(bpy.types.Operator):
     """Create a new Baker"""
@@ -304,6 +305,22 @@ class EZB_OT_show_image(bpy.types.Operator):
                     area.spaces.active.image = image
         return {'FINISHED'}
 
+# for not storing the undo step, but it can crash blender, so it's not being used
+class EZB_OT_show_cage(bpy.types.Operator):
+    """Show/Hide Cage"""
+    bl_idname = "ezb.show_cage"
+    bl_label = "Show Cage"
+    bl_options = {'INTERNAL'}
+
+    index: bpy.props.IntProperty()
+
+    def execute(self, context):
+        baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
+        bg = baker.bake_groups[self.index]
+        bg.preview_cage = not bg.preview_cage
+
+        bake_group.update_cage(bg, context)
+        return {'FINISHED'}
 
 class EZB_OT_export(bpy.types.Operator):
     """Export"""
@@ -421,6 +438,7 @@ classes = [
     EZB_OT_select_texture_size,
     EZB_OT_select_object,
     EZB_OT_create_possible_bake_groups,
+    EZB_OT_show_cage,
 ]
 
 def register():

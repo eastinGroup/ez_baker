@@ -18,14 +18,19 @@ def update_cage(self, context):
             mod.mid_level = 0
             mod.strength = self.cage_displacement
         bpy.context.scene.collection.objects.link(cage)
+        for mat_slot in cage.material_slots:
+            mat_slot.material = None
         return cage
 
-    if self.preview_cage_object:
-        mesh = self.preview_cage_object.data
-        bpy.data.objects.remove(self.preview_cage_object, do_unlink=True)
-        bpy.data.meshes.remove(mesh, do_unlink=True)
 
-    if self.preview_cage:
+
+    if self.preview_cage and self.objects_low:
+        if self.preview_cage_object:
+            mesh = self.preview_cage_object.data
+            bpy.data.objects.remove(self.preview_cage_object, do_unlink=True)
+            bpy.data.meshes.remove(mesh, do_unlink=True)
+
+            del mesh
         bpy.context.space_data.shading.type = 'SOLID'
         bpy.context.space_data.shading.color_type = 'OBJECT'
 
@@ -33,13 +38,13 @@ def update_cage(self, context):
         copy_objects_data = [x.data for x in copy_objects]
 
         if bpy.ops.object.mode_set.poll():
-            bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-        bpy.ops.object.select_all(action='DESELECT')
+            bpy.ops.object.mode_set(False, mode='OBJECT', toggle=False)
+        bpy.ops.object.select_all(False, action='DESELECT')
         for x in copy_objects:
             x.select_set(True)
             bpy.context.view_layer.objects.active=x
         if len(copy_objects) >1:
-            bpy.ops.object.join()
+            bpy.ops.object.join(False)
             
 
         self.preview_cage_object = bpy.context.view_layer.objects.active
@@ -47,12 +52,19 @@ def update_cage(self, context):
         self.preview_cage_object.data.name = self.key + '_preview_cage'
         self.preview_cage_object.color = (1, 0, 0, 0.3)
         self.preview_cage_object.display_type='SOLID'
-        bpy.ops.object.convert(target='MESH')
+        bpy.ops.object.convert(False, target='MESH')
 
         for i in reversed(range(0, len(copy_objects) - 1)):
             bpy.data.meshes.remove(copy_objects_data[i], do_unlink=True)
 
         bpy.context.view_layer.objects.active = None
+    # if we just delete the mesh everytime we hide the cage, the memory usage piles up like crazy because of the undo system
+    # so instead we just hide it until we need it again
+    else:
+        if self.preview_cage_object:
+            collections = self.preview_cage_object.users_collection[:]
+            for x in collections:
+                x.objects.unlink(self.preview_cage_object)
 
 
 class EZB_Bake_Group(bpy.types.PropertyGroup):
@@ -61,7 +73,7 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
     key: bpy.props.StringProperty()
     mode_group: bpy.props.EnumProperty(items=mode_group_types, name="Group By")
     
-    cage_displacement: bpy.props.FloatProperty(name='Cage Displacement', default=1, update=update_cage)
+    cage_displacement: bpy.props.FloatProperty(name='Cage Displacement', default=0.05, update=update_cage, step=0.1, precision=3)
 
     preview_cage: bpy.props.BoolProperty(update=update_cage)
     preview_cage_object: bpy.props.PointerProperty(type=bpy.types.Object)

@@ -112,10 +112,11 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
                             print('{} :: {} ...'.format(x.name, map.id))
                             bpy.ops.object.bake(selection_context, type=map_id)
                             print('FINISHED BAKE')
-            self.clear_temp_materials()
-                    
-        for x in bake_textures:
-            x.scale(baker.width, baker.height)
-            x.pack()
+                    for orig_material, temp_material in temp_materials.items():
+                        img = baker.get_image(map, orig_material.name)
+                        img.image.scale(baker.width, baker.height)
+                        img.image.pack()
+        
+        self.clear_temp_materials()
                     #save() 3 if filepathh is set
         baker.clear_outputs()

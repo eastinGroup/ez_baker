@@ -49,7 +49,7 @@ class Map_Context():
             for i, x in enumerate(mats):
                 obj.material_slots[i].material = x
         
-        #bpy.data.scenes.remove(self.scene)
+        bpy.data.scenes.remove(self.scene)
 
 class EZB_Map_Blender(EZB_Map):
     pass_name = 'TEST'

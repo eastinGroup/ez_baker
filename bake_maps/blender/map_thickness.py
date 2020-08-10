@@ -24,7 +24,10 @@ class Map_Context_Thickness(Map_Context):
             bpy.context.scene.collection.objects.link(self.dup_objects[i])
             self.dup_objects[i].data = mesh
 
-            bpy.context.view_layer.objects.active = self.dup_objects[i]
+            override_context = {}
+            override_context['active_object'] = self.dup_objects[i]
+            override_context['selected_objects'] = [self.dup_objects[i]]
+            override_context['selected_editable_objects'] = [self.dup_objects[i]]
             #bpy.ops.object.mode_set(mode='EDIT', toggle=False)
 
             #bpy.ops.mesh.select_all(action='SELECT')
@@ -35,7 +38,7 @@ class Map_Context_Thickness(Map_Context):
 
             for j in reversed(range(0, len(self.dup_objects[i].material_slots))):
                 self.dup_objects[i].active_material_index = j
-                bpy.ops.object.material_slot_remove()
+                bpy.ops.object.material_slot_remove(override_context)
 
             bpy.ops.object.material_slot_add()
 
@@ -43,9 +46,6 @@ class Map_Context_Thickness(Map_Context):
 
 
         super().__init__(baker, map, self.dup_objects, low)
-
-    def __enter__(self):
-        return super().__enter__()
 
     def __exit__(self, type, value, traceback):
         super().__exit__(type, value, traceback)

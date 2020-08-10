@@ -17,8 +17,8 @@ class Scene_Visible():
         # we need to traverse the tree from child to parent or else the exclude property can be missed
         layers_in_hierarchy = reversed(list(traverse_tree(bpy.context.view_layer.layer_collection, exclude_parent=True)))
         for layer_collection in layers_in_hierarchy:
-            bpy.data.collections[layer_collection.name]['__orig_exclude__'] = layer_collection.exclude
-            bpy.data.collections[layer_collection.name]['__orig_hide_lc__'] = layer_collection.hide_viewport
+            layer_collection.collection['__orig_exclude__'] = layer_collection.exclude
+            layer_collection.collection['__orig_hide_lc__'] = layer_collection.hide_viewport
             layer_collection.exclude = False
             layer_collection.hide_viewport = False
 
@@ -60,18 +60,22 @@ class Scene_Visible():
             del obj['__orig_select__']
 
         for collection in bpy.data.collections:
-            collection.hide_viewport = collection['__orig_hide__']
-            collection.hide_select = collection['__orig_hide_select__']
+            collection.hide_viewport = bool(collection['__orig_hide__'])
+            collection.hide_select = bool(collection['__orig_hide_select__'])
 
             del collection['__orig_hide__']
             del collection['__orig_hide_select__']
 
         layers_in_hierarchy = reversed(list(traverse_tree(bpy.context.view_layer.layer_collection, exclude_parent=True)))
         for layer_collection in layers_in_hierarchy:
-            layer_collection.exclude = bpy.data.collections[layer_collection.name]['__orig_exclude__']
-            layer_collection.hide_viewport = bpy.data.collections[layer_collection.name]['__orig_hide_lc__']
-            del bpy.data.collections[layer_collection.name]['__orig_exclude__']
-            del bpy.data.collections[layer_collection.name]['__orig_hide_lc__']
+            print(layer_collection)
+            print(layer_collection.collection['__orig_exclude__'])
+            layer_collection.hide_viewport = bool(layer_collection.collection['__orig_hide_lc__'])
+            layer_collection.exclude = bool(layer_collection.collection['__orig_exclude__'])
+            print(layer_collection.exclude)
+            
+            del layer_collection.collection['__orig_exclude__']
+            del layer_collection.collection['__orig_hide_lc__']
         
         bpy.context.view_layer.objects.active = self.active_obj
 

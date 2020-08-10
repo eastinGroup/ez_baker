@@ -70,9 +70,6 @@ class Map_Context_ID(Map_Context):
         self.mat_index +=1
         return id_mat
 
-    def __enter__(self):
-        return super().__enter__()
-
     def __exit__(self, type, value, traceback):
         super().__exit__(type, value, traceback)
 

@@ -11,11 +11,8 @@ def update_group_objects(scene):
         if len(baker.bake_groups) > baker.bake_group_index and baker.bake_group_index >= 0:
             bake_group = baker.bake_groups[baker.bake_group_index]
 
-            try:
-                scene.EZB_Settings.preview_group_objects_high.clear()
-                scene.EZB_Settings.preview_group_objects_low.clear()
-            except:
-                pass
+            scene.EZB_Settings.preview_group_objects_high.clear()
+            scene.EZB_Settings.preview_group_objects_low.clear()
             
             for high in bake_group.objects_high:
                 item = scene.EZB_Settings.preview_group_objects_high.add()

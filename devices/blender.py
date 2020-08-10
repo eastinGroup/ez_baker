@@ -96,22 +96,22 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         temp_materials.clear()
         bake_textures.clear()
 
-        with Scene_Visible():
-            with Custom_Render_Settings():
-                for map in self.get_bakeable_maps():
-                    print('SETUP: {}'.format(map.id))
-                    self.setup_settings(baker)
-                    map.setup_settings()
-                    for group in baker.bake_groups:
-                        group.setup_settings()
-                        high = group.objects_high
-                        low = group.objects_low
-                        for x in low:
-                            with map.context(baker, map, high, x) as map_id:
-                                print('{} :: {} ...'.format(x.name, map.id))
-                                bpy.ops.object.bake(type=map_id)
-                                print('FINISHED BAKE')
-                self.clear_temp_materials()
+        with Custom_Render_Settings():
+            for map in self.get_bakeable_maps():
+                print('SETUP: {}'.format(map.id))
+                self.setup_settings(baker)
+                map.setup_settings()
+                for group in baker.bake_groups:
+                    group.setup_settings()
+                    high = group.objects_high
+                    low = group.objects_low
+                    for x in low:
+                        with map.context(baker, map, high, x) as tup:
+                            map_id, selection_context = tup
+                            print('{} :: {} ...'.format(x.name, map.id))
+                            bpy.ops.object.bake(selection_context, type=map_id)
+                            print('FINISHED BAKE')
+            self.clear_temp_materials()
                     
         for x in bake_textures:
             x.scale(baker.width, baker.height)

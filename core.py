@@ -47,9 +47,6 @@ class EZB_Settings(bpy.types.PropertyGroup):
     preview_group_objects_high_index: bpy.props.IntProperty()
     preview_group_objects_low_index: bpy.props.IntProperty()
 
-    
-
-
 class EZB_PT_core_panel(bpy.types.Panel):
     bl_idname = "EZB_PT_core_panel"
     bl_label = "Settings"
@@ -93,7 +90,8 @@ class EZB_UL_bake_groups(bpy.types.UIList):
         row.prop(item, 'key', text='', icon=icon, emboss=False)
         high_objs = item.objects_high
         low_objs = item.objects_low
-        row.operator('ezb.show_high_objects',text='High: {}'.format(len(high_objs)), emboss=False).index = index
+        if not data.use_low_to_low:
+            row.operator('ezb.show_high_objects',text='High: {}'.format(len(high_objs)), emboss=False).index = index
         row.operator('ezb.show_low_objects',text='Low: {}'.format(len(low_objs)), emboss=False).index = index
         '''
         # for not storing the undo step, but it can crash blender
@@ -104,14 +102,15 @@ class EZB_UL_bake_groups(bpy.types.UIList):
                 emboss=False
                 )
         '''
-        row.prop(
-            item, 
-            'preview_cage',
-            text='cage',
-            icon="HIDE_OFF" if item.preview_cage else "HIDE_ON",
-            icon_only=True,
-            emboss=False
-            )
+        if not data.use_low_to_low:
+            row.prop(
+                item, 
+                'preview_cage',
+                text='cage',
+                icon="HIDE_OFF" if item.preview_cage else "HIDE_ON",
+                icon_only=True,
+                emboss=False
+                )
 
 
 class EZB_PT_baker_panel(bpy.types.Panel):
@@ -151,17 +150,17 @@ class EZB_PT_baker_panel(bpy.types.Panel):
         col.operator('ezb.new_baker',text='', icon='ADD')
         col.operator('ezb.remove_baker', text='', icon='REMOVE')
 
+        if False:
+            tooltip = operators.EZB_OT_bake.description(context, bake_op)
+            if tooltip != 'Bake':
+                text_wrap = textwrap.TextWrapper(width=50) #50 = maximum length       
+                text_list = text_wrap.wrap(text=tooltip) 
 
-        tooltip = operators.EZB_OT_bake.description(context, bake_op)
-        if tooltip != 'Bake':
-            text_wrap = textwrap.TextWrapper(width=50) #50 = maximum length       
-            text_list = text_wrap.wrap(text=tooltip) 
-
-            #Now in the panel:
-            for text in text_list: 
-                row = layout.row(align = True)
-                row.alignment = 'CENTER'
-                row.label(text=text)
+                #Now in the panel:
+                for text in text_list: 
+                    row = layout.row(align = True)
+                    row.alignment = 'CENTER'
+                    row.label(text=text)
 
 class EZB_PT_baker_settings_panel(bpy.types.Panel):
     bl_idname = "EZB_PT_baker_settings_panel"
@@ -252,20 +251,19 @@ class EZB_PT_bake_groups_panel(bpy.types.Panel):
 
         if len(baker.bake_groups) > baker.bake_group_index and baker.bake_group_index >= 0:
             bake_group = baker.bake_groups[baker.bake_group_index]
-
-            col = layout.column(align=True)
-            row = col.row(align=True)
-            row.prop(
-                bake_group, 
-                'preview_cage',
-                text='',
-                icon="HIDE_OFF" if bake_group.preview_cage else "HIDE_ON",
-                icon_only=True,
-                emboss=False
-                )
-            row.prop(bake_group, 'cage_displacement')
-            
             if not baker.use_low_to_low:
+                col = layout.column(align=True)
+                row = col.row(align=True)
+                row.prop(
+                    bake_group, 
+                    'preview_cage',
+                    text='',
+                    icon="HIDE_OFF" if bake_group.preview_cage else "HIDE_ON",
+                    icon_only=True,
+                    emboss=False
+                    )
+                row.prop(bake_group, 'cage_displacement')
+
                 layout = layout.split(factor=0.5,align=True)
                 layout.template_list(
                     "EZB_UL_preview_group_objects", 

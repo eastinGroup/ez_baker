@@ -268,7 +268,8 @@ def get_possible_maps(self, context):
             ordered_maps[x.category] = set()
         ordered_maps[x.category].add((x.id, x.label, x.label, x.icon, i+1))
     last_maps = []
-    for category, maps in ordered_maps.items():
+    for category in sorted([x for x in ordered_maps.keys()]):
+        maps = ordered_maps[category]
         last_maps.append(("", category, "description", "NONE", 0))
         for map in maps:
             last_maps.append(map)

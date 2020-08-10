@@ -1,62 +1,41 @@
 import bpy
 from .map import EZB_Map_Blender, Map_Context
 
-class Map_Context_Curvature(Map_Context):
+class Map_Context_Custom_Material(Map_Context):
+
+    def create_mat(self):
+        pass
+
     def __init__(self, baker, map, high, low):
-        if bpy.ops.object.mode_set.poll():
-            bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-        bpy.ops.object.select_all(action='DESELECT')
+        super().__init__(baker, map, high, low)
 
-        self.curv_mat = bpy.data.materials.new('BAKECURV')
-        self.curv_mat.use_nodes = True
-        node = self.curv_mat.node_tree.nodes.new('ShaderNodeNewGeometry')
-        ramp_node = self.curv_mat.node_tree.nodes.new('ShaderNodeValToRGB')
-        ramp_node.color_ramp.elements[0].position = 0.45
-        ramp_node.color_ramp.elements[1].position = 0.55
+        self.mat = self.create_mat()
 
-        bsdf = self.curv_mat.node_tree.nodes['Material Output']
-        self.curv_mat.node_tree.links.new(node.outputs['Pointiness'], ramp_node.inputs['Fac'])
-        self.curv_mat.node_tree.links.new(ramp_node.outputs['Color'], bsdf.inputs['Surface'])
+        objects = self.high if not self.baker.use_low_to_low else [self.low]
 
-        self.dup_objects = [x.copy() for x in high]
-        self.dup_meshes = [x.data.copy() for x in self.dup_objects]
-
-        for i, mesh in enumerate(self.dup_meshes):
-            bpy.context.scene.collection.objects.link(self.dup_objects[i])
-            self.dup_objects[i].data = mesh
-
-            override_context = {}
-            override_context['active_object'] = self.dup_objects[i]
-            override_context['selected_objects'] = [self.dup_objects[i]]
-            override_context['selected_editable_objects'] = [self.dup_objects[i]]
-            #bpy.ops.object.mode_set(mode='EDIT', toggle=False)
-
-            #bpy.ops.mesh.select_all(action='SELECT')
-            #bpy.ops.mesh.flip_normals()
-
-            #bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-
-
-            for j in reversed(range(0, len(self.dup_objects[i].material_slots))):
-                self.dup_objects[i].active_material_index = j
-                bpy.ops.object.material_slot_remove(override_context)
-
-            bpy.ops.object.material_slot_add()
-
-            self.dup_objects[i].material_slots[0].material = self.curv_mat
-
-
-        super().__init__(baker, map, self.dup_objects, low)
+        for obj in objects:
+            for mat_slot in obj.material_slots:
+                mat_slot.material = self.mat
 
     def __exit__(self, type, value, traceback):
         super().__exit__(type, value, traceback)
 
-        for x in self.dup_objects:
-            bpy.data.objects.remove(x, do_unlink=True)
-        for x in self.dup_meshes:
-            bpy.data.meshes.remove(x, do_unlink=True)
+        bpy.data.materials.remove(self.mat, do_unlink=True)
 
-        bpy.data.materials.remove(self.curv_mat, do_unlink=True)
+class Map_Context_Curvature(Map_Context_Custom_Material):
+    def create_mat(self):
+        curv_mat = bpy.data.materials.new('BAKECURV')
+        curv_mat.use_nodes = True
+        node = curv_mat.node_tree.nodes.new('ShaderNodeNewGeometry')
+        ramp_node = curv_mat.node_tree.nodes.new('ShaderNodeValToRGB')
+        ramp_node.color_ramp.elements[0].position = 0.45
+        ramp_node.color_ramp.elements[1].position = 0.55
+
+        bsdf = curv_mat.node_tree.nodes['Material Output']
+        curv_mat.node_tree.links.new(node.outputs['Pointiness'], ramp_node.inputs['Fac'])
+        curv_mat.node_tree.links.new(ramp_node.outputs['Color'], bsdf.inputs['Surface'])
+
+        return curv_mat
 
 
 class EZB_Map_Curvature(bpy.types.PropertyGroup, EZB_Map_Blender):

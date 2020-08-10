@@ -131,7 +131,6 @@ class EZB_PT_baker_panel(bpy.types.Panel):
         split=row.split(factor=0.75, align=True)
         row.scale_y = 1.5
 
-            
         bake_op = split.operator('ezb.bake', text = 'Bake', icon='IMPORT')
         split.operator('ezb.export', text = 'Export', icon='EXPORT')
 
@@ -205,6 +204,8 @@ class EZB_PT_baker_settings_panel(bpy.types.Panel):
         
         row = col.row(align=True)
         row.prop(baker, 'padding', text='Padding', expand=True)
+        row = col.row(align=True)
+        row.prop(baker, 'use_low_to_low', text='Bake Low to Low')
 
         col.prop(baker, 'image_format', text='Format', icon='IMAGE_DATA')
         
@@ -251,7 +252,40 @@ class EZB_PT_bake_groups_panel(bpy.types.Panel):
 
         if len(baker.bake_groups) > baker.bake_group_index and baker.bake_group_index >= 0:
             bake_group = baker.bake_groups[baker.bake_group_index]
-            bake_group.draw(layout, context)
+
+            col = layout.column(align=True)
+            row = col.row(align=True)
+            row.prop(
+                bake_group, 
+                'preview_cage',
+                text='',
+                icon="HIDE_OFF" if bake_group.preview_cage else "HIDE_ON",
+                icon_only=True,
+                emboss=False
+                )
+            row.prop(bake_group, 'cage_displacement')
+            
+            if not baker.use_low_to_low:
+                layout = layout.split(factor=0.5,align=True)
+                layout.template_list(
+                    "EZB_UL_preview_group_objects", 
+                    "", 
+                    ezb_settings, 
+                    "preview_group_objects_high", 
+                    ezb_settings, 
+                    "preview_group_objects_high_index", 
+                    rows=2, 
+                    sort_lock = False
+                )
+            layout.template_list(
+                "EZB_UL_preview_group_objects", 
+                "", ezb_settings, 
+                "preview_group_objects_low", 
+                ezb_settings, 
+                "preview_group_objects_low_index", 
+                rows=2, 
+                sort_lock = False
+            )
 
 
 class EZB_PT_maps_panel(bpy.types.Panel):

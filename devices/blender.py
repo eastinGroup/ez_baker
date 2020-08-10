@@ -39,6 +39,7 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         bpy.context.scene.render.engine = 'CYCLES'
         bpy.context.scene.cycles.device = self.device
         bpy.context.scene.cycles.progressive = 'PATH'
+        bake_options.use_selected_to_active = not baker.use_low_to_low
         tile_size_relative = 1
         if self.tile_size == '1/8':
             tile_size_relative = 0.125

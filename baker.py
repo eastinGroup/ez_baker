@@ -91,6 +91,8 @@ class EZB_Baker(bpy.types.PropertyGroup):
 
     materials: bpy.props.CollectionProperty(type=EZB_Stored_Material)
 
+    use_low_to_low: bpy.props.BoolProperty(default=False, name='Use Low as High', description='Uses the object with all modifiers applied as the "high" and the same object without modifiers as the "low"')
+
     def get_abs_export_path(self):
         return os.path.abspath(bpy.path.abspath(self.path))
 
@@ -182,7 +184,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
             if not group.objects_low:
                 return 'Some bake groups have no low objects assigned'
         for group in self.bake_groups:
-            if not group.objects_high and not group.use_low_to_low:
+            if not group.objects_high and not self.use_low_to_low:
                 return 'Some bake groups have no high objects assigned'
         if not self.bake_groups:
             return 'You need to create a bake group first\nMake sure you have one object (or collection) named "example_low" and another one named "example_high"\nYou will now be able to add the bake group with the dropdown'

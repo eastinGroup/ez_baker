@@ -146,10 +146,10 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
                             custom_write(file, 'String name = "{}";'.format(bake_group.key), 3)
                             custom_write(file, 'HighPolyModelConfiguration highModels', 3)
                             with Write_Wrapper(file, '[', ']', 3):
-                                models = bake_group.objects_high if not bake_group.use_low_to_low else bake_group.objects_low
+                                models = bake_group.objects_high if not baker.use_low_to_low else bake_group.objects_low
                                 for model in models:
                                     with Write_Wrapper(file, '{', '}', 4):
-                                        name = model.name if not bake_group.use_low_to_low else '__' + model.name + '__'
+                                        name = model.name if not baker.use_low_to_low else '__' + model.name + '__'
                                         write_value(file, 'Filename', 'model', export_obj(meshes_folder, model, name, t_space=False, modifiers=True), 4) 
                                         write_value(file, 'bool', 'overrideMaterial', False, 4) 
                                         write_value(file, 'int32', 'material', 0, 4)
@@ -163,7 +163,7 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
                                     with Write_Wrapper(file, '{', '}', 4):
                                         cage = bpy.context.scene.objects.get(model.name + bpy.context.scene.EZB_Settings.suffix_cage)
                                         cage_path = '' if not cage else export_obj(meshes_folder, cage, cage.name, t_space=True, modifiers=True)
-                                        write_value(file, 'Filename', 'model', export_obj(meshes_folder, model, model.name, t_space=True, modifiers=not bake_group.use_low_to_low), 4) 
+                                        write_value(file, 'Filename', 'model', export_obj(meshes_folder, model, model.name, t_space=True, modifiers=not baker.use_low_to_low), 4) 
                                         write_value(file, 'Filename', 'cageModel', cage_path, 4) 
                                         write_value(file, 'bool', 'overrideCageOffset', False, 4) 
                                         write_value(file, 'float', 'autoCageOffset', bake_group.cage_displacement, 4)

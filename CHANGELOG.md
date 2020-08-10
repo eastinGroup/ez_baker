@@ -4,12 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/0_0_3)
+## [0.1.0](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/0_1_0)
+### Added
+- new maps:
+    - Emission
+    - Glossy
+    - Metallic
+    - Roughness
+    - Subsurface Color
+    - Base Color
+    - Transmission
 ### Fixed
 - Low to Low now only bakes itself and ignores the rest of the objects
+- Better support for baking with the "low_to_low" option
+- Supersampling now works with the blender baker
+
 ### Changed
 - The preview cage is now unselectable and selection and active object is kept when showing/hiding it
 - The low to low setting is now set per baker and not per bake_group
+- some UI changes
 
 ## [0.0.3](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/0_0_3)
 ### Fixed

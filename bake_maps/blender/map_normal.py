@@ -26,6 +26,8 @@ class EZB_Map_Normal(bpy.types.PropertyGroup, EZB_Map_Blender):
     icon = 'NORMALS_FACE'
     category = 'Mesh'
 
+    color_space = 'Non-Color'
+
     suffix: bpy.props.StringProperty(default='_N')
     active: bpy.props.BoolProperty(default=True)
     triangulate_low: bpy.props.BoolProperty(default=True)

@@ -124,14 +124,14 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
                 img.image.scale(baker.width, baker.height)
                 img.image.pack()
                 img.image.file_format = baker.image_format
-                path_full = os.path.join(bpy.path.abspath(baker.path), img.image.name) + file_formats_enum[baker.image_format]
+                path_full = os.path.normpath(os.path.join(bpy.path.abspath(baker.path), img.image.name) + file_formats_enum[baker.image_format])
                 directory = os.path.dirname(path_full)
                 try:
                     pathlib.Path(directory).mkdir(parents=True, exist_ok=True)
                     img.image.filepath = path_full
                     img.image.save()
-                    img.image.unpack()
                     img.image.source = 'FILE'
+                    img.image.unpack(method='REMOVE')
                     
                 except OSError:
                     print('The image could not be saved to the path')

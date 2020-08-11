@@ -124,6 +124,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
                 new_image = existing_image
             else:
                 new_image = bpy.data.images.new(new_name, width = self.width*supersampling, height = self.height*supersampling)
+                new_image.colorspace_settings.name = map.color_space
 
         if new_image not in bake_textures:
             new_image.name = new_name

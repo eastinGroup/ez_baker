@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - new operator to modify cage options for multiple bake groups
 - more triangulation options for normal map
+- samples option added to normal map
 
 ### Changed
 - Images are now directly saved to disk, instead of being packed

@@ -52,6 +52,9 @@ def get_possible_bake_groups(objects):
 
     def is_group_valid(orig_name, type):
         name = orig_name.lower()
+        if name[-3:].isdigit() and name[-4] == '.':
+            name = name[:-4]
+            
         suffix_high = ezb_settings.suffix_high.lower()
         suffix_low = ezb_settings.suffix_low.lower()
         group_name = ''

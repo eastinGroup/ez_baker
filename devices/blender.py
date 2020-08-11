@@ -127,9 +127,12 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
                 directory = os.path.dirname(path_full)
                 try:
                     pathlib.Path(directory).mkdir(parents=True, exist_ok=True)
+                    img.image.filepath = path_full
+                    img.image.save()
+                    img.image.unpack()
+                    img.image.source = 'FILE'
+                    
                 except OSError:
+                    print('The image could not be saved to the path')
                     pass
-                img.image.filepath = path_full
-                img.image.source = 'FILE'
-                img.image.unpack()
-                img.image.save()
+                

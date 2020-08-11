@@ -114,27 +114,28 @@ class EZB_Baker(bpy.types.PropertyGroup):
             found_image = found_material.images.add()
             found_image.map_name = map.id
         
-        old_image = found_image.image
-        if old_image not in bake_textures:
-            if old_image:
-                old_image.name = '__delete'
-            new_name = material_name + map.suffix
+        new_image = found_image.image
+        new_name = material_name + map.suffix
+        supersampling = self.get_supersampling
+
+        if not new_image:
             existing_image = bpy.data.images.get(new_name)
-            supersampling = self.get_supersampling
-            new_image = bpy.data.images.new(new_name, width = self.width*supersampling, height = self.height*supersampling)
+            if existing_image:
+                new_image = existing_image
+            else:
+                new_image = bpy.data.images.new(new_name, width = self.width*supersampling, height = self.height*supersampling)
+
+        if new_image not in bake_textures:
+            new_image.name = new_name
+            new_image.source = 'GENERATED'
+            new_image.pack()
+            
+            new_image.scale(self.width*supersampling, self.height*supersampling)
             pixels = [map.background_color for i in range(0, self.width*supersampling*self.height*supersampling)]
             pixels = [chan for px in pixels for chan in px]
             new_image.pixels = pixels
 
-            if existing_image:
-                existing_image.name = '___TEMP___'
-                old_name = new_image.name
-                new_image.name = new_name
-                existing_image.name = old_name
             # new_image.source = 'GENERATED'
-            if old_image:
-                old_image.user_remap(new_image)
-                bpy.data.images.remove(old_image, do_unlink=True)
             found_image.image = new_image
             bake_textures.append(new_image)
 

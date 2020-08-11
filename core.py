@@ -95,7 +95,13 @@ class EZB_UL_bake_groups(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         row = layout.row()
         icon = next(x[3] for x in mode_group_types if x[0] == item.mode_group)
+
+        selected = any(y.select_get() for y in item.objects_high) or any(y.select_get() for y in item.objects_low)
+        selected_icon = 'RESTRICT_SELECT_ON' if not selected else 'RESTRICT_SELECT_OFF'
+
+        row.label(text='', icon = selected_icon)
         row.prop(item, 'key', text='', icon=icon, emboss=False)
+        
         high_objs = item.objects_high
         low_objs = item.objects_low
         if not data.use_low_to_low:
@@ -271,6 +277,7 @@ class EZB_PT_bake_groups_panel(bpy.types.Panel):
                     emboss=False
                     )
                 row.prop(bake_group, 'cage_displacement')
+                row.operator('ezb.edit_bake_groups', text='', icon='SHADERFX')
 
                 layout = layout.split(factor=0.5,align=True)
                 layout.template_list(

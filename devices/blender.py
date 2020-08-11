@@ -36,6 +36,7 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         row=col.row(align=True)
         row.prop(self, 'tile_size', text='Tile Size', expand=True)
 
+    #TODO: remove baker from all the function properties, get it with parent_baker property
     def setup_settings(self, baker):
         bake_options = bpy.context.scene.render.bake
         bpy.context.scene.render.engine = 'CYCLES'

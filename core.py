@@ -140,12 +140,21 @@ class EZB_PT_baker_panel(bpy.types.Panel):
         ezb_settings = bpy.context.scene.EZB_Settings
 
         bakers = [x for x in ezb_settings.bakers]
+
+
+        row = layout.row(align=False)
+
+        row.template_list("EZB_UL_bakers", "", ezb_settings, "bakers", ezb_settings, "baker_index", rows=2)
+        col=row.column(align=False)
+        col.operator('ezb.new_baker',text='', icon='ADD')
+        col.operator('ezb.remove_baker', text='', icon='REMOVE')
+
         row = layout.row(align=True)
-        split=row.split(factor=0.75, align=True)
+        #split=row.split(factor=0.75, align=True)
         row.scale_y = 1.5
 
-        bake_op = split.operator('ezb.bake', text = 'Bake', icon='IMPORT')
-        split.operator('ezb.export', text = 'Export', icon='EXPORT')
+        bake_op = row.operator('ezb.bake', text = 'Bake', icon='IMPORT')
+        #split.operator('ezb.export', text = 'Export', icon='EXPORT')
 
         path = ''
         row = row.row(align=True)
@@ -156,13 +165,6 @@ class EZB_PT_baker_panel(bpy.types.Panel):
             row.enabled = bool(baker.path)
         
         row.operator("wm.path_open", text="", icon=open_folder_icon).filepath = path
-
-        row = layout.row(align=False)
-
-        row.template_list("EZB_UL_bakers", "", ezb_settings, "bakers", ezb_settings, "baker_index", rows=2)
-        col=row.column(align=False)
-        col.operator('ezb.new_baker',text='', icon='ADD')
-        col.operator('ezb.remove_baker', text='', icon='REMOVE')
 
         if False:
             tooltip = operators.EZB_OT_bake.description(context, bake_op)

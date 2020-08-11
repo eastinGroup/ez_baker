@@ -265,7 +265,6 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
             img.image.source = 'FILE'
             img.image.filepath = img_path
             img.image.reload()
-            img.image.pack()
 
             pass
 

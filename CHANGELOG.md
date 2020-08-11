@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/0_1_1)
+### Added
+- new operator to modify cage options for multiple bake groups
+- more triangulation options for normal map
+
+### Changed
+- Images are now directly saved to disk, instead of being packed
+
+### Fixed
+- Scrolling issue in bake groups
+
+### Removed
+- Export maps button
+
 ## [0.1.0](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/0_1_0)
 ### Added
 - new maps:

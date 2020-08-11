@@ -229,7 +229,7 @@ class EZB_OT_bake(bpy.types.Operator):
         if not (bpy.context.scene.EZB_Settings.baker_index >= 0 and len(bpy.context.scene.EZB_Settings.bakers) > bpy.context.scene.EZB_Settings.baker_index):
             return 'No baker selected'
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
-        device = baker.get_device
+        device = baker.child_device
         ans = baker.check_for_errors()
         if ans:
             return ans
@@ -243,7 +243,7 @@ class EZB_OT_bake(bpy.types.Operator):
         if not (bpy.context.scene.EZB_Settings.baker_index >= 0 and len(bpy.context.scene.EZB_Settings.bakers) > bpy.context.scene.EZB_Settings.baker_index):
             return False
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
-        device = baker.get_device
+        device = baker.child_device
         ans = baker.check_for_errors()
         if ans:
             return False
@@ -260,7 +260,7 @@ class EZB_OT_bake(bpy.types.Operator):
 last_maps = None
 def get_possible_maps(self, context):
     baker = bpy.context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
-    device = baker.get_device
+    device = baker.child_device
     global last_maps
     ordered_maps = {}
     for i, x in enumerate(device.get_inactive_maps()):
@@ -286,7 +286,7 @@ class EZB_OT_add_map(bpy.types.Operator):
 
     def execute(self, context):
         baker = bpy.context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
-        device = baker.get_device
+        device = baker.child_device
         map = getattr(device.maps, self.map)
         map.active=True
         map.show_info=True

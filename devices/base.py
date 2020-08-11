@@ -31,6 +31,12 @@ class EZB_Device:
             if not map.active:
                 yield map
 
+    @property
+    def parent_baker(self):
+        for x in bpy.context.scene.EZB_Settings.bakers:
+            if x.child_device == self:
+                return x
+        return None
 
     def bake(self, baker):
         pass

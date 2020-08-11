@@ -77,6 +77,14 @@ class EZB_UL_preview_group_objects(bpy.types.UIList):
         if item.cage:
             sub_row.operator('ezb.select_object', text= '', icon='SELECT_SET').name = item.cage
 
+class EZB_UL_preview_group_objects_low(bpy.types.UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        sub_row = layout.row()
+        sub_row.operator('ezb.select_object', text= '', icon='RESTRICT_SELECT_OFF').name = item.name
+        sub_row.label(text=item.name, icon='MESH_CUBE')
+        if item.cage:
+            sub_row.operator('ezb.select_object', text= '', icon='SELECT_SET').name = item.cage
+
 class EZB_UL_bakers(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         row = layout.row()
@@ -223,7 +231,7 @@ class EZB_PT_baker_settings_panel(bpy.types.Panel):
         col = layout.column(align=False)
         col.use_property_split = True
         col.use_property_decorate = False
-        baker.get_device.draw(col, context)
+        baker.child_device.draw(col, context)
 
 
 class EZB_PT_bake_groups_panel(bpy.types.Panel):
@@ -273,16 +281,15 @@ class EZB_PT_bake_groups_panel(bpy.types.Panel):
                     ezb_settings, 
                     "preview_group_objects_high_index", 
                     rows=2, 
-                    sort_lock = False
                 )
             layout.template_list(
-                "EZB_UL_preview_group_objects", 
-                "", ezb_settings, 
+                "EZB_UL_preview_group_objects_low", 
+                "", 
+                ezb_settings, 
                 "preview_group_objects_low", 
                 ezb_settings, 
                 "preview_group_objects_low_index", 
                 rows=2, 
-                sort_lock = False
             )
 
 
@@ -343,7 +350,8 @@ classes = [
     EZB_PT_bake_groups_panel, 
     EZB_PT_maps_panel, 
     EZB_PT_output_panel,
-    EZB_UL_preview_group_objects
+    EZB_UL_preview_group_objects,
+    EZB_UL_preview_group_objects_low
 ]
 
 

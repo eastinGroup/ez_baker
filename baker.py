@@ -148,8 +148,8 @@ class EZB_Baker(bpy.types.PropertyGroup):
             del_mat = True
             for j in reversed(range(0, len(mat.images))):
                 img = mat.images[j]
-                if hasattr(self.get_device.maps, img.map_name):
-                    map = getattr(self.get_device.maps, img.map_name)
+                if hasattr(self.child_device.maps, img.map_name):
+                    map = getattr(self.child_device.maps, img.map_name)
                     if img.image in bake_textures or (map.active and not map.bake):
                         del_mat = False
                     else:
@@ -209,7 +209,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
         return supersampling
 
     @property
-    def get_device(self):
+    def child_device(self):
         if self.device_type == 'BLENDER':
             return self.devices.blender
         elif self.device_type == 'HANDPLANE':
@@ -218,7 +218,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
     def bake(self):
         bake_textures.clear()
         print('BAKING: {}'.format(self.key))
-        self.get_device.bake(self)
+        self.child_device.bake(self)
 
     def export(self):
         textures = []

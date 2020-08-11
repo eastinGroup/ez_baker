@@ -10,6 +10,11 @@ class EZB_Map:
     show_info: bpy.props.BoolProperty(default=False)
     background_color = [0.0, 0.0, 0.0, 0.0]
 
+    color_space: bpy.props.EnumProperty(
+        items=[(y.identifier, y.name, y.description) for y in bpy.types.ColorManagedInputColorspaceSettings.bl_rna.properties['name'].enum_items],
+        default='sRGB'
+        )
+
     suffix: bpy.props.StringProperty(default='_TEST')
 
     # "less than", for ordering lists of this class
@@ -81,4 +86,5 @@ class EZB_Map:
             col = row.column(align=False)
             col.use_property_split = True
             col.use_property_decorate = False  # No animation.
+            col.prop(self, 'color_space', text='Color Space')
             self._draw_info(col)

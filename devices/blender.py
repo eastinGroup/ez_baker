@@ -1,10 +1,12 @@
 import bpy
+import pathlib
+import os
 from .base import EZB_Device
 from ..bake_maps import EZB_Maps_Blender
 from ..contexts import Scene_Visible, Custom_Render_Settings
+from ..settings import file_formats_enum
 
 temp_materials = {}
-bake_textures = []
 
 class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
     name = "blender"
@@ -67,13 +69,13 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
     def create_bake_material(self, baker, map, material):
         found_image = baker.get_image(map, material.name)
         temp_material = None
-        if material not in temp_materials:
+        if material.name not in temp_materials:
             temp_material = material.copy()
             temp_material.name = material.name + '__temp'
-            temp_materials[material] = temp_material
+            temp_materials[material.name] = temp_material
             temp_material.use_nodes = True
         else:
-            temp_material = temp_materials[material]
+            temp_material = temp_materials[material.name]
     
         material_nodes = temp_material.node_tree.nodes
         node = material_nodes.get(f'__{map.id}__')
@@ -95,7 +97,6 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
     def bake(self, baker):
         super().bake(baker)
         temp_materials.clear()
-        bake_textures.clear()
 
         with Custom_Render_Settings():
             for map in self.get_bakeable_maps():
@@ -115,10 +116,20 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         
         
         self.clear_temp_materials()
-                    #save() 3 if filepathh is set
         baker.clear_outputs()
 
         for mat in baker.materials:
             for img in mat.images:
                 img.image.scale(baker.width, baker.height)
                 img.image.pack()
+                img.image.file_format = baker.image_format
+                path_full = os.path.join(bpy.path.abspath(baker.path), img.image.name) + file_formats_enum[baker.image_format]
+                directory = os.path.dirname(path_full)
+                try:
+                    pathlib.Path(directory).mkdir(parents=True, exist_ok=True)
+                except OSError:
+                    pass
+                img.image.filepath = path_full
+                img.image.source = 'FILE'
+                img.image.unpack()
+                img.image.save()

@@ -47,7 +47,7 @@ class Map_Context():
         context['view_layer'] = {'objects':all_obj_and_lights}
 
 
-        self.baker.get_device.setup_bake_material(self.low, self.baker, self.map)
+        self.baker.child_device.setup_bake_material(self.low, self.baker, self.map)
         cage = bpy.context.scene.objects.get(self.low.name + bpy.context.scene.EZB_Settings.suffix_cage)
         bpy.context.scene.render.bake.cage_object = cage
 

@@ -113,7 +113,7 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
     def bake(self, baker):
         super().bake(baker)
 
-        device = baker.get_device
+        device = baker.child_device
         scene = bpy.context.scene
         prefs = bpy.context.preferences.addons[__package__.split('.')[0]].preferences
 

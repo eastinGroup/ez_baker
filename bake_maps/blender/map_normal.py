@@ -8,7 +8,8 @@ class Map_Context_Normal(Map_Context):
     def __enter__(self):
         if self.map.triangulate_low:
             self.mod = self.low.modifiers.new('TRIANGULATE', 'TRIANGULATE')
-            self.mod.keep_custom_normals = True
+            self.mod.quad_method = self.map.quad_method
+            self.mod.ngon_method = self.map.ngon_method
         
         return super().__enter__()
 
@@ -28,6 +29,14 @@ class EZB_Map_Normal(bpy.types.PropertyGroup, EZB_Map_Blender):
     suffix: bpy.props.StringProperty(default='_N')
     active: bpy.props.BoolProperty(default=True)
     triangulate_low: bpy.props.BoolProperty(default=True)
+    quad_method: bpy.props.EnumProperty(
+        items=[(y.identifier, y.name, y.description) for y in bpy.types.TriangulateModifier.bl_rna.properties['quad_method'].enum_items],
+        default='BEAUTY'
+        )
+    ngon_method: bpy.props.EnumProperty(
+        items=[(y.identifier, y.name, y.description) for y in bpy.types.TriangulateModifier.bl_rna.properties['ngon_method'].enum_items],
+        default='BEAUTY'
+        )
     #TODO: add triangulation options (beauty or whatever)
 
     background_color = [0.5, 0.5, 1.0, 1.0]
@@ -61,9 +70,17 @@ class EZB_Map_Normal(bpy.types.PropertyGroup, EZB_Map_Blender):
 
     def _draw_info(self, layout):
         layout.prop(self, "normal_space", text="Space")
-        layout.prop(self, 'triangulate_low', text='Triangulate')
+        
         sub = layout.column(align=True)
         sub.prop(self, "normal_r", text="R")
         sub.prop(self, "normal_g", text="G")
         sub.prop(self, "normal_b", text="B")
-        
+        layout.prop(self, "samples", text="Samples")
+
+        layout.prop(self, 'triangulate_low', text='Triangulate')
+        if self.triangulate_low:
+            row = layout.row(align=True)
+            row.separator(factor=8)
+            sub = row.column(align=True)
+            sub.prop(self, 'quad_method', text='Quad Method')
+            sub.prop(self, 'ngon_method', text='Polygon Method')

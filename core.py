@@ -137,15 +137,15 @@ class EZB_PT_baker_panel(bpy.types.Panel):
 
         bakers = [x for x in ezb_settings.bakers]
 
-
-        row = layout.row(align=False)
+        main_col = layout.column(align=True)
+        row = main_col.row(align=True)
 
         row.template_list("EZB_UL_bakers", "", ezb_settings, "bakers", ezb_settings, "baker_index", rows=2)
-        col=row.column(align=False)
+        col=row.column(align=True)
         col.operator('ezb.new_baker',text='', icon='ADD')
         col.operator('ezb.remove_baker', text='', icon='REMOVE')
 
-        row = layout.row(align=True)
+        row = main_col.split(factor=0.8, align=True)
         #split=row.split(factor=0.75, align=True)
         row.scale_y = 1.5
 
@@ -160,7 +160,7 @@ class EZB_PT_baker_panel(bpy.types.Panel):
             path = baker.path
             row.enabled = bool(baker.path)
         
-        row.operator("wm.path_open", text="", icon=open_folder_icon).filepath = path
+        row.operator("wm.path_open", text="Open", icon=open_folder_icon).filepath = path
 
         if False:
             tooltip = operators.EZB_OT_bake.description(context, bake_op)
@@ -176,11 +176,12 @@ class EZB_PT_baker_panel(bpy.types.Panel):
 
 class EZB_PT_baker_settings_panel(bpy.types.Panel):
     bl_idname = "EZB_PT_baker_settings_panel"
-    bl_label = "Baker Settings"
+    bl_label = "Settings"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "EZ Baker"
     bl_options = {'DEFAULT_CLOSED'}
+    bl_parent_id = "EZB_PT_baker_panel"
 
     def draw(self, context):
         layout = self.layout
@@ -193,7 +194,7 @@ class EZB_PT_baker_settings_panel(bpy.types.Panel):
             return
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
 
-        col = layout.column(align=True)
+        col = layout.column(align=False)
 
         # Path settings
         row = col.row(align=True)
@@ -216,7 +217,8 @@ class EZB_PT_baker_settings_panel(bpy.types.Panel):
         row = col.row(align=True)
         row.prop(baker, 'padding', text='Padding', expand=True)
         row = col.row(align=True)
-        row.prop(baker, 'use_low_to_low', text='Bake Low to Low')
+        row.prop(baker, 'use_low_to_low', text='High to Low', expand=True, toggle=True, invert_checkbox=True)
+        row.prop(baker, 'use_low_to_low', text='Low to Low', expand=True, toggle=True)
 
         col.prop(baker, 'image_format', text='Format', icon='IMAGE_DATA')
         

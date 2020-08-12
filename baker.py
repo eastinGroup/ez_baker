@@ -237,7 +237,6 @@ class EZB_Baker(bpy.types.PropertyGroup):
             bpy.context.scene.render.image_settings.color_depth = self.color_depth
             bpy.context.scene.render.image_settings.compression = 0
             bpy.context.scene.render.image_settings.tiff_codec = 'DEFLATE'
-
             
             for x in textures:
                 path_full = os.path.join(bpy.path.abspath(self.path), x.name) + file_formats_enum[self.image_format]

@@ -448,6 +448,12 @@ class EZB_OT_edit_bake_groups(bpy.types.Operator):
     cage_displacement: bpy.props.FloatProperty(name='Cage Displacement', default=0.05, step=0.1, precision=3, update=update_cage)
     preview_cage: bpy.props.BoolProperty(update=update_cage_visible, default=True)
 
+    @classmethod
+    def poll(cls, context):
+        if not context.selected_objects:
+            return False
+        return True
+
     def draw(self, context):
         layout = self.layout
         row = layout.row(align=True)

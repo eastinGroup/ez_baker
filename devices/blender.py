@@ -116,24 +116,32 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
                             print('FINISHED BAKE')
         
         
-        self.clear_temp_materials()
-        baker.clear_outputs()
+            self.clear_temp_materials()
+            baker.clear_outputs()
 
-        for mat in baker.materials:
-            for img in mat.images:
-                img.image.scale(baker.width, baker.height)
-                img.image.pack()
-                img.image.file_format = baker.image_format
-                path_full = os.path.normpath(os.path.join(bpy.path.abspath(baker.path), img.image.name) + file_formats_enum[baker.image_format])
-                directory = os.path.dirname(path_full)
-                try:
-                    pathlib.Path(directory).mkdir(parents=True, exist_ok=True)
-                    img.image.filepath = path_full
-                    img.image.save()
-                    img.image.source = 'FILE'
-                    img.image.unpack(method='REMOVE')
-                    
-                except OSError:
-                    print('The image could not be saved to the path')
-                    pass
+            bpy.context.scene.view_settings.view_transform = 'Standard'
+
+            bpy.context.scene.render.image_settings.file_format = baker.image_format
+            bpy.context.scene.render.image_settings.color_mode = baker.color_mode
+            bpy.context.scene.render.image_settings.color_depth = baker.color_depth
+            bpy.context.scene.render.image_settings.compression = 0
+            bpy.context.scene.render.image_settings.tiff_codec = 'DEFLATE'
+
+            for mat in baker.materials:
+                for img in mat.images:
+                    img.image.scale(baker.width, baker.height)
+                    img.image.pack()
+                    img.image.file_format = baker.image_format
+                    path_full = os.path.normpath(os.path.join(bpy.path.abspath(baker.path), img.image.name) + file_formats_enum[baker.image_format])
+                    directory = os.path.dirname(path_full)
+                    try:
+                        pathlib.Path(directory).mkdir(parents=True, exist_ok=True)
+                        img.image.filepath = path_full
+                        img.image.save_render(path_full, scene=bpy.context.scene)
+                        img.image.source = 'FILE'
+                        img.image.unpack(method='REMOVE')
+                        
+                    except OSError:
+                        print('The image could not be saved to the path')
+                        pass
                 

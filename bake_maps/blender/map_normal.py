@@ -8,8 +8,11 @@ class Map_Context_Normal(Map_Context):
     def __enter__(self):
         if self.map.triangulate_low:
             self.mod = self.low.modifiers.new('TRIANGULATE', 'TRIANGULATE')
+
             self.mod.quad_method = self.map.quad_method
             self.mod.ngon_method = self.map.ngon_method
+            self.mod.keep_custom_normals = self.map.keep_custom_normals
+            
         
         return super().__enter__()
 
@@ -33,12 +36,13 @@ class EZB_Map_Normal(bpy.types.PropertyGroup, EZB_Map_Blender):
     triangulate_low: bpy.props.BoolProperty(default=True)
     quad_method: bpy.props.EnumProperty(
         items=[(y.identifier, y.name, y.description) for y in bpy.types.TriangulateModifier.bl_rna.properties['quad_method'].enum_items],
-        default='BEAUTY'
+        default='SHORTEST_DIAGONAL'
         )
     ngon_method: bpy.props.EnumProperty(
         items=[(y.identifier, y.name, y.description) for y in bpy.types.TriangulateModifier.bl_rna.properties['ngon_method'].enum_items],
         default='BEAUTY'
         )
+    keep_custom_normals: bpy.props.BoolProperty(default=False, name='Keep Normals')
     #TODO: add triangulation options (beauty or whatever)
 
     background_color = [0.5, 0.5, 1.0, 1.0]
@@ -86,3 +90,4 @@ class EZB_Map_Normal(bpy.types.PropertyGroup, EZB_Map_Blender):
             sub = row.column(align=True)
             sub.prop(self, 'quad_method', text='Quad Method')
             sub.prop(self, 'ngon_method', text='Polygon Method')
+            sub.prop(self, 'keep_custom_normals')

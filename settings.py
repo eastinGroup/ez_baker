@@ -11,6 +11,7 @@ file_formats_enum = {
     'JPEG': '.jpg',
     'JPEG2000': '.jp2',
     'TARGA': '.tga',
+    'TGA': '.tga',
     'TARGA_RAW': '.tga',
     'CINEON': '.cin',
     'DPX': '.dpx',
@@ -18,6 +19,7 @@ file_formats_enum = {
     'OPEN_EXR': '.exr',
     'HDR': '.hdr',
     'TIFF': '.tiff',
+    'TIF': '.tiff',
     'AVI_JPEG': '.avi',  # why not
     'AVI_RAW': '.avi',
     'FFMPEG': '.mkv'

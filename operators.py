@@ -46,6 +46,7 @@ class EZB_OT_remove_baker(bpy.types.Operator):
 last_bake_groups = None
 
 def get_possible_bake_groups(objects):
+    objects = objects[:]
     ezb_settings = bpy.context.scene.EZB_Settings
     baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
     ans = set()
@@ -73,7 +74,7 @@ def get_possible_bake_groups(objects):
 
     for x in traverse_tree(bpy.context.scene.collection, exclude_parent=True):
         group_name = is_group_valid(x.name, 'COLLECTION')
-        if group_name and any(obj in objects for obj in x):
+        if group_name and any(obj in objects for obj in x.objects):
             ans.add((group_name,'COLLECTION', 'GROUP'))    
 
     for x in objects:
@@ -137,7 +138,7 @@ class EZB_OT_create_possible_bake_groups(bpy.types.Operator):
         if self.gather_from == 'SELECTION':
             possible_bake_groups = get_possible_bake_groups([x for x in bpy.context.scene.objects if x.select_get()])
         elif self.gather_from == 'SCENE':
-            possible_bake_groups = get_possible_bake_groups(bpy.context.scene.objects[:])
+            possible_bake_groups = get_possible_bake_groups(bpy.context.scene.objects)
         for name, group, icon in possible_bake_groups:
             new_bake_group = baker.bake_groups.add()
             new_bake_group.key = name

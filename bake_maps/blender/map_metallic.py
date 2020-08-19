@@ -5,6 +5,7 @@ from .map import EZB_Map_Blender, Map_Context
 class Map_Context_Property_Switcher(Map_Context):
     from_socket = 'Metallic'
     to_socket = 'Emission'
+    set_value = None
 
     def create_material(self, material, from_input, to_input):
         if material in self.materials:
@@ -25,6 +26,8 @@ class Map_Context_Property_Switcher(Map_Context):
                     new_input.default_value = input.default_value
                 else:
                     new_input.default_value = input.default_value, input.default_value, input.default_value, 1
+            if self.set_value is not None:
+                input.default_value = self.set_value
 
         self.materials[material] = new_material
         return new_material

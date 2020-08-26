@@ -1,5 +1,5 @@
 import bpy
-import textwrap 
+import textwrap
 
 from bpy.props import (
     StringProperty,
@@ -19,14 +19,17 @@ from . import operators
 from . import bake_maps
 from . import devices
 from . import handlers
+from . import addon_updater_ops
 
 open_folder_icon = 'FILE_FOLDER'
 if bpy.app.version >= (2, 83, 0):
     open_folder_icon = 'FOLDER_REDIRECT'
 
+
 class EZB_preview_group_object(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty()
     cage: bpy.props.StringProperty()
+
 
 class EZB_Settings(bpy.types.PropertyGroup):
     bakers: bpy.props.CollectionProperty(type=baker.EZB_Baker)
@@ -47,6 +50,7 @@ class EZB_Settings(bpy.types.PropertyGroup):
     preview_group_objects_high_index: bpy.props.IntProperty()
     preview_group_objects_low_index: bpy.props.IntProperty()
 
+
 class EZB_PT_core_panel(bpy.types.Panel):
     bl_idname = "EZB_PT_core_panel"
     bl_label = "Settings"
@@ -64,22 +68,25 @@ class EZB_PT_core_panel(bpy.types.Panel):
         col.prop(context.scene.EZB_Settings, "suffix_high", text="High")
         col.prop(context.scene.EZB_Settings, "suffix_low", text="Low")
         col.prop(context.scene.EZB_Settings, "suffix_cage", text="Cage")
-        
+
+
 class EZB_UL_preview_group_objects(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         sub_row = layout.row()
-        sub_row.operator('ezb.select_object', text= '', icon='RESTRICT_SELECT_OFF').name = item.name
+        sub_row.operator('ezb.select_object', text='', icon='RESTRICT_SELECT_OFF').name = item.name
         sub_row.label(text=item.name, icon='MESH_CUBE')
         if item.cage:
-            sub_row.operator('ezb.select_object', text= '', icon='SELECT_SET').name = item.cage
+            sub_row.operator('ezb.select_object', text='', icon='SELECT_SET').name = item.cage
+
 
 class EZB_UL_preview_group_objects_low(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         sub_row = layout.row()
-        sub_row.operator('ezb.select_object', text= '', icon='RESTRICT_SELECT_OFF').name = item.name
+        sub_row.operator('ezb.select_object', text='', icon='RESTRICT_SELECT_OFF').name = item.name
         sub_row.label(text=item.name, icon='MESH_CUBE')
         if item.cage:
-            sub_row.operator('ezb.select_object', text= '', icon='SELECT_SET').name = item.cage
+            sub_row.operator('ezb.select_object', text='', icon='SELECT_SET').name = item.cage
+
 
 class EZB_UL_bakers(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
@@ -95,14 +102,14 @@ class EZB_UL_bake_groups(bpy.types.UIList):
         selected = any(y.select_get() for y in item.objects_high) or any(y.select_get() for y in item.objects_low)
         selected_icon = 'RESTRICT_SELECT_ON' if not selected else 'RESTRICT_SELECT_OFF'
 
-        row.label(text='', icon = selected_icon)
+        row.label(text='', icon=selected_icon)
         row.prop(item, 'key', text='', icon=icon, emboss=False)
-        
+
         high_objs = item.objects_high
         low_objs = item.objects_low
         if not data.use_low_to_low:
-            row.operator('ezb.show_high_objects',text='High: {}'.format(len(high_objs)), emboss=False).index = index
-        row.operator('ezb.show_low_objects',text='Low: {}'.format(len(low_objs)), emboss=False).index = index
+            row.operator('ezb.show_high_objects', text='High: {}'.format(len(high_objs)), emboss=False).index = index
+        row.operator('ezb.show_low_objects', text='Low: {}'.format(len(low_objs)), emboss=False).index = index
         '''
         # for not storing the undo step, but it can crash blender
         row.operator(
@@ -114,13 +121,13 @@ class EZB_UL_bake_groups(bpy.types.UIList):
         '''
         if not data.use_low_to_low:
             row.prop(
-                item, 
+                item,
                 'preview_cage',
                 text='cage',
                 icon="HIDE_OFF" if item.preview_cage else "HIDE_ON",
                 icon_only=True,
                 emboss=False
-                )
+            )
 
 
 class EZB_PT_baker_panel(bpy.types.Panel):
@@ -131,6 +138,9 @@ class EZB_PT_baker_panel(bpy.types.Panel):
     bl_category = "EZ Baker"
 
     def draw(self, context):
+        addon_updater_ops.check_for_update_background()
+        addon_updater_ops.update_notice_box_ui(self, context)
+
         layout = self.layout
 
         ezb_settings = bpy.context.scene.EZB_Settings
@@ -141,15 +151,15 @@ class EZB_PT_baker_panel(bpy.types.Panel):
         row = main_col.row(align=True)
 
         row.template_list("EZB_UL_bakers", "", ezb_settings, "bakers", ezb_settings, "baker_index", rows=2)
-        col=row.column(align=True)
-        col.operator('ezb.new_baker',text='', icon='ADD')
+        col = row.column(align=True)
+        col.operator('ezb.new_baker', text='', icon='ADD')
         col.operator('ezb.remove_baker', text='', icon='REMOVE')
 
         row = main_col.split(factor=0.8, align=True)
         #split=row.split(factor=0.75, align=True)
         row.scale_y = 1.5
 
-        bake_op = row.operator('ezb.bake', text = 'Bake', icon='IMPORT')
+        bake_op = row.operator('ezb.bake', text='Bake', icon='IMPORT')
         #split.operator('ezb.export', text = 'Export', icon='EXPORT')
 
         path = ''
@@ -159,20 +169,21 @@ class EZB_PT_baker_panel(bpy.types.Panel):
             baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
             path = baker.path
             row.enabled = bool(baker.path)
-        
+
         row.operator("wm.path_open", text="Open", icon=open_folder_icon).filepath = path
 
         if False:
             tooltip = operators.EZB_OT_bake.description(context, bake_op)
             if tooltip != 'Bake':
-                text_wrap = textwrap.TextWrapper(width=50) #50 = maximum length       
-                text_list = text_wrap.wrap(text=tooltip) 
+                text_wrap = textwrap.TextWrapper(width=50)  # 50 = maximum length
+                text_list = text_wrap.wrap(text=tooltip)
 
-                #Now in the panel:
-                for text in text_list: 
-                    row = layout.row(align = True)
+                # Now in the panel:
+                for text in text_list:
+                    row = layout.row(align=True)
                     row.alignment = 'CENTER'
                     row.label(text=text)
+
 
 class EZB_PT_baker_settings_panel(bpy.types.Panel):
     bl_idname = "EZB_PT_baker_settings_panel"
@@ -208,12 +219,12 @@ class EZB_PT_baker_settings_panel(bpy.types.Panel):
         # texture size
         row = col.row(align=True)
         row.operator_menu_enum('ezb.select_texture_size', 'size', text='', icon='DOWNARROW_HLT')
-        split = row.split(align=True, factor =0.85)
+        split = row.split(align=True, factor=0.85)
         row2 = split.row(align=True)
         row2.prop(baker, 'width', text='Width')
         row2.prop(baker, 'height', text='Height')
         split.prop(baker, 'supersampling', text='')
-        
+
         row = col.row(align=True)
         row.prop(baker, 'padding', text='Padding', expand=True)
         row = col.row(align=True)
@@ -221,19 +232,18 @@ class EZB_PT_baker_settings_panel(bpy.types.Panel):
         row.prop(baker, 'use_low_to_low', text='Low to Low', expand=True, toggle=True)
 
         col.prop(baker, 'image_format', text='Format', icon='IMAGE_DATA')
-        
+
         col2 = layout.column(align=True)
         col2.use_property_split = True
         col2.use_property_decorate = False
-        row=col2.row(align=True)
+        row = col2.row(align=True)
         row.prop(baker, 'color_mode', expand=True,)
         if not baker.image_format == 'TARGA':
-            row=col2.row(align=True)
+            row = col2.row(align=True)
             row.prop(baker, 'color_depth', expand=True)
 
-        
         layout.prop(baker, 'device_type', text='Bake with')
-        
+
         col = layout.column(align=False)
         col.use_property_split = True
         col.use_property_decorate = False
@@ -260,7 +270,7 @@ class EZB_PT_bake_groups_panel(bpy.types.Panel):
         col.template_list("EZB_UL_bake_groups", "", baker, "bake_groups", baker, "bake_group_index", rows=2)
         row2 = col.row(align=True)
         row2.operator_menu_enum('ezb.create_possible_bake_groups', 'gather_from', text='', icon='IMPORT')
-        row2.operator_menu_enum('ezb.new_bake_group', 'name' ,text='Add Bake Group', icon='ADD')
+        row2.operator_menu_enum('ezb.new_bake_group', 'name', text='Add Bake Group', icon='ADD')
         row2.operator('ezb.remove_bake_group', text='', icon='REMOVE')
 
         if len(baker.bake_groups) > baker.bake_group_index and baker.bake_group_index >= 0:
@@ -269,34 +279,34 @@ class EZB_PT_bake_groups_panel(bpy.types.Panel):
                 col = layout.column(align=True)
                 row = col.row(align=True)
                 row.prop(
-                    bake_group, 
+                    bake_group,
                     'preview_cage',
                     text='',
                     icon="HIDE_OFF" if bake_group.preview_cage else "HIDE_ON",
                     icon_only=True,
                     emboss=False
-                    )
+                )
                 row.prop(bake_group, 'cage_displacement')
                 row.operator('ezb.edit_bake_groups', text='', icon='SHADERFX')
 
-                layout = layout.split(factor=0.5,align=True)
+                layout = layout.split(factor=0.5, align=True)
                 layout.template_list(
-                    "EZB_UL_preview_group_objects", 
-                    "", 
-                    ezb_settings, 
-                    "preview_group_objects_high", 
-                    ezb_settings, 
-                    "preview_group_objects_high_index", 
-                    rows=2, 
+                    "EZB_UL_preview_group_objects",
+                    "",
+                    ezb_settings,
+                    "preview_group_objects_high",
+                    ezb_settings,
+                    "preview_group_objects_high_index",
+                    rows=2,
                 )
             layout.template_list(
-                "EZB_UL_preview_group_objects_low", 
-                "", 
-                ezb_settings, 
-                "preview_group_objects_low", 
-                ezb_settings, 
-                "preview_group_objects_low_index", 
-                rows=2, 
+                "EZB_UL_preview_group_objects_low",
+                "",
+                ezb_settings,
+                "preview_group_objects_low",
+                ezb_settings,
+                "preview_group_objects_low_index",
+                rows=2,
             )
 
 
@@ -347,15 +357,15 @@ class EZB_PT_output_panel(bpy.types.Panel):
 
 
 classes = [
-    EZB_preview_group_object, 
-    EZB_Settings, 
+    EZB_preview_group_object,
+    EZB_Settings,
     EZB_UL_bakers,
-    EZB_UL_bake_groups, 
-    EZB_PT_core_panel, 
+    EZB_UL_bake_groups,
+    EZB_PT_core_panel,
     EZB_PT_baker_panel,
     EZB_PT_baker_settings_panel,
-    EZB_PT_bake_groups_panel, 
-    EZB_PT_maps_panel, 
+    EZB_PT_bake_groups_panel,
+    EZB_PT_maps_panel,
     EZB_PT_output_panel,
     EZB_UL_preview_group_objects,
     EZB_UL_preview_group_objects_low
@@ -369,8 +379,7 @@ def register():
     devices.register()
     bake_group.register()
     baker.register()
-    
-    
+
     from bpy.utils import register_class
 
     for cls in classes:
@@ -391,7 +400,6 @@ def unregister():
 
     del bpy.types.Scene.EZB_Settings
 
-    
     baker.unregister()
     bake_group.unregister()
     operators.unregister()

@@ -1,6 +1,7 @@
 import bpy
 from .map import EZB_Map_Handplane
 
+
 class EZB_Map_Cavity(bpy.types.PropertyGroup, EZB_Map_Handplane):
     id = 'CAVITY'
     pass_name = 'cavity'
@@ -16,12 +17,12 @@ class EZB_Map_Cavity(bpy.types.PropertyGroup, EZB_Map_Handplane):
     pixel_radius: bpy.props.IntProperty(name='Pixel Radius', default=4)
     kernel_type: bpy.props.EnumProperty(
         items=[
-            ('ConstantBox', 'Constant Box', ''), 
-            ('ConstantDisk', 'Constant Disk', ''), 
-            ('LinearBox', 'Linear Box', ''), 
-            ('LinearDisk', 'Linear Disk', ''), 
+            ('ConstantBox', 'Constant Box', ''),
+            ('ConstantDisk', 'Constant Disk', ''),
+            ('LinearBox', 'Linear Box', ''),
+            ('LinearDisk', 'Linear Disk', ''),
             ('Gaussian', 'Gaussian', '')
-        ], 
+        ],
         default='ConstantDisk'
     )
 
@@ -33,5 +34,3 @@ class EZB_Map_Cavity(bpy.types.PropertyGroup, EZB_Map_Handplane):
         layout.prop(self, 'gamma')
         layout.prop(self, 'pixel_radius')
         layout.prop(self, 'kernel_type')
-
-        

@@ -1,6 +1,7 @@
 import bpy
 from .map import EZB_Map_Handplane
 
+
 class EZB_Map_Height(bpy.types.PropertyGroup, EZB_Map_Handplane):
     id = 'HEIGHT'
     pass_name = 'height'
@@ -18,7 +19,3 @@ class EZB_Map_Height(bpy.types.PropertyGroup, EZB_Map_Handplane):
     def _draw_info(self, layout):
         layout.prop(self, 'scale')
         layout.prop(self, 'offset')
-
-    
-
-        

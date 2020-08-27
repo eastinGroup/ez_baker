@@ -1,9 +1,10 @@
 import bpy
 from .map import EZB_Map_Handplane
 
+
 class EZB_Map_Curvature(bpy.types.PropertyGroup, EZB_Map_Handplane):
     id = 'CURVATURE'
-    pass_name = 'curvature'
+    pass_name = 'curve'
     label = 'Curvature'
     icon = 'SPHERECURVE'
 
@@ -30,5 +31,3 @@ class EZB_Map_Curvature(bpy.types.PropertyGroup, EZB_Map_Handplane):
 
         layout.prop(self, 'max_angle')
         layout.prop(self, 'gamma')
-
-        

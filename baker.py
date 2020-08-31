@@ -12,6 +12,7 @@ from .contexts import Scene_Visible, Custom_Render_Settings
 from .settings import mode_group_types, file_formats_enum
 from .outputs import EZB_Stored_Material
 
+
 def set_path(self, value):
     # checks if the provided path is inside a subdirectory of the current file to save it as a relative path
     if bpy.data.is_saved:
@@ -22,10 +23,13 @@ def set_path(self, value):
 
     self.real_path = value
 
+
 def get_path(self):
     return self.real_path
 
+
 bake_textures = []
+
 
 class EZB_Baker(bpy.types.PropertyGroup):
     key: bpy.props.StringProperty(default='')
@@ -60,33 +64,33 @@ class EZB_Baker(bpy.types.PropertyGroup):
             ('x4', 'x4', 'x4'),
             ('x16', 'x16', 'x16'),
         ],
-        default= 'x1'
+        default='x1'
     )
     image_format: bpy.props.EnumProperty(
-       items=[
-           ('TGA', 'TGA', 'Export images as .tga'),
-           ('PNG', 'PNG', 'Export images as .png'),
-           ('TIF', 'TIF', 'Export images as .tif'),
-       ],
-       default='PNG',
-       name='Format'
+        items=[
+            ('TGA', 'TGA', 'Export images as .tga'),
+            ('PNG', 'PNG', 'Export images as .png'),
+            ('TIF', 'TIF', 'Export images as .tif'),
+        ],
+        default='PNG',
+        name='Format'
     )
     color_mode: bpy.props.EnumProperty(
-       items=[
-           ('BW', 'BW', 'Black and white'),
-           ('RGB', 'RGB', 'Red, green, blue'),
-           ('RGBA', 'RGBA', 'Red, green, blue, alpha'),
-       ],
-       default='RGB',
-       name='Mode'
+        items=[
+            ('BW', 'BW', 'Black and white'),
+            ('RGB', 'RGB', 'Red, green, blue'),
+            ('RGBA', 'RGBA', 'Red, green, blue, alpha'),
+        ],
+        default='RGB',
+        name='Mode'
     )
     color_depth: bpy.props.EnumProperty(
-       items=[
-           ('8', '8', '8'),
-           ('16', '16', '16'),
-       ],
-       default='8',
-       name='Depth'
+        items=[
+            ('8', '8', '8'),
+            ('16', '16', '16'),
+        ],
+        default='8',
+        name='Depth'
     )
 
     materials: bpy.props.CollectionProperty(type=EZB_Stored_Material)
@@ -105,7 +109,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
         if not found_material:
             found_material = self.materials.add()
             found_material.material_name = material_name
-        
+
         for image in found_material.images:
             if image.map_name == map.id:
                 found_image = image
@@ -113,7 +117,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
         if not found_image:
             found_image = found_material.images.add()
             found_image.map_name = map.id
-        
+
         new_image = found_image.image
         new_name = material_name + map.suffix
         supersampling = self.get_supersampling
@@ -123,16 +127,17 @@ class EZB_Baker(bpy.types.PropertyGroup):
             if existing_image:
                 new_image = existing_image
             else:
-                new_image = bpy.data.images.new(new_name, width = self.width*supersampling, height = self.height*supersampling)
+                new_image = bpy.data.images.new(new_name, width=self.width * supersampling, height=self.height * supersampling)
                 new_image.colorspace_settings.name = map.color_space
 
         if new_image not in bake_textures:
             new_image.name = new_name
             new_image.source = 'GENERATED'
             new_image.pack()
-            
-            new_image.scale(self.width*supersampling, self.height*supersampling)
-            pixels = [map.background_color for i in range(0, self.width*supersampling*self.height*supersampling)]
+            new_image.use_generated_float = True
+
+            new_image.scale(self.width * supersampling, self.height * supersampling)
+            pixels = [map.background_color for i in range(0, self.width * supersampling * self.height * supersampling)]
             pixels = [chan for px in pixels for chan in px]
             new_image.pixels = pixels
 
@@ -160,7 +165,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
                     mat.images.remove(j)
             if del_mat:
                 self.materials.remove(i)
-            
+
     def get_troublesome_objects(self):
         ans = set()
         for group in self.bake_groups:
@@ -193,11 +198,10 @@ class EZB_Baker(bpy.types.PropertyGroup):
 
         if not self.path:
             return 'No export path set in the Baker Settings panel'
-        
+
         for group in self.bake_groups:
             if group.key == '' or ' ' in group.key or ',' in group.key:
                 return 'Invalid bake group name {}'.format(group.key)
-
 
     @property
     def get_supersampling(self):
@@ -216,7 +220,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
             return self.devices.blender
         elif self.device_type == 'HANDPLANE':
             return self.devices.handplane
-        
+
     def bake(self):
         bake_textures.clear()
         print('BAKING: {}'.format(self.key))
@@ -237,7 +241,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
             bpy.context.scene.render.image_settings.color_depth = self.color_depth
             bpy.context.scene.render.image_settings.compression = 0
             bpy.context.scene.render.image_settings.tiff_codec = 'DEFLATE'
-            
+
             for x in textures:
                 path_full = os.path.join(bpy.path.abspath(self.path), x.name) + file_formats_enum[self.image_format]
                 directory = os.path.dirname(path_full)
@@ -245,15 +249,18 @@ class EZB_Baker(bpy.types.PropertyGroup):
 
                 x.save_render(path_full, scene=bpy.context.scene)
 
+
 classes = [
     EZB_Baker
-    ]
+]
+
 
 def register():
     from bpy.utils import register_class
 
     for cls in classes:
         register_class(cls)
+
 
 def unregister():
     from bpy.utils import unregister_class

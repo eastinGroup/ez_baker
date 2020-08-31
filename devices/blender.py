@@ -151,6 +151,7 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
                             path_full, scene=bpy.context.scene)
                         img.image.source = 'FILE'
                         img.image.unpack(method='REMOVE')
+                        img.image.reload()
 
                     except OSError:
                         print('The image could not be saved to the path')

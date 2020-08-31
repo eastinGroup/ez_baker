@@ -1,6 +1,6 @@
 mode_group_types = [
-    ('NAME', 'Name', 'Group low and high by object names', 'OUTLINER_OB_MESH', 0), 
-    ('COLLECTION', 'Collection', 'Group low and high by their collection names', 'GROUP', 1), 
+    ('NAME', 'Name', 'Group low and high by object names', 'OUTLINER_OB_MESH', 0),
+    ('COLLECTION', 'Collection', 'Group low and high by their collection names', 'GROUP', 1),
     #('PARENT', 'Parent', 'Group low and high by their parent names')
 ]
 

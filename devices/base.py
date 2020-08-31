@@ -1,5 +1,6 @@
 import bpy
 
+
 class EZB_Device:
     name = "Default"
 
@@ -18,12 +19,10 @@ class EZB_Device:
             if map.active and map.bake:
                 yield map
 
-
     def get_all_maps(self):
         for bake_map in self.maps.maps:
             map = getattr(self.maps, bake_map.id)
             yield map
-
 
     def get_inactive_maps(self):
         for bake_map in self.maps.maps:
@@ -40,7 +39,6 @@ class EZB_Device:
 
     def bake(self, baker):
         pass
-
 
     def check_for_errors(self):
         if not any(True for x in self.get_bakeable_maps()):

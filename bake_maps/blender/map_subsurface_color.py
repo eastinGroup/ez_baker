@@ -2,15 +2,17 @@ import bpy
 from .map import EZB_Map_Blender
 from .map_metallic import Map_Context_Property_Switcher
 
+
 class Map_Context_Subsurface_Color(Map_Context_Property_Switcher):
     from_socket = 'Subsurface Color'
     to_socket = 'Emission'
+
 
 class EZB_Map_Subsurface_Color(bpy.types.PropertyGroup, EZB_Map_Blender):
     id = 'SUBSURFACE_COLOR'
     pass_name = 'EMIT'
     label = 'Subsurface Color'
-    icon='COLOR'
+    icon = 'COLOR'
     category = 'Surface'
 
     suffix: bpy.props.StringProperty(default='_SS')

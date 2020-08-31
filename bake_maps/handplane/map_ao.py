@@ -1,6 +1,7 @@
 import bpy
 from .map import EZB_Map_Handplane
 
+
 class EZB_Map_AO(bpy.types.PropertyGroup, EZB_Map_Handplane):
     id = 'AO'
     pass_name = 'ao'
@@ -18,5 +19,3 @@ class EZB_Map_AO(bpy.types.PropertyGroup, EZB_Map_Handplane):
     def _draw_info(self, layout):
         layout.prop(self, 'sample_radius')
         layout.prop(self, 'sample_count')
-
-        

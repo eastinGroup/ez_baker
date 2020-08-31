@@ -2,6 +2,7 @@ import bpy
 from .settings import mode_group_types
 from .utilities import traverse_tree
 
+
 def update_cage(self, context):
     def get_copy_cage(obj):
         cage = bpy.context.scene.objects.get(obj.name + bpy.context.scene.EZB_Settings.suffix_cage)
@@ -25,7 +26,7 @@ def update_cage(self, context):
         return cage
 
     new_context = context.copy()
-    
+
     if self.preview_cage and self.objects_low:
         if self.preview_cage_object:
             mesh = self.preview_cage_object.data
@@ -44,9 +45,9 @@ def update_cage(self, context):
         new_context['active_object'] = copy_objects[-1]
         #new_context['view_layer']['objects']['active'] = copy_objects[-1]
 
-        if len(copy_objects) >1:
+        if len(copy_objects) > 1:
             bpy.ops.object.join(new_context)
-        
+
         new_context['selected_editable_objects'] = [new_context['active_object']]
         new_context['selected_objects'] = new_context['selected_editable_objects']
 
@@ -54,10 +55,10 @@ def update_cage(self, context):
         self.preview_cage_object.name = self.key + '_preview_cage'
         self.preview_cage_object.data.name = self.key + '_preview_cage'
         self.preview_cage_object.color = (1, 0, 0, 0.3)
-        self.preview_cage_object.display_type='SOLID'
-        #not necessary, it was crashing blender on 2.9
+        self.preview_cage_object.display_type = 'SOLID'
+        # not necessary, it was crashing blender on 2.9
         #bpy.ops.object.convert(new_context, target='MESH')
-        self.preview_cage_object.hide_select=True
+        self.preview_cage_object.hide_select = True
 
         for i in reversed(range(0, len(copy_objects) - 1)):
             bpy.data.meshes.remove(copy_objects_data[i], do_unlink=True)
@@ -69,6 +70,7 @@ def update_cage(self, context):
             collections = self.preview_cage_object.users_collection[:]
             for x in collections:
                 x.objects.unlink(self.preview_cage_object)
+
 
 '''
 
@@ -95,12 +97,11 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
     # default cage info (displacement)
     key: bpy.props.StringProperty()
     mode_group: bpy.props.EnumProperty(items=mode_group_types, name="Group By")
-    
+
     cage_displacement: bpy.props.FloatProperty(name='Cage Displacement', default=0.05, update=update_cage, step=0.1, precision=3)
 
     preview_cage: bpy.props.BoolProperty(update=update_cage)
     preview_cage_object: bpy.props.PointerProperty(type=bpy.types.Object)
-
 
     def _remove_numbering(self, name):
         if name[-3:].isdigit() and name[-4] == '.':
@@ -122,14 +123,14 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
             for x in bpy.context.scene.objects:
                 if self._remove_numbering(x.name.lower()) == self.key.lower() + suffix:
                     objects.append(x)
-                
+
         return objects
 
     def setup_settings(self):
         bake_options = bpy.context.scene.render.bake
         bake_options.use_cage = True
         bake_options.cage_extrusion = self.cage_displacement
-    
+
     @property
     def parent_baker(self):
         return next(x for x in bpy.context.scene.EZB_Settings.bakers if self in x.bake_groups[:])
@@ -148,14 +149,16 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
 
 classes = [EZB_Bake_Group]
 
+
 def register():
     from bpy.utils import register_class
 
     for cls in classes:
         register_class(cls)
 
+
 def unregister():
     from bpy.utils import unregister_class
-    
+
     for cls in reversed(classes):
         unregister_class(cls)

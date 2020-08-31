@@ -50,15 +50,17 @@ class Map_Context_Property_Switcher(Map_Context):
         for orig_mat, temp_mat in self.materials.items():
             bpy.data.materials.remove(temp_mat, do_unlink=True)
 
+
 class Map_Context_Metallic(Map_Context_Property_Switcher):
     from_socket = 'Metallic'
     to_socket = 'Emission'
+
 
 class EZB_Map_Metallic(bpy.types.PropertyGroup, EZB_Map_Blender):
     id = 'METALLIC'
     pass_name = 'EMIT'
     label = 'Metallic'
-    icon='COLOR'
+    icon = 'COLOR'
     category = 'Surface'
 
     suffix: bpy.props.StringProperty(default='_M')

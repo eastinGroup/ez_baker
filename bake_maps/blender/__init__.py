@@ -22,15 +22,17 @@ map_annotations = {}
 for x in maps:
     map_annotations[x.id] = (bpy.props.PointerProperty, {'type': x})
 
-EZB_Maps_Blender = type("EZB_maps_blender", (bpy.types.PropertyGroup,), {'maps':maps ,'__annotations__': map_annotations})
+EZB_Maps_Blender = type("EZB_maps_blender", (bpy.types.PropertyGroup,), {'maps': maps, '__annotations__': map_annotations})
 
 classes = maps + [EZB_Maps_Blender]
+
 
 def register():
     from bpy.utils import register_class
 
     for cls in classes:
         register_class(cls)
+
 
 def unregister():
     from bpy.utils import unregister_class

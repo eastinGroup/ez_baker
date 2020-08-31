@@ -1,11 +1,12 @@
 import bpy
 from .map import EZB_Map_Blender
 
+
 class EZB_Map_AO(bpy.types.PropertyGroup, EZB_Map_Blender):
     id = 'AO'
     pass_name = 'AO'
     label = 'Ambient Occlusion'
-    icon='SHADING_RENDERED'
+    icon = 'SHADING_RENDERED'
     category = 'Lighting'
 
     suffix: bpy.props.StringProperty(default='_AO')

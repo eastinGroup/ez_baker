@@ -1,6 +1,7 @@
 import bpy
 from ..map import EZB_Map
 
+
 class Map_Context():
     def __init__(self, baker, map, high, low):
         self.baker = baker
@@ -31,27 +32,23 @@ class Map_Context():
         for obj in bpy.context.scene.objects:
             if obj.type == 'LIGHT' and obj.visible_get():
                 all_obj_and_lights.append(obj)
-        
+
         print(all_obj_and_lights)
 
         for obj in all_obj_and_lights:
             self.scene.collection.objects.link(obj)
         print('LINKED')
-        
 
         context['selected_objects'] = all_objs
         context['selected_editable_objects'] = all_objs
         context['editable_objects'] = all_obj_and_lights
         context['visible_objects'] = all_obj_and_lights
         context['selectable_objects'] = all_obj_and_lights
-        context['view_layer'] = {'objects':all_obj_and_lights}
-
+        context['view_layer'] = {'objects': all_obj_and_lights}
 
         self.baker.child_device.setup_bake_material(self.low, self.baker, self.map)
         cage = bpy.context.scene.objects.get(self.low.name + bpy.context.scene.EZB_Settings.suffix_cage)
         bpy.context.scene.render.bake.cage_object = cage
-
-        
 
         context['scene'] = self.scene
 
@@ -63,14 +60,15 @@ class Map_Context():
         for obj, mats in self.original_materials_high.items():
             for i, x in enumerate(mats):
                 obj.material_slots[i].material = x
-        
+
         bpy.data.scenes.remove(self.scene)
+
 
 class EZB_Map_Blender(EZB_Map):
     pass_name = 'TEST'
 
     samples: bpy.props.IntProperty(default=1)
-    
+
     context = Map_Context
 
     def setup_settings(self):
@@ -78,4 +76,4 @@ class EZB_Map_Blender(EZB_Map):
         bpy.context.scene.cycles.bake_type = self.pass_name
         bpy.context.scene.cycles.samples = self.samples
 
-        #each map should override this with more settings to setup
+        # each map should override this with more settings to setup

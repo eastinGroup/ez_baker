@@ -1,6 +1,7 @@
 import bpy
 from .map import EZB_Map_Blender
 
+
 class EZB_Map_Shadow(bpy.types.PropertyGroup, EZB_Map_Blender):
     id = 'SHADOW'
     pass_name = 'SHADOW'

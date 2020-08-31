@@ -3,6 +3,7 @@ from .utilities import traverse_tree
 from . import bake_maps
 from . import bake_group
 
+
 class EZB_OT_new_baker(bpy.types.Operator):
     """Create a new Baker"""
     bl_idname = "ezb.new_baker"
@@ -15,11 +16,12 @@ class EZB_OT_new_baker(bpy.types.Operator):
 
     def execute(self, context):
         ezb_settings = bpy.context.scene.EZB_Settings
-        new_baker=ezb_settings.bakers.add()
-        index=len(ezb_settings.bakers) - 1
+        new_baker = ezb_settings.bakers.add()
+        index = len(ezb_settings.bakers) - 1
         ezb_settings.baker_index = index
-        new_baker.key='Baker_{}'.format(index)
+        new_baker.key = 'Baker_{}'.format(index)
         return {'FINISHED'}
+
 
 class EZB_OT_remove_baker(bpy.types.Operator):
     """Remove Baker"""
@@ -40,10 +42,12 @@ class EZB_OT_remove_baker(bpy.types.Operator):
 
         ezb_settings.bakers.remove(ezb_settings.baker_index)
         if ezb_settings.baker_index >= len(ezb_settings.bakers):
-            ezb_settings.baker_index = len(ezb_settings.bakers)-1
+            ezb_settings.baker_index = len(ezb_settings.bakers) - 1
         return {'FINISHED'}
 
+
 last_bake_groups = None
+
 
 def get_possible_bake_groups(objects):
     objects = objects[:]
@@ -55,7 +59,7 @@ def get_possible_bake_groups(objects):
         name = orig_name.lower()
         if name[-3:].isdigit() and name[-4] == '.':
             name = name[:-4]
-            
+
         suffix_high = ezb_settings.suffix_high.lower()
         suffix_low = ezb_settings.suffix_low.lower()
         group_name = ''
@@ -70,12 +74,11 @@ def get_possible_bake_groups(objects):
                     return ''
 
         return group_name
-        
 
     for x in traverse_tree(bpy.context.scene.collection, exclude_parent=True):
         group_name = is_group_valid(x.name, 'COLLECTION')
         if group_name and any(obj in objects for obj in x.objects):
-            ans.add((group_name,'COLLECTION', 'GROUP'))    
+            ans.add((group_name, 'COLLECTION', 'GROUP'))
 
     for x in objects:
         if x.type == 'MESH':
@@ -85,11 +88,13 @@ def get_possible_bake_groups(objects):
 
     return ans
 
+
 def get_possible_bake_groups_enums(self, context):
     global last_bake_groups
     ans = list(get_possible_bake_groups(bpy.context.scene.objects))
-    last_bake_groups = [(x[1]+'___'+x[0],x[0],x[0],x[2],i) for i,x in enumerate(ans)]
+    last_bake_groups = [(x[1] + '___' + x[0], x[0], x[0], x[2], i) for i, x in enumerate(ans)]
     return last_bake_groups
+
 
 class EZB_OT_new_bake_group(bpy.types.Operator):
     """Bake groups are created by searching the scene for objects or collections that match the naming patterns in the settings panel.
@@ -97,7 +102,6 @@ So you need Collections or Objects already created.
 e.g. "test_low" and "test_high" objects"""
     bl_idname = "ezb.new_bake_group"
     bl_label = "New Bake Group"
-    
 
     name: bpy.props.EnumProperty(items=get_possible_bake_groups_enums)
 
@@ -108,13 +112,14 @@ e.g. "test_low" and "test_high" objects"""
 
     def execute(self, context):
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
-        new_bake_group=baker.bake_groups.add()
-        index=len(baker.bake_groups) - 1
+        new_bake_group = baker.bake_groups.add()
+        index = len(baker.bake_groups) - 1
         baker.bake_group_index = index
         group, name = self.name.split('___')
         new_bake_group.key = name
         new_bake_group.mode_group = group
         return {'FINISHED'}
+
 
 class EZB_OT_create_possible_bake_groups(bpy.types.Operator):
     """Create all possible bake groups"""
@@ -127,7 +132,7 @@ class EZB_OT_create_possible_bake_groups(bpy.types.Operator):
             ('SCENE', 'From Scene', 'Add all posible bake groups from the current scene'),
         ]
     )
-    
+
     @classmethod
     def poll(cls, context):
         ezb_settings = bpy.context.scene.EZB_Settings
@@ -143,11 +148,12 @@ class EZB_OT_create_possible_bake_groups(bpy.types.Operator):
             new_bake_group = baker.bake_groups.add()
             new_bake_group.key = name
             new_bake_group.mode_group = group
-        
-        index=len(baker.bake_groups) - 1
+
+        index = len(baker.bake_groups) - 1
         baker.bake_group_index = index
 
         return {'FINISHED'}
+
 
 class EZB_OT_remove_bake_group(bpy.types.Operator):
     """Remove Bake Group"""
@@ -166,7 +172,7 @@ class EZB_OT_remove_bake_group(bpy.types.Operator):
         baker.bake_groups.remove(baker.bake_group_index)
 
         if baker.bake_group_index >= len(baker.bake_groups):
-            baker.bake_group_index = len(baker.bake_groups)-1
+            baker.bake_group_index = len(baker.bake_groups) - 1
         return {'FINISHED'}
 
 
@@ -190,11 +196,12 @@ class EZB_OT_show_high_objects(bpy.types.Operator):
         baker = bpy.context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
         bake_group = baker.bake_groups[self.index]
         if bpy.ops.object.mode_set.poll():
-            bpy.ops.object.mode_set(mode = 'OBJECT', toggle=False)
+            bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         bpy.ops.object.select_all(action='DESELECT')
         for x in bake_group.objects_high:
             x.select_set(True)
         return {'FINISHED'}
+
 
 class EZB_OT_show_low_objects(bpy.types.Operator):
     """Show Low Objects"""
@@ -216,7 +223,7 @@ class EZB_OT_show_low_objects(bpy.types.Operator):
         baker = bpy.context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
         bake_group = baker.bake_groups[self.index]
         if bpy.ops.object.mode_set.poll():
-            bpy.ops.object.mode_set(mode = 'OBJECT', toggle=False)
+            bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         bpy.ops.object.select_all(action='DESELECT')
         for x in bake_group.objects_low:
             x.select_set(True)
@@ -261,7 +268,10 @@ class EZB_OT_bake(bpy.types.Operator):
         baker.bake()
         return {'FINISHED'}
 
+
 last_maps = None
+
+
 def get_possible_maps(self, context):
     baker = bpy.context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
     device = baker.child_device
@@ -270,7 +280,7 @@ def get_possible_maps(self, context):
     for i, x in enumerate(device.get_inactive_maps()):
         if x.category not in ordered_maps:
             ordered_maps[x.category] = set()
-        ordered_maps[x.category].add((x.id, x.label, x.label, x.icon, i+1))
+        ordered_maps[x.category].add((x.id, x.label, x.label, x.icon, i + 1))
     last_maps = []
     for category in sorted([x for x in ordered_maps.keys()]):
         maps = ordered_maps[category]
@@ -292,9 +302,10 @@ class EZB_OT_add_map(bpy.types.Operator):
         baker = bpy.context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
         device = baker.child_device
         map = getattr(device.maps, self.map)
-        map.active=True
-        map.show_info=True
+        map.active = True
+        map.show_info = True
         return {'FINISHED'}
+
 
 class EZB_OT_show_image(bpy.types.Operator):
     """Show Image"""
@@ -305,12 +316,14 @@ class EZB_OT_show_image(bpy.types.Operator):
 
     def execute(self, context):
         image = bpy.data.images.get(self.image)
-        for area in bpy.context.screen.areas :
-            if area.type == 'IMAGE_EDITOR' :
-                    area.spaces.active.image = image
+        for area in bpy.context.screen.areas:
+            if area.type == 'IMAGE_EDITOR':
+                area.spaces.active.image = image
         return {'FINISHED'}
 
 # for not storing the undo step, but it can crash blender, so it's not being used
+
+
 class EZB_OT_show_cage(bpy.types.Operator):
     """Show/Hide Cage"""
     bl_idname = "ezb.show_cage"
@@ -326,6 +339,7 @@ class EZB_OT_show_cage(bpy.types.Operator):
 
         bake_group.update_cage(bg, context)
         return {'FINISHED'}
+
 
 class EZB_OT_export(bpy.types.Operator):
     """Export"""
@@ -375,6 +389,7 @@ class EZB_OT_export(bpy.types.Operator):
         baker.export()
         return {'FINISHED'}
 
+
 class EZB_OT_select_texture_size(bpy.types.Operator):
     """Select Texture Size"""
     bl_idname = "ezb.select_texture_size"
@@ -412,7 +427,6 @@ class EZB_OT_select_texture_size(bpy.types.Operator):
         return {'FINISHED'}
 
 
-
 class EZB_OT_select_object(bpy.types.Operator):
     """Select Object"""
     bl_idname = "ezb.select_object"
@@ -423,12 +437,13 @@ class EZB_OT_select_object(bpy.types.Operator):
     def execute(self, context):
         obj = context.scene.objects.get(self.name)
         if bpy.ops.object.mode_set.poll():
-            bpy.ops.object.mode_set(mode = 'OBJECT', toggle=False)
+            bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         bpy.ops.object.select_all(action='DESELECT')
         if obj:
             obj.select_set(True)
         return {'FINISHED'}
-    
+
+
 class EZB_OT_edit_bake_groups(bpy.types.Operator):
     """Edit selected bake groups"""
     bl_idname = "ezb.edit_bake_groups"
@@ -439,7 +454,7 @@ class EZB_OT_edit_bake_groups(bpy.types.Operator):
         for x in baker.bake_groups:
             if any(y.select_get() for y in x.objects_high) or any(y.select_get() for y in x.objects_low):
                 x.cage_displacement = self.cage_displacement
-    
+
     def update_cage_visible(self, context):
         baker = bpy.context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
         for x in baker.bake_groups:
@@ -459,13 +474,13 @@ class EZB_OT_edit_bake_groups(bpy.types.Operator):
         layout = self.layout
         row = layout.row(align=True)
         row.prop(
-                    self, 
-                    'preview_cage',
-                    text='',
-                    icon="HIDE_OFF" if self.preview_cage else "HIDE_ON",
-                    icon_only=True,
-                    emboss=False
-                    )
+            self,
+            'preview_cage',
+            text='',
+            icon="HIDE_OFF" if self.preview_cage else "HIDE_ON",
+            icon_only=True,
+            emboss=False
+        )
         row.prop(self, 'cage_displacement')
 
     def invoke(self, context, event):
@@ -474,8 +489,9 @@ class EZB_OT_edit_bake_groups(bpy.types.Operator):
         return wm.invoke_props_dialog(self)
 
     def execute(self, context):
-        
+
         return {'FINISHED'}
+
 
 classes = [
     EZB_OT_new_baker,
@@ -495,14 +511,16 @@ classes = [
     EZB_OT_edit_bake_groups,
 ]
 
+
 def register():
     from bpy.utils import register_class
 
     for cls in classes:
         register_class(cls)
 
+
 def unregister():
     from bpy.utils import unregister_class
-    
+
     for cls in reversed(classes):
         unregister_class(cls)

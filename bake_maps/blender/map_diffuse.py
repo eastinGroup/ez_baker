@@ -1,11 +1,12 @@
 import bpy
 from .map import EZB_Map_Blender
 
+
 class EZB_Map_Diffuse(bpy.types.PropertyGroup, EZB_Map_Blender):
     id = 'DIFFUSE'
     pass_name = 'DIFFUSE'
     label = 'Diffuse'
-    icon='COLOR'
+    icon = 'COLOR'
     category = 'Surface'
 
     suffix: bpy.props.StringProperty(default='_D')
@@ -14,7 +15,7 @@ class EZB_Map_Diffuse(bpy.types.PropertyGroup, EZB_Map_Blender):
     use_pass_direct: bpy.props.BoolProperty(default=False, name='Direct', description='Bake direct light')
     use_pass_indirect: bpy.props.BoolProperty(default=False, name='Indirect', description='Bake indirect light')
     use_pass_color: bpy.props.BoolProperty(default=True, name='Color', description='Bake the surface color')
-    
+
     def setup_settings(self):
         super().setup_settings()
         bpy.context.scene.render.bake.use_pass_direct = self.use_pass_direct

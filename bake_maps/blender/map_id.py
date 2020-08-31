@@ -1,6 +1,7 @@
 import bpy
 from .map import EZB_Map_Blender, Map_Context
 
+
 class Map_Context_ID(Map_Context):
     def __init__(self, baker, map, high, low):
         if bpy.ops.object.mode_set.poll():
@@ -8,39 +9,39 @@ class Map_Context_ID(Map_Context):
         bpy.ops.object.select_all(action='DESELECT')
 
         self.colors = [
-            (1,0,0,1),
-            (0,1,0,1),
-            (0,0,1,1),
+            (1, 0, 0, 1),
+            (0, 1, 0, 1),
+            (0, 0, 1, 1),
 
-            (1,1,0,1),
-            (0,1,1,1),
-            (1,0,1,1),
+            (1, 1, 0, 1),
+            (0, 1, 1, 1),
+            (1, 0, 1, 1),
 
-            (0.3,1,0,1),
-            (0,0.3,1,1),
-            (1,0,0.3,1),
-            (1,0.3,0,1),
-            (0,1,0.3,1),
-            (0.3,0,1,1),
+            (0.3, 1, 0, 1),
+            (0, 0.3, 1, 1),
+            (1, 0, 0.3, 1),
+            (1, 0.3, 0, 1),
+            (0, 1, 0.3, 1),
+            (0.3, 0, 1, 1),
 
-            (0.5,0.5,0,1),
-            (0,0.5,0.5,1),
-            (0.5,0,0.5,1),
+            (0.5, 0.5, 0, 1),
+            (0, 0.5, 0.5, 1),
+            (0.5, 0, 0.5, 1),
 
-            (1,0.5,0.5,1),
-            (0.5,1,0.5,1),
-            (0.5,0.5,1,1),
+            (1, 0.5, 0.5, 1),
+            (0.5, 1, 0.5, 1),
+            (0.5, 0.5, 1, 1),
 
-            (0.4,0.8,0,1),
-            (0,0.4,0.8,1),
-            (0.8,0,0.4,1),
-            (0.8,0.4,0,1),
-            (0,0.8,0.4,1),
-            (0.4,0,0.8,1),
+            (0.4, 0.8, 0, 1),
+            (0, 0.4, 0.8, 1),
+            (0.8, 0, 0.4, 1),
+            (0.8, 0.4, 0, 1),
+            (0, 0.8, 0.4, 1),
+            (0.4, 0, 0.8, 1),
         ]
 
         self.mat_index = 0
-        
+
         self.dup_objects = [x.copy() for x in high]
         self.dup_meshes = [x.data.copy() for x in self.dup_objects]
 
@@ -63,11 +64,11 @@ class Map_Context_ID(Map_Context):
         id_mat = bpy.data.materials.new('BAKETHICKNESS')
         id_mat.use_nodes = True
         color_node = id_mat.node_tree.nodes.new('ShaderNodeRGB')
-        color_node.outputs[0].default_value = self.colors[self.mat_index%len(self.colors)]
+        color_node.outputs[0].default_value = self.colors[self.mat_index % len(self.colors)]
 
         output = id_mat.node_tree.nodes['Material Output']
         id_mat.node_tree.links.new(color_node.outputs['Color'], output.inputs['Surface'])
-        self.mat_index +=1
+        self.mat_index += 1
         return id_mat
 
     def __exit__(self, type, value, traceback):

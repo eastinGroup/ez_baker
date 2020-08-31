@@ -1,6 +1,7 @@
 import bpy
 from .map import EZB_Map_Blender, Map_Context
 
+
 class Map_Context_Custom_Material(Map_Context):
 
     def create_mat(self):
@@ -22,6 +23,7 @@ class Map_Context_Custom_Material(Map_Context):
 
         bpy.data.materials.remove(self.mat, do_unlink=True)
 
+
 class Map_Context_Curvature(Map_Context_Custom_Material):
     def create_mat(self):
         curv_mat = bpy.data.materials.new('BAKECURV')
@@ -42,7 +44,7 @@ class EZB_Map_Curvature(bpy.types.PropertyGroup, EZB_Map_Blender):
     id = 'CURVATURE'
     pass_name = 'EMIT'
     label = 'Curvature'
-    icon='SPHERECURVE'
+    icon = 'SPHERECURVE'
     category = 'Mesh'
 
     suffix: bpy.props.StringProperty(default='_CURV')
@@ -52,5 +54,5 @@ class EZB_Map_Curvature(bpy.types.PropertyGroup, EZB_Map_Blender):
     context = Map_Context_Curvature
 
     def _draw_info(self, layout):
-        #TODO: add contrat prop
+        # TODO: add contrat prop
         pass

@@ -1,6 +1,7 @@
 import bpy
 from . utilities import traverse_tree
 
+
 class Scene_Visible():
     def __init__(self):
         pass
@@ -12,7 +13,6 @@ class Scene_Visible():
 
         if bpy.context.space_data.local_view:
             bpy.ops.view3d.localview()
-        
 
         # we need to traverse the tree from child to parent or else the exclude property can be missed
         layers_in_hierarchy = reversed(list(traverse_tree(bpy.context.view_layer.layer_collection, exclude_parent=True)))
@@ -39,7 +39,7 @@ class Scene_Visible():
             obj.hide_viewport = False
             obj.hide_select = False
             obj.hide_set(False)
-        
+
         bpy.ops.object.select_all(action='DESELECT')
 
     def __exit__(self, type, value, traceback):
@@ -73,11 +73,12 @@ class Scene_Visible():
             layer_collection.hide_viewport = bool(layer_collection.collection['__orig_hide_lc__'])
             layer_collection.exclude = bool(layer_collection.collection['__orig_exclude__'])
             print(layer_collection.exclude)
-            
+
             del layer_collection.collection['__orig_exclude__']
             del layer_collection.collection['__orig_hide_lc__']
-        
+
         bpy.context.view_layer.objects.active = self.active_obj
+
 
 class Custom_Render_Settings():
     def __init__(self):
@@ -103,4 +104,3 @@ class Custom_Render_Settings():
         self.restore_attributes(bpy.context.scene.render, self.render)
         self.restore_attributes(bpy.context.scene.cycles, self.cycles)
         self.restore_attributes(bpy.context.scene.render.bake, self.bake)
-

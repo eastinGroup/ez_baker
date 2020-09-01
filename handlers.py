@@ -1,9 +1,10 @@
 import bpy
+from .utilities import log
 
 
 def update_group_objects(scene):
     """Updates the low and high objects lists when the scene changes"""
-    # print('UPDATING...')
+    # log('UPDATING...')
     # bpy.app.handlers.depsgraph_update_post.remove(update_group_objects)
 
     if scene.EZB_Settings.baker_index >= 0 and scene.EZB_Settings.baker_index < len(scene.EZB_Settings.bakers) and len(scene.EZB_Settings.bakers) > 0:

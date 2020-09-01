@@ -1,5 +1,6 @@
 import bpy
 from . utilities import traverse_tree
+from . utilities import log
 
 
 class Scene_Visible():
@@ -68,11 +69,11 @@ class Scene_Visible():
 
         layers_in_hierarchy = reversed(list(traverse_tree(bpy.context.view_layer.layer_collection, exclude_parent=True)))
         for layer_collection in layers_in_hierarchy:
-            print(layer_collection)
-            print(layer_collection.collection['__orig_exclude__'])
+            log(layer_collection)
+            log(layer_collection.collection['__orig_exclude__'])
             layer_collection.hide_viewport = bool(layer_collection.collection['__orig_hide_lc__'])
             layer_collection.exclude = bool(layer_collection.collection['__orig_exclude__'])
-            print(layer_collection.exclude)
+            log(layer_collection.exclude)
 
             del layer_collection.collection['__orig_exclude__']
             del layer_collection.collection['__orig_hide_lc__']

@@ -6,6 +6,7 @@ from .base import EZB_Device
 from ..bake_maps import EZB_Maps_Handplane
 from ..bake_maps.handplane.map_normal import tangent_space_enum
 from ..settings import file_formats_enum
+from ..utilities import log
 
 maps = [
     'normal_ts',
@@ -263,18 +264,18 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
         # bake with handplane
         handplane_cmd = os.path.join(prefs.handplane_path, 'handplaneCmd.exe')
 
-        print(project_file_path)
+        log(project_file_path)
         project_file_path = project_file_path.replace('\\', '/')
-        print(project_file_path)
+        log(project_file_path)
 
         command_argument = handplane_cmd + ' "/project "' + project_file_path + '""'
-        print(command_argument)
+        log(command_argument)
         arguments = [
             handplane_cmd,
             '/project',
             project_file_path
         ]
-        print(command_argument)
+        log(command_argument)
 
         subprocess.run(command_argument)
 
@@ -289,6 +290,7 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
             pass
 
         baker.clear_outputs()
+        return True
 
     def check_for_errors(self):
         ans = super().check_for_errors()

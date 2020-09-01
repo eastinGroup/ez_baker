@@ -1,3 +1,11 @@
+import bpy
+
+
+def log(text):
+    if bpy.app.debug:
+        print(text)
+
+
 def traverse_tree(t, exclude_parent=False):
     if not exclude_parent:
         yield t

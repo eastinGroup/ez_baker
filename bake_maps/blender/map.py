@@ -1,5 +1,6 @@
 import bpy
 from ..map import EZB_Map
+from ...utilities import log
 
 
 class Map_Context():
@@ -27,17 +28,17 @@ class Map_Context():
         context['active_object'] = self.low
         all_objs = [self.low] + self.high
 
-        print('gathering objects...')
+        log('gathering objects...')
         all_obj_and_lights = all_objs[:]
         for obj in bpy.context.scene.objects:
             if obj.type == 'LIGHT' and obj.visible_get():
                 all_obj_and_lights.append(obj)
 
-        print(all_obj_and_lights)
+        log(all_obj_and_lights)
 
         for obj in all_obj_and_lights:
             self.scene.collection.objects.link(obj)
-        print('LINKED')
+        log('LINKED')
 
         context['selected_objects'] = all_objs
         context['selected_editable_objects'] = all_objs
@@ -46,7 +47,9 @@ class Map_Context():
         context['selectable_objects'] = all_obj_and_lights
         context['view_layer'] = {'objects': all_obj_and_lights}
 
+        log('Setting bake material...')
         self.baker.child_device.setup_bake_material(self.low, self.baker, self.map)
+        log('Material Set')
         cage = bpy.context.scene.objects.get(self.low.name + bpy.context.scene.EZB_Settings.suffix_cage)
         bpy.context.scene.render.bake.cage_object = cage
 

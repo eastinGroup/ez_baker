@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Baking as 16 was not working
 
+### Added
+- Experimental options for hiding artifacts due to 8 bit compression
+
 ## [0.1.6](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/0_1_6)
 ### Fixed
 - Fixed Curvature baking with handplane

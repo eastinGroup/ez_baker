@@ -11,6 +11,7 @@ from .bake_group import EZB_Bake_Group
 from .contexts import Scene_Visible, Custom_Render_Settings
 from .settings import mode_group_types, file_formats_enum
 from .outputs import EZB_Stored_Material
+from .utilities import log
 
 
 def set_path(self, value):
@@ -223,7 +224,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
 
     def bake(self):
         bake_textures.clear()
-        print('BAKING: {}'.format(self.key))
+        log('BAKING: {}'.format(self.key))
         self.child_device.bake(self)
 
     def export(self):

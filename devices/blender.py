@@ -187,8 +187,11 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
             temp_mat.node_tree.nodes.active = active_node
             mat_slot.material = temp_mat
 
-    def bake(self, baker):
-        super().bake(baker)
+    def bake(self):
+        super().bake()
+
+        baker = self.parent_baker
+
         temp_materials.clear()
 
         with Custom_Render_Settings():

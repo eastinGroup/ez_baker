@@ -37,7 +37,7 @@ class EZB_Device:
                 return x
         return None
 
-    def bake(self, baker):
+    def bake(self):
         pass
 
     def check_for_errors(self):

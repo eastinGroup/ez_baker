@@ -16,7 +16,8 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-"""Blender UI integrations for the addon updater.
+"""
+Blender UI integrations for the addon updater.
 
 Implements draw calls, popups, and operators that use the addon_updater.
 """

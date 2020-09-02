@@ -493,6 +493,60 @@ class EZB_OT_edit_bake_groups(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class EZB_OT_run_handplane_background(bpy.types.Operator):
+    """Updates UI based on handplane progress"""
+    bl_idname = "ezb.run_handplane_background"
+    bl_label = "Updates UI with handplane information"
+
+    command_argument: bpy.props.StringProperty()
+
+    _timer = None
+    th = None
+    prog = 0
+    stop_early = False
+
+    def modal(self, context, event):
+        if event.type in {'RIGHTMOUSE', 'ESC'}:
+            self.cancel(context)
+
+            self.stop_early = True
+            self.th.join()
+            print('CANCELLED')
+
+            return {'CANCELLED'}
+
+        if event.type == 'TIMER':
+            # update progress widget here
+
+            if not self.th.isAlive():
+                self.th.join()
+                print('FINISHED')
+                baker = bpy.context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
+
+                baker.child_device.bake_finished()
+                return {'FINISHED'}
+        return {'PASS_THROUGH'}
+
+    def execute(self, context):
+        import threading
+
+        def long_task(self):
+            import subprocess
+            subprocess.run(self.command_argument, stdout=subprocess.PIPE)
+
+        self.th = threading.Thread(target=long_task, args=(self,))
+        self.th.start()
+
+        wm = context.window_manager
+        self._timer = wm.event_timer_add(0.1, window=context.window)
+        wm.modal_handler_add(self)
+        return {'RUNNING_MODAL'}
+
+    def cancel(self, context):
+        wm = context.window_manager
+        wm.event_timer_remove(self._timer)
+
+
 classes = [
     EZB_OT_new_baker,
     EZB_OT_remove_baker,
@@ -509,6 +563,7 @@ classes = [
     EZB_OT_create_possible_bake_groups,
     EZB_OT_show_cage,
     EZB_OT_edit_bake_groups,
+    EZB_OT_run_handplane_background,
 ]
 
 

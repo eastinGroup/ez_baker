@@ -25,6 +25,8 @@ open_folder_icon = 'FILE_FOLDER'
 if bpy.app.version >= (2, 83, 0):
     open_folder_icon = 'FOLDER_REDIRECT'
 
+is_baking = False
+
 
 class EZB_preview_group_object(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty()

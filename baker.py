@@ -225,7 +225,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
     def bake(self):
         bake_textures.clear()
         log('BAKING: {}'.format(self.key))
-        self.child_device.bake(self)
+        self.child_device.bake()
 
     def export(self):
         textures = []

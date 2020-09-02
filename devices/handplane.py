@@ -116,15 +116,12 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
         row = col.row(align=True)
         row.prop(self, 'use_dither', text='Use Dither', expand=True)
 
-    def bake(self, baker):
-        super().bake(baker)
-
+    def write_handplane_file(self, baker):
         device = baker.child_device
-        scene = bpy.context.scene
-        prefs = bpy.context.preferences.addons[__package__.split('.')[0]].preferences
 
         file_name = baker.key
         export_folder = baker.get_abs_export_path()
+
         root_folder = os.path.join(baker.get_abs_export_path(), file_name)
         os.makedirs(root_folder, exist_ok=True)
 
@@ -139,9 +136,6 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
         bit_depth = int(baker.color_depth)
         if texture_format == 'tga':
             bit_depth = '8'
-
-        textures_path = export_folder
-        #os.makedirs(textures_path, exist_ok=True)
 
         # Write data out (2 integers)
         with open(project_file_path, "w") as file:
@@ -231,7 +225,7 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
                                 custom_write(file, '0xFF000000,', 4)
                                 custom_write(file, '0xFF000000,', 4)
                 # OUTPUT SETTINGS
-                write_value(file, 'Filename', 'outputFolder', textures_path, 0)
+                write_value(file, 'Filename', 'outputFolder', export_folder, 0)
                 write_value(file, 'String', 'outputFilename', file_name, 0)
                 write_value(file, 'String', 'outputExtension', texture_format, 0)
                 write_value(file, 'ImageBitDepth', 'outputBitDepth', bit_depth, 0)
@@ -260,37 +254,41 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
 
                 tangent_space = next(x[1] for x in tangent_space_enum if x[0] == device.maps.NORMAL.tangent_space)
                 write_value(file, 'String', 'tangentSpace', tangent_space, 0)
+        return project_file_path
+
+    def bake(self):
+        super().bake()
+
+        baker = self.parent_baker
+
+        prefs = bpy.context.preferences.addons[__package__.split('.')[0]].preferences
+
+        project_file_path = self.write_handplane_file(baker)
 
         # bake with handplane
         handplane_cmd = os.path.join(prefs.handplane_path, 'handplaneCmd.exe')
-
-        log(project_file_path)
         project_file_path = project_file_path.replace('\\', '/')
-        log(project_file_path)
-
         command_argument = handplane_cmd + ' "/project "' + project_file_path + '""'
-        log(command_argument)
-        arguments = [
-            handplane_cmd,
-            '/project',
-            project_file_path
-        ]
-        log(command_argument)
 
-        subprocess.run(command_argument)
+        if False:
+            subprocess.run(command_argument)
+            self.bake_finished()
+        else:
+            bpy.ops.ezb.run_handplane_background(command_argument=command_argument)
 
+    def bake_finished(self):
+        baker = self.parent_baker
+        export_folder = baker.get_abs_export_path()
         # open explorer at baked textures
         for map in self.get_bakeable_maps():
-            img_path = os.path.join(textures_path, baker.key + map.suffix + file_formats_enum[baker.image_format])
+            img_path = os.path.join(export_folder, baker.key + map.suffix + file_formats_enum[baker.image_format])
             img = baker.get_image(map, baker.key)
             img.image.source = 'FILE'
             img.image.filepath = img_path
             img.image.reload()
-
             pass
 
         baker.clear_outputs()
-        return True
 
     def check_for_errors(self):
         ans = super().check_for_errors()

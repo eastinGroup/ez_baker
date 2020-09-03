@@ -329,7 +329,7 @@ class EZB_PT_maps_panel(bpy.types.Panel):
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
         col = layout.column(align=True)
         col.operator_menu_enum('ezb.add_map', 'map', text='Add Map', icon='ADD')
-        bake_maps.draw(col, context, baker)
+        baker.draw_maps(col, context)
 
 
 class EZB_PT_output_panel(bpy.types.Panel):

@@ -1,6 +1,5 @@
 import bpy
 from .utilities import traverse_tree
-from . import bake_maps
 from . import bake_group
 
 

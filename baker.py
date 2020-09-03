@@ -250,6 +250,19 @@ class EZB_Baker(bpy.types.PropertyGroup):
 
                 x.save_render(path_full, scene=bpy.context.scene)
 
+    def draw_maps(self, layout, context):
+        col = layout.column()
+
+        maps_to_draw = []
+        for x in self.child_device.maps.maps:
+            map = getattr(self.child_device.maps, x.id)
+            if map.active:
+                maps_to_draw.append(map)
+        #maps_to_draw = sorted(maps_to_draw)
+        for x in maps_to_draw:
+            box = col.box()
+            x.draw(box)
+
 
 classes = [
     EZB_Baker

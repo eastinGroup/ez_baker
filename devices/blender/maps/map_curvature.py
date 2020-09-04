@@ -7,8 +7,8 @@ class Map_Context_Custom_Material(Map_Context):
     def create_mat(self):
         pass
 
-    def __init__(self, baker, map, high, low):
-        super().__init__(baker, map, high, low)
+    def __init__(self, map, high, low):
+        super().__init__(map, high, low)
 
         self.mat = self.create_mat()
 

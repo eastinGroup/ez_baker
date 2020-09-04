@@ -16,10 +16,9 @@ from . import outputs
 from . import baker
 from . import bake_group
 from . import operators
-from . import bake_maps
 from . import devices
 from . import handlers
-from . import addon_updater_ops
+from .addon_updater import ops
 
 open_folder_icon = 'FILE_FOLDER'
 if bpy.app.version >= (2, 83, 0):
@@ -140,8 +139,8 @@ class EZB_PT_baker_panel(bpy.types.Panel):
     bl_category = "EZ Baker"
 
     def draw(self, context):
-        addon_updater_ops.check_for_update_background()
-        addon_updater_ops.update_notice_box_ui(self, context)
+        ops.check_for_update_background()
+        ops.update_notice_box_ui(self, context)
 
         layout = self.layout
 
@@ -377,7 +376,6 @@ classes = [
 def register():
     outputs.register()
     operators.register()
-    bake_maps.register()
     devices.register()
     bake_group.register()
     baker.register()
@@ -406,5 +404,4 @@ def unregister():
     bake_group.unregister()
     operators.unregister()
     devices.unregister()
-    bake_maps.unregister()
     outputs.unregister()

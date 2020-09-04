@@ -50,10 +50,10 @@ import addon_utils
 DEFAULT_TIMEOUT = 10
 DEFAULT_PER_PAGE = 30
 
-
 # -----------------------------------------------------------------------------
 # The main class
 # -----------------------------------------------------------------------------
+
 
 class Singleton_updater(object):
     """
@@ -83,7 +83,7 @@ class Singleton_updater(object):
 
         # by default, backup current addon if new is being loaded
         self._backup_current = True
-        self._backup_ignore_patterns = None
+        self._backup_ignore_patterns = ['.git']
 
         # set patterns for what files to overwrite on update
         self._overwrite_patterns = ["*.py", "*.pyc"]
@@ -113,11 +113,10 @@ class Singleton_updater(object):
         self.skip_tag = None
 
         # get from module data
-        self._addon = __package__.lower()
-        self._addon_package = __package__  # must not change
-        self._updater_path = os.path.join(os.path.dirname(__file__),
-                                          self._addon + "_updater")
-        self._addon_root = os.path.dirname(__file__)
+        self._addon = __package__.split('.')[0].lower()
+        self._addon_package = __package__.split('.')[0]  # must not change
+        self._updater_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), self._addon + "_updater")
+        self._addon_root = os.path.dirname(os.path.dirname(__file__))
         self._json = {}
         self._error = None
         self._error_msg = None
@@ -794,9 +793,7 @@ class Singleton_updater(object):
         if self._verbose:
             print("Backing up current addon folder")
         local = os.path.join(self._updater_path, "backup")
-        tempdest = os.path.join(self._addon_root,
-                                os.pardir,
-                                self._addon + "_updater_backup_temp")
+        tempdest = os.path.join(self._addon_root, os.pardir, self._addon + "_updater_backup_temp")
 
         if self._verbose:
             print("Backup destination path: ", local)
@@ -817,17 +814,14 @@ class Singleton_updater(object):
                     print("Failed to remove existing temp folder, contininuing")
         # make the full addon copy, which temporarily places outside the addon folder
         if self._backup_ignore_patterns != None:
-            shutil.copytree(
-                self._addon_root, tempdest,
-                ignore=shutil.ignore_patterns(*self._backup_ignore_patterns))
+            shutil.copytree(self._addon_root, tempdest, ignore=shutil.ignore_patterns(*self._backup_ignore_patterns))
         else:
             shutil.copytree(self._addon_root, tempdest)
         shutil.move(tempdest, local)
 
         # save the date for future ref
         now = datetime.now()
-        self._json["backup_date"] = "{m}-{d}-{yr}".format(
-            m=now.strftime("%B"), d=now.day, yr=now.year)
+        self._json["backup_date"] = "{m}-{d}-{yr}".format(m=now.strftime("%B"), d=now.day, yr=now.year)
         self.save_updater_json()
 
     def restore_backup(self):
@@ -837,9 +831,7 @@ class Singleton_updater(object):
         if self._verbose:
             print("Backing up current addon folder")
         backuploc = os.path.join(self._updater_path, "backup")
-        tempdest = os.path.join(self._addon_root,
-                                os.pardir,
-                                self._addon + "_updater_backup_temp")
+        tempdest = os.path.join(self._addon_root, os.pardir, self._addon + "_updater_backup_temp")
         tempdest = os.path.abspath(tempdest)
 
         # make the copy

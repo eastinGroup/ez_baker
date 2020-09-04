@@ -8,8 +8,8 @@ class Map_Context_Alpha(Map_Context_Property_Switcher):
     to_socket = 'Emission'
     set_value = 1
 
-    def __init__(self, baker, map, high, low):
-        super().__init__(baker, map, high, low)
+    def __init__(self, map, high, low):
+        super().__init__(map, high, low)
 
         self.scene.render.bake.margin = 0
 

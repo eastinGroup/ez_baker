@@ -32,10 +32,9 @@ class EZB_Device:
 
     @property
     def parent_baker(self):
-        for x in bpy.context.scene.EZB_Settings.bakers:
-            if x.child_device == self:
-                return x
-        return None
+        path = self.path_from_id()
+        parent_path = path.rsplit('.', 2)[0]
+        return self.id_data.path_resolve(parent_path)
 
     def bake(self):
         pass

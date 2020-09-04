@@ -1,11 +1,11 @@
 import bpy
-from ..map import EZB_Map
-from ...utilities import log
+from ...map import EZB_Map
+from ....utilities import log
 
 
 class Map_Context():
-    def __init__(self, baker, map, high, low):
-        self.baker = baker
+    def __init__(self, map, high, low):
+        self.baker = map.parent_baker
         self.map = map
         self.high = high
         self.low = low
@@ -67,6 +67,11 @@ class Map_Context():
         bpy.data.scenes.remove(self.scene)
 
 
+class EZB_Created_Image(bpy.types.PropertyGroup):
+    material: bpy.props.PointerProperty(type=bpy.types.Material)
+    image: bpy.props.PointerProperty(type=bpy.types.Image)
+
+
 class EZB_Map_Blender(EZB_Map):
     pass_name = 'TEST'
 
@@ -74,9 +79,31 @@ class EZB_Map_Blender(EZB_Map):
 
     context = Map_Context
 
+    created_images: bpy.props.CollectionProperty(type=EZB_Created_Image)
+
     def setup_settings(self):
         bake_options = bpy.context.scene.render.bake
         bpy.context.scene.cycles.bake_type = self.pass_name
         bpy.context.scene.cycles.samples = self.samples
+
+    def do_bake(self):
+        self.parent_device.setup_settings()
+        self.setup_settings()
+
+        for group in self.parent_baker.bake_groups:
+            group.setup_settings()
+
+            high = group.objects_high
+            low = group.objects_low
+
+            for x in low:
+                self.bake_start(high, x)
+
+    def bake_start(self, high, low):
+        with self.context(self, high, low) as tup:
+            map_id, selection_context = tup
+            log('{} :: {} ...'.format(low.name, self.id))
+            bpy.ops.object.bake(selection_context, type=map_id)
+            log('FINISHED BAKE')
 
         # each map should override this with more settings to setup

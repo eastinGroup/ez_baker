@@ -1,10 +1,10 @@
 import bpy
 from .map import EZB_Map_Blender, Map_Context
-from ...utilities import log
+from ....utilities import log
 
 
 class Map_Context_ID(Map_Context):
-    def __init__(self, baker, map, high, low):
+    def __init__(self, map, high, low):
         if bpy.ops.object.mode_set.poll():
             bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         bpy.ops.object.select_all(action='DESELECT')
@@ -55,10 +55,7 @@ class Map_Context_ID(Map_Context):
                     self.materials[mat_slot.material] = self.create_mat()
                 mat_slot.material = self.materials[mat_slot.material]
 
-        for i, mesh in enumerate(self.dup_meshes):
-            bpy.context.scene.collection.objects.link(self.dup_objects[i])
-
-        super().__init__(baker, map, self.dup_objects, low)
+        super().__init__(map, self.dup_objects, low)
 
     def create_mat(self):
         log('newmat')

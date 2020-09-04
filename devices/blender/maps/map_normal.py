@@ -3,8 +3,8 @@ from .map import EZB_Map_Blender, Map_Context
 
 
 class Map_Context_Normal(Map_Context):
-    def __init__(self, baker, map, high, low):
-        super().__init__(baker, map, high, low)
+    def __init__(self, map, high, low):
+        super().__init__(map, high, low)
 
     def __enter__(self):
         if self.map.triangulate_low:

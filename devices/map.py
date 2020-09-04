@@ -1,10 +1,12 @@
 import bpy
+
+
 class EZB_Map:
     id = 'DEFAULT'
     label = 'Default'
     category = 'Surface'
 
-    icon='TEXTURE'
+    icon = 'TEXTURE'
     active: bpy.props.BoolProperty(default=False)
     bake: bpy.props.BoolProperty(default=True)
     show_info: bpy.props.BoolProperty(default=False)
@@ -13,6 +15,18 @@ class EZB_Map:
     color_space = 'sRGB'
 
     suffix: bpy.props.StringProperty(default='_TEST')
+
+    @property
+    def parent_device(self):
+        path = self.path_from_id()
+        parent_path = path.rsplit('.', 2)[0]
+        return self.id_data.path_resolve(parent_path)
+
+    @property
+    def parent_baker(self):
+        path = self.path_from_id()
+        parent_path = path.rsplit('.', 4)[0]
+        return self.id_data.path_resolve(parent_path)
 
     # "less than", for ordering lists of this class
     def __lt__(self, other):
@@ -24,20 +38,20 @@ class EZB_Map:
     def draw_prop_with_warning(self, layout, obj, prop_name, max_limit):
         row = layout.row()
         if getattr(obj, prop_name) >= max_limit:
-            row.alert=True
-            
+            row.alert = True
+
         row.prop(obj, prop_name, toggle=True)
         if row.alert:
-            row.label(text='', icon= 'ERROR')
+            row.label(text='', icon='ERROR')
 
     def draw(self, layout):
         row = layout.row(align=True)
         split = row.split(factor=0.5, align=True)
         row1 = split.row(align=True)
-        row1.enabled=self.bake
-        row1.alignment='LEFT'
+        row1.enabled = self.bake
+        row1.alignment = 'LEFT'
         #row.alignment = 'LEFT'
-        
+
         row1.prop(
             self,
             'show_info',
@@ -58,7 +72,7 @@ class EZB_Map:
         )
 
         row2 = split.row(align=True)
-        
+
         row2.alignment = 'RIGHT'
         row3 = row2.row(align=True)
         row3.enabled = self.bake

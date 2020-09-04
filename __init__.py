@@ -1,9 +1,4 @@
-import bpy
-import bpy.utils.previews
-import os
-from . import addon_updater_ops
-from .addon_updater import Updater as updater
-
+from .settings import mode_group_types
 from bpy.props import (
     StringProperty,
     BoolProperty,
@@ -14,14 +9,19 @@ from bpy.props import (
     PointerProperty,
 )
 
-from .settings import mode_group_types
+import bpy
+import bpy.utils.previews
+import os
+from .addon_updater import ops
+from .addon_updater.core import Updater as updater
+
 
 bl_info = {
     "name": "EZ Baker",
     "description": "Bake textures by grouping objects",
     "author": "AquaticNightmare",
     "blender": (2, 83, 0),
-    "version": (0, 1, 7),
+    "version": (0, 2, 0),
     "category": "3D View",
     "location": "3D View > Tools Panel > EZ Baker",
     "warning": "",
@@ -80,13 +80,13 @@ class EZB_preferences(bpy.types.AddonPreferences):
     def draw(self, context):
         layout = self.layout
         layout.prop(self, 'handplane_path')
-        addon_updater_ops.update_settings_ui(self, context)
+        ops.update_settings_ui(self, context)
 
 
 def register():
     from bpy.utils import register_class
 
-    addon_updater_ops.register(bl_info)
+    ops.register(bl_info)
 
     register_class(EZB_preferences)
 
@@ -105,4 +105,4 @@ def unregister():
 
     unregister_class(EZB_preferences)
 
-    addon_updater_ops.unregister()
+    ops.unregister()

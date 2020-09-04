@@ -8,10 +8,12 @@ from . import handlers
 from . import devices
 
 from .bake_group import EZB_Bake_Group
-from .contexts import Scene_Visible, Custom_Render_Settings
+from .contexts import Custom_Render_Settings
 from .settings import mode_group_types, file_formats_enum
 from .outputs import EZB_Stored_Material
 from .utilities import log
+
+print('baker')
 
 
 def set_path(self, value):

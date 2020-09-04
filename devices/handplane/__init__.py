@@ -2,13 +2,13 @@ import os
 import subprocess
 import bpy
 
-from .base import EZB_Device
-from ..bake_maps import EZB_Maps_Handplane
-from ..bake_maps.handplane.map_normal import tangent_space_enum
-from ..settings import file_formats_enum
-from ..utilities import log
+from ..device import EZB_Device
+from ...settings import file_formats_enum
+from ...utilities import log
+from . import maps
+from .maps.map_normal import tangent_space_enum
 
-maps = [
+map_names = [
     'normal_ts',
     'normal_os',
     'ao',
@@ -23,6 +23,59 @@ maps = [
     'tsao',
     'thickness'
 ]
+
+
+class EZB_OT_run_handplane_background(bpy.types.Operator):
+    """Updates UI based on handplane progress"""
+    bl_idname = "ezb.run_handplane_background"
+    bl_label = "Updates UI with handplane information"
+
+    command_argument: bpy.props.StringProperty()
+
+    _timer = None
+    th = None
+    prog = 0
+    stop_early = False
+
+    def modal(self, context, event):
+        if event.type in {'RIGHTMOUSE', 'ESC'}:
+            self.cancel(context)
+
+            self.stop_early = True
+            self.th.join()
+            print('MODAL CANCELLED')
+            return {'CANCELLED'}
+
+        if event.type == 'TIMER':
+            # update progress widget here
+
+            if not self.th.isAlive():
+                self.th.join()
+                print('MODAL FINISHED')
+                baker = bpy.context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
+
+                baker.child_device.bake_finished()
+                return {'FINISHED'}
+        return {'PASS_THROUGH'}
+
+    def execute(self, context):
+        import threading
+
+        def long_task(self):
+            import subprocess
+            subprocess.run(self.command_argument, stdout=subprocess.PIPE)
+
+        self.th = threading.Thread(target=long_task, args=(self,))
+        self.th.start()
+
+        wm = context.window_manager
+        self._timer = wm.event_timer_add(0.1, window=context.window)
+        wm.modal_handler_add(self)
+        return {'RUNNING_MODAL'}
+
+    def cancel(self, context):
+        wm = context.window_manager
+        wm.event_timer_remove(self._timer)
 
 
 def custom_write(file, line, tabs=0, end_line=True):
@@ -108,7 +161,7 @@ def export_obj(meshes_folder, obj, name, t_space, modifiers):
 
 class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
     name = "handplane"
-    maps: bpy.props.PointerProperty(type=EZB_Maps_Handplane)
+    maps: bpy.props.PointerProperty(type=maps.EZB_Maps_Handplane)
     use_dither: bpy.props.BoolProperty(default=True)
 
     def draw(self, layout, context):
@@ -239,7 +292,7 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
                 # IMAGE OUTPUTS
                 custom_write(file, 'ImageOutput outputs', 1)
                 with Write_Wrapper(file, '[', ']', 1, True):
-                    for map_name in maps:
+                    for map_name in map_names:
                         with Write_Wrapper(file, '{', '}', 2, True):
                             enabled = True
                             suffix = '_'
@@ -306,3 +359,24 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
             return 'Handplane path in the addon preferences is incorrect'
 
         return None
+
+
+classes = [EZB_OT_run_handplane_background, EZB_Device_Handplane]
+
+
+def register():
+    from bpy.utils import register_class
+
+    maps.register()
+
+    for cls in classes:
+        register_class(cls)
+
+
+def unregister():
+    from bpy.utils import unregister_class
+
+    maps.unregister()
+
+    for cls in reversed(classes):
+        unregister_class(cls)

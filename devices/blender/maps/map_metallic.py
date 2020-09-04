@@ -32,8 +32,10 @@ class Map_Context_Property_Switcher(Map_Context):
         self.materials[material] = new_material
         return new_material
 
-    def __init__(self, baker, map, high, low):
-        super().__init__(baker, map, high, low)
+    def __init__(self, map, high, low):
+        super().__init__(map, high, low)
+
+        baker = map.parent_baker
 
         self.materials = dict()
         if baker.use_low_to_low:

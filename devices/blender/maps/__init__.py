@@ -2,7 +2,7 @@ import bpy
 import os
 import importlib
 
-from .map import EZB_Map
+from .map import EZB_Map, EZB_Created_Image
 
 
 tree = [x[:-3] for x in os.listdir(os.path.dirname(__file__)) if x.endswith('.py') and x != '__init__.py']
@@ -24,7 +24,7 @@ for x in maps:
 
 EZB_Maps_Blender = type("EZB_maps_blender", (bpy.types.PropertyGroup,), {'maps': maps, '__annotations__': map_annotations})
 
-classes = maps + [EZB_Maps_Blender]
+classes = [EZB_Created_Image] + maps + [EZB_Maps_Blender]
 
 
 def register():

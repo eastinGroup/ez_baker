@@ -2,12 +2,14 @@ import bpy
 import pathlib
 import os
 import math
-from .base import EZB_Device
-from ..bake_maps import EZB_Maps_Blender
-from ..contexts import Scene_Visible, Custom_Render_Settings
-from ..settings import file_formats_enum
 import random
-from ..utilities import log
+
+from ..device import EZB_Device
+from ...contexts import Custom_Render_Settings
+from ...settings import file_formats_enum
+from ...utilities import log
+
+from . import maps
 
 temp_materials = {}
 
@@ -85,7 +87,7 @@ class Dither:
 
 class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
     name = "blender"
-    maps: bpy.props.PointerProperty(type=EZB_Maps_Blender)
+    maps: bpy.props.PointerProperty(type=maps.EZB_Maps_Blender)
 
     tile_size: bpy.props.EnumProperty(
         items=[
@@ -126,7 +128,9 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
 
     # TODO: remove baker from all the function properties, get it with parent_baker property
 
-    def setup_settings(self, baker):
+    def setup_settings(self):
+        baker = self.parent_baker
+
         bake_options = bpy.context.scene.render.bake
         bpy.context.scene.render.engine = 'CYCLES'
         bpy.context.scene.cycles.device = self.device
@@ -144,13 +148,23 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
 
         supersampling = baker.get_supersampling
 
-        bpy.context.scene.render.tile_x = int(
-            baker.width * tile_size_relative * supersampling)
-        bpy.context.scene.render.tile_y = int(
-            baker.height * tile_size_relative * supersampling)
+        bpy.context.scene.render.tile_x = int(baker.width * tile_size_relative * supersampling)
+        bpy.context.scene.render.tile_y = int(baker.height * tile_size_relative * supersampling)
 
         bake_options.margin = baker.padding * supersampling
         bake_options.use_clear = False
+
+        file_format = 'PNG'
+        if baker.image_format == 'TGA':
+            file_format = 'TARGA'
+        elif baker.image_format == 'TIF':
+            file_format = 'TIFF'
+
+        bpy.context.scene.render.image_settings.file_format = file_format
+        bpy.context.scene.render.image_settings.color_mode = baker.color_mode
+        bpy.context.scene.render.image_settings.color_depth = baker.color_depth
+        bpy.context.scene.render.image_settings.compression = 0
+        bpy.context.scene.render.image_settings.tiff_codec = 'DEFLATE'
 
     def clear_temp_materials(self):
         for orig_mat, temp_mat in temp_materials.items():
@@ -196,22 +210,7 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
 
         with Custom_Render_Settings():
             for map in self.get_bakeable_maps():
-                log('SETUP: {}'.format(map.id))
-                self.setup_settings(baker)
-                map.setup_settings()
-                log('Baker Setup Correctly')
-                for group in baker.bake_groups:
-                    group.setup_settings()
-                    high = group.objects_high
-                    low = group.objects_low
-                    for x in low:
-                        log('Setting map context...')
-                        with map.context(baker, map, high, x) as tup:
-                            log('Context set')
-                            map_id, selection_context = tup
-                            log('{} :: {} ...'.format(x.name, map.id))
-                            bpy.ops.object.bake(selection_context, type=map_id)
-                            log('FINISHED BAKE')
+                map.do_bake()
 
             self.clear_temp_materials()
             baker.clear_outputs()
@@ -223,12 +222,6 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
                 file_format = 'TARGA'
             elif baker.image_format == 'TIF':
                 file_format = 'TIFF'
-
-            bpy.context.scene.render.image_settings.file_format = file_format
-            bpy.context.scene.render.image_settings.color_mode = baker.color_mode
-            bpy.context.scene.render.image_settings.color_depth = baker.color_depth
-            bpy.context.scene.render.image_settings.compression = 0
-            bpy.context.scene.render.image_settings.tiff_codec = 'DEFLATE'
 
             for mat in baker.materials:
                 for img in mat.images:
@@ -288,3 +281,24 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
                         return False
 
         return True
+
+
+classes = [EZB_Device_Blender]
+
+
+def register():
+    from bpy.utils import register_class
+
+    maps.register()
+
+    for cls in classes:
+        register_class(cls)
+
+
+def unregister():
+    from bpy.utils import unregister_class
+
+    maps.unregister()
+
+    for cls in reversed(classes):
+        unregister_class(cls)

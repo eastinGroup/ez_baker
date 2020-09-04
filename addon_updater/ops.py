@@ -30,7 +30,7 @@ from bpy.app.handlers import persistent
 # updater import, import safely
 # Prevents popups for users with invalid python installs e.g. missing libraries
 try:
-    from .addon_updater import Updater as updater
+    from .core import Updater as updater
 except Exception as e:
     print("ERROR INITIALIZING UPDATER")
     print(str(e))
@@ -97,9 +97,9 @@ def get_user_preferences(context=None):
         context = bpy.context
     prefs = None
     if hasattr(context, "user_preferences"):
-        prefs = context.user_preferences.addons.get(__package__, None)
+        prefs = context.user_preferences.addons.get(__package__.split('.')[0], None)
     elif hasattr(context, "preferences"):
-        prefs = context.preferences.addons.get(__package__, None)
+        prefs = context.preferences.addons.get(__package__.split('.')[0], None)
     if prefs:
         return prefs.preferences
     # To make the addon stable and non-exception prone, return None
@@ -238,7 +238,7 @@ class addon_updater_check_now(bpy.types.Operator):
         if not settings:
             if updater.verbose:
                 print("Could not get {} preferences, update check skipped".format(
-                    __package__))
+                    __package__.split('.')[0]))
             return {'CANCELLED'}
         updater.set_check_interval(enable=settings.auto_check_update,
                                    months=settings.updater_intrval_months,
@@ -806,7 +806,7 @@ def check_for_update_nonthreaded(self, context):
     if not settings:
         if updater.verbose:
             print("Could not get {} preferences, update check skipped".format(
-                __package__))
+                __package__.split('.')[0]))
         return
     updater.set_check_interval(enable=settings.auto_check_update,
                                months=settings.updater_intrval_months,
@@ -1380,7 +1380,7 @@ def register(bl_info):
     updater.backup_current = True  # True by default
 
     # Sample ignore patterns for when creating backup of current during update
-    updater.backup_ignore_patterns = ["__pycache__"]
+    updater.backup_ignore_patterns = ["__pycache__", ".git"]
     # Alternate example patterns
     # updater.backup_ignore_patterns = [".git", "__pycache__", "*.bat", ".gitignore", "*.exe"]
 

@@ -323,7 +323,7 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
         project_file_path = project_file_path.replace('\\', '/')
         command_argument = handplane_cmd + ' "/project "' + project_file_path + '""'
 
-        if False:
+        if not self.parent_baker.run_in_background:
             subprocess.run(command_argument)
             self.bake_finished()
         else:

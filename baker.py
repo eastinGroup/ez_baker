@@ -96,6 +96,8 @@ class EZB_Baker(bpy.types.PropertyGroup):
         name='Depth'
     )
 
+    run_in_background: bpy.props.BoolProperty(default=True, name='Run in background')
+
     materials: bpy.props.CollectionProperty(type=EZB_Stored_Material)
 
     use_low_to_low: bpy.props.BoolProperty(default=False, name='Use Low as High', description='Uses the object with all modifiers applied as the "high" and the same object without modifiers as the "low"')

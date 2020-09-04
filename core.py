@@ -228,6 +228,8 @@ class EZB_PT_baker_settings_panel(bpy.types.Panel):
         row = col.row(align=True)
         row.prop(baker, 'padding', text='Padding', expand=True)
         row = col.row(align=True)
+        row.prop(baker, 'run_in_background')
+        row = col.row(align=True)
         row.prop(baker, 'use_low_to_low', text='High to Low', expand=True, toggle=True, invert_checkbox=True)
         row.prop(baker, 'use_low_to_low', text='Low to Low', expand=True, toggle=True)
 

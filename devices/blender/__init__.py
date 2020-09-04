@@ -12,6 +12,70 @@ from ...utilities import log
 from . import maps
 
 
+class EZB_OT_run_blender_background(bpy.types.Operator):
+    """Updates UI based on blender progress"""
+    bl_idname = "ezb.run_blender_background"
+    bl_label = "Updates UI with blender background information"
+
+    _timer = None
+    th = None
+    prog = 0
+    stop_early = False
+
+    export_path: bpy.props.StringProperty()
+
+    def modal(self, context, event):
+        if event.type in {'RIGHTMOUSE', 'ESC'}:
+            self.cancel(context)
+
+            self.stop_early = True
+            self.th.join()
+            print('MODAL CANCELLED')
+            return {'CANCELLED'}
+
+        if event.type == 'TIMER':
+            # update progress widget here
+
+            if not self.th.isAlive():
+                self.th.join()
+                print('MODAL FINISHED')
+                return {'FINISHED'}
+        return {'PASS_THROUGH'}
+
+    def execute(self, context):
+        import threading
+        blender_save_file = os.path.join(self.export_path, 'bake.blend')
+        print(blender_save_file)
+        bpy.ops.wm.save_as_mainfile(filepath=blender_save_file)
+
+        def run_blender_background(self, blender_save_file):
+            import subprocess
+
+            path = os.path.join(os.path.split(__file__)[0], 'multithread.py')
+
+            blender_args = [
+                bpy.app.binary_path,
+                "--background",
+                blender_save_file,
+                "--python",
+                path
+            ]
+
+            subprocess.run(blender_args)
+
+        self.th = threading.Thread(target=run_blender_background, args=(self, blender_save_file))
+        self.th.start()
+
+        wm = context.window_manager
+        self._timer = wm.event_timer_add(0.1, window=context.window)
+        wm.modal_handler_add(self)
+        return {'RUNNING_MODAL'}
+
+    def cancel(self, context):
+        wm = context.window_manager
+        wm.event_timer_remove(self._timer)
+
+
 class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
     name = "blender"
     maps: bpy.props.PointerProperty(type=maps.EZB_Maps_Blender)
@@ -81,15 +145,25 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         bpy.context.scene.render.image_settings.compression = 0
         bpy.context.scene.render.image_settings.tiff_codec = 'DEFLATE'
 
-    def bake(self):
+    def bake_local(self):
         super().bake()
         with Custom_Render_Settings():
             for map in self.get_bakeable_maps():
                 map.do_bake()
         return True
 
+    def bake_multithread(self):
+        bpy.ops.ezb.run_blender_background(export_path=self.parent_baker.get_abs_export_path())
+        pass
 
-classes = [EZB_Device_Blender]
+    def bake(self):
+        if self.parent_baker.run_in_background:
+            self.bake_multithread()
+        else:
+            self.bake_local()
+
+
+classes = [EZB_Device_Blender, EZB_OT_run_blender_background]
 
 
 def register():

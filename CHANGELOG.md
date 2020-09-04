@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Show image button in the outputs panel can now show the image in another window
 
 ### Changed
-- Moved 8 bit compression options to the normal map options
+- Moved 8 bit compression options from the baker to the normal map options
 
 ## [0.1.7](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/0_1_7)
 ### Fixed

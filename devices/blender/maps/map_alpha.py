@@ -10,8 +10,13 @@ class Map_Context_Alpha(Map_Context_Property_Switcher):
 
     def __init__(self, map, high, low):
         super().__init__(map, high, low)
-
+        self.orig_margin = self.scene.render.bake.margin
         self.scene.render.bake.margin = 0
+
+    def __exit__(self, type, value, traceback):
+        super().__exit__(type, value, traceback)
+
+        self.scene.render.bake.margin = self.orig_margin
 
 
 class EZB_Map_Alpha(bpy.types.PropertyGroup, EZB_Map_Blender):

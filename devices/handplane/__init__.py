@@ -341,8 +341,6 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
             img.image.reload()
             pass
 
-        baker.clear_outputs()
-
     def check_for_errors(self):
         ans = super().check_for_errors()
         if ans:

@@ -9,3 +9,5 @@ class EZB_Map_Transmission(bpy.types.PropertyGroup, EZB_Map_Blender):
     icon = 'COLOR'
     category = 'Surface'
     suffix: bpy.props.StringProperty(default='_TS')
+
+    color_space = 'Non-Color'

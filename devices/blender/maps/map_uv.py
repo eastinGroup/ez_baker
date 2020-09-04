@@ -10,3 +10,5 @@ class EZB_Map_UV(bpy.types.PropertyGroup, EZB_Map_Blender):
     category = 'Mesh'
 
     suffix: bpy.props.StringProperty(default='_UV')
+
+    color_space = 'Non-Color'

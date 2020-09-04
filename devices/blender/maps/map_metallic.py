@@ -70,3 +70,5 @@ class EZB_Map_Metallic(bpy.types.PropertyGroup, EZB_Map_Blender):
     background_color = [0.0, 0.0, 0.0, 1.0]
 
     context = Map_Context_Metallic
+
+    color_space = 'Non-Color'

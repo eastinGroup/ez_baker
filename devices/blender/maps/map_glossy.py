@@ -10,3 +10,5 @@ class EZB_Map_Glossy(bpy.types.PropertyGroup, EZB_Map_Blender):
     category = 'Surface'
 
     suffix: bpy.props.StringProperty(default='_G')
+
+    color_space = 'Non-Color'

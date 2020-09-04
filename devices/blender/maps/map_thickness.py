@@ -33,5 +33,7 @@ class EZB_Map_Thickness(bpy.types.PropertyGroup, EZB_Map_Blender):
 
     samples: bpy.props.IntProperty(name='Samples', default=6)
 
+    color_space = 'Non-Color'
+
     def _draw_info(self, layout):
         self.draw_prop_with_warning(layout, self, 'samples', 16)

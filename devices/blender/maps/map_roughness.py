@@ -9,3 +9,5 @@ class EZB_Map_Roughness(bpy.types.PropertyGroup, EZB_Map_Blender):
     icon = 'COLOR'
     category = 'Surface'
     suffix: bpy.props.StringProperty(default='_R')
+
+    color_space = 'Non-Color'

@@ -53,6 +53,8 @@ class EZB_Map_Curvature(bpy.types.PropertyGroup, EZB_Map_Blender):
 
     context = Map_Context_Curvature
 
+    color_space = 'Non-Color'
+
     def _draw_info(self, layout):
         # TODO: add contrat prop
         pass

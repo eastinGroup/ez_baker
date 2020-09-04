@@ -4,10 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/0_1_7)
+## [0.2.0](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/0_2_0)
 ### Added
 - Handplane now bakes in another thread, making blender responsive in the meantime
 - Show image button in the outputs panel can now show the image in another window
+
+### Changed
+- Moved 8 bit compression options to the normal map options
 
 ## [0.1.7](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/0_1_7)
 ### Fixed

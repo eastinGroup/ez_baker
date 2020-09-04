@@ -151,24 +151,6 @@ class EZB_Baker(bpy.types.PropertyGroup):
             return found_image
         return found_image
 
-    def clear_outputs(self):
-        # clear unnecessary maps
-        for i in reversed(range(0, len(self.materials))):
-            mat = self.materials[i]
-            del_mat = True
-            for j in reversed(range(0, len(mat.images))):
-                img = mat.images[j]
-                if hasattr(self.child_device.maps, img.map_name):
-                    map = getattr(self.child_device.maps, img.map_name)
-                    if img.image in bake_textures or (map.active and not map.bake):
-                        del_mat = False
-                    else:
-                        mat.images.remove(j)
-                else:
-                    mat.images.remove(j)
-            if del_mat:
-                self.materials.remove(i)
-
     def get_troublesome_objects(self):
         ans = set()
         for group in self.bake_groups:
@@ -226,31 +208,10 @@ class EZB_Baker(bpy.types.PropertyGroup):
 
     def bake(self):
         bake_textures.clear()
+        self.materials.clear()
+
         log('BAKING: {}'.format(self.key))
         self.child_device.bake()
-
-    def export(self):
-        textures = []
-        for x in self.materials:
-            for y in x.images:
-                if y.image:
-                    textures.append(y.image)
-
-        with Custom_Render_Settings():
-            bpy.context.scene.view_settings.view_transform = 'Standard'
-
-            bpy.context.scene.render.image_settings.file_format = self.image_format
-            bpy.context.scene.render.image_settings.color_mode = self.color_mode
-            bpy.context.scene.render.image_settings.color_depth = self.color_depth
-            bpy.context.scene.render.image_settings.compression = 0
-            bpy.context.scene.render.image_settings.tiff_codec = 'DEFLATE'
-
-            for x in textures:
-                path_full = os.path.join(bpy.path.abspath(self.path), x.name) + file_formats_enum[self.image_format]
-                directory = os.path.dirname(path_full)
-                pathlib.Path(directory).mkdir(parents=True, exist_ok=True)
-
-                x.save_render(path_full, scene=bpy.context.scene)
 
     def draw_maps(self, layout, context):
         col = layout.column()

@@ -1,5 +1,5 @@
 import bpy
-from .map import EZB_Map_Blender, Map_Context
+from .map import EZB_Map_Blender, Map_Context, postprocess_enum
 
 
 class Map_Context_Normal(Map_Context):
@@ -75,17 +75,22 @@ class EZB_Map_Normal(bpy.types.PropertyGroup, EZB_Map_Blender):
         bpy.context.scene.render.bake.normal_b = self.normal_b
 
     def _draw_info(self, layout):
+        if self.parent_baker.color_depth == '8':
+            layout.prop(self, 'postprocess', text='Postprocess')
+        layout.separator(factor=0.5)
         layout.prop(self, "normal_space", text="Space")
 
         sub = layout.column(align=True)
         sub.prop(self, "normal_r", text="R")
         sub.prop(self, "normal_g", text="G")
         sub.prop(self, "normal_b", text="B")
+        layout.separator(factor=0.5)
         layout.prop(self, "samples", text="Samples")
-
-        layout.prop(self, 'triangulate_low', text='Triangulate')
+        layout.separator(factor=0.5)
+        layout.prop(self, 'triangulate_low', text='Triangulate Low')
         if self.triangulate_low:
-            row = layout.row(align=True)
+            box = layout.box()
+            row = box.row(align=True)
             row.separator(factor=8)
             sub = row.column(align=True)
             sub.prop(self, 'quad_method', text='Quad Method')

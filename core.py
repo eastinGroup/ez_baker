@@ -161,7 +161,6 @@ class EZB_PT_baker_panel(bpy.types.Panel):
         row.scale_y = 1.5
 
         bake_op = row.operator('ezb.bake', text='Bake', icon='IMPORT')
-        #split.operator('ezb.export', text = 'Export', icon='EXPORT')
 
         path = ''
         row = row.row(align=True)

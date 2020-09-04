@@ -342,55 +342,6 @@ class EZB_OT_show_cage(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class EZB_OT_export(bpy.types.Operator):
-    """Export"""
-    bl_idname = "ezb.export"
-    bl_label = "Export"
-
-    @classmethod
-    def description(cls, context, properties):
-        if not (bpy.context.scene.EZB_Settings.baker_index >= 0 and len(bpy.context.scene.EZB_Settings.bakers) > bpy.context.scene.EZB_Settings.baker_index):
-            return 'No baker selected'
-        baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
-        if not baker.path:
-            return 'Export Path not set'
-        images_correct = False
-        for x in baker.materials:
-            for y in x.images:
-                if y.image:
-                    images_correct = True
-                    break
-            if images_correct:
-                break
-        if not images_correct:
-            return 'There are no images to export, make sure you bake the textures before exporting'
-        return 'Export'
-
-    @classmethod
-    def poll(cls, context):
-        if not (bpy.context.scene.EZB_Settings.baker_index >= 0 and len(bpy.context.scene.EZB_Settings.bakers) > bpy.context.scene.EZB_Settings.baker_index):
-            return False
-        baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
-        if not baker.path:
-            return False
-        images_correct = False
-        for x in baker.materials:
-            for y in x.images:
-                if y.image:
-                    images_correct = True
-                    break
-            if images_correct:
-                break
-        if not images_correct:
-            return False
-        return True
-
-    def execute(self, context):
-        baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
-        baker.export()
-        return {'FINISHED'}
-
-
 class EZB_OT_select_texture_size(bpy.types.Operator):
     """Select Texture Size"""
     bl_idname = "ezb.select_texture_size"
@@ -503,7 +454,6 @@ classes = [
     EZB_OT_show_low_objects,
     EZB_OT_add_map,
     EZB_OT_bake,
-    EZB_OT_export,
     EZB_OT_show_image,
     EZB_OT_select_texture_size,
     EZB_OT_select_object,

@@ -160,25 +160,28 @@ class EZB_PT_baker_panel(bpy.types.Panel):
         #split=row.split(factor=0.75, align=True)
         row.scale_y = 1.5
 
-        bake_op = row.operator('ezb.bake', text='Bake', icon='IMPORT')
+        if (context.scene.EZB_Settings.baker_index < len(context.scene.EZB_Settings.bakers) and len(context.scene.EZB_Settings.bakers) > 0):
+            baker = context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
+
+        bake_button_text = 'Bake'
+        if baker.is_baking:
+            bake_button_text = f'Baking... {int(baker.current_baking_progress*100)}%'
+        bake_op = row.operator('ezb.bake', text=bake_button_text, icon='IMPORT')
 
         path = ''
         row = row.row(align=True)
         row.enabled = False
-        if (context.scene.EZB_Settings.baker_index < len(context.scene.EZB_Settings.bakers) and len(context.scene.EZB_Settings.bakers) > 0):
-            baker = context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
-            path = baker.path
+        if baker:
             row.enabled = bool(baker.path)
+            path = baker.path
 
         row.operator("wm.path_open", text="Open", icon=open_folder_icon).filepath = path
 
         if baker.is_baking:
-            layout.label(text=baker.baking_map_name)
+            layout.label(text=f'Baking: {baker.baking_map_name}...')
 
             row = layout.row()
             row.enabled = False
-
-            row.prop(baker, 'baking_map_progress', text='')
 
         if False:
             tooltip = operators.EZB_OT_bake.description(context, bake_op)

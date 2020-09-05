@@ -3,6 +3,12 @@ import pathlib
 import os
 import math
 import random
+import time
+import threading
+
+import multiprocessing
+import queue
+from multiprocessing.connection import Listener
 
 from ..device import EZB_Device
 from ...contexts import Custom_Render_Settings
@@ -10,6 +16,8 @@ from ...settings import file_formats_enum
 from ...utilities import log
 
 from . import maps
+
+connection = None
 
 
 class EZB_OT_run_blender_background(bpy.types.Operator):
@@ -37,9 +45,10 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
         return bpy.data.scenes[self.baker_scene].path_resolve(self.device_datapath)
 
     def redraw_region(self, context):
-        for region in context.area.regions:
-            if region.type == "UI":
-                region.tag_redraw()
+        if context and context.area:
+            for region in context.area.regions:
+                if region.type == "UI":
+                    region.tag_redraw()
 
     def modal(self, context, event):
         if event.type in {'RIGHTMOUSE', 'ESC'}:
@@ -54,8 +63,21 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
             return {'CANCELLED'}
 
         if event.type == 'TIMER':
+            try:
+                msg = self.messages.get_nowait()
+                msg_split = msg.split(':::')
+                if len(msg_split) == 3:
+                    self.device.texture_baked(msg_split[0], msg_split[1], msg_split[2])
+                if len(msg_split) == 2 and msg_split[0] == 'WORKING':
+                    self.baker.baking_map_name = msg_split[1]
+                    self.current_bake += 1
+                    self.baker.current_baking_progress = float(self.current_bake) / self.total_bakes
+
+                print(f'received: {msg}')
+            except queue.Empty:
+                pass
             # update progress widget here
-            if self.process.poll() != None:
+            if self.process.poll() is not None:
 
                 print('MODAL FINISHED')
                 self.device.bake_finish()
@@ -63,15 +85,20 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
                 return {'FINISHED'}
 
         self.redraw_region(context)
-        self.baker.baking_map_progress += 0.001
 
         return {'PASS_THROUGH'}
 
     def execute(self, context):
         import subprocess
 
-        blender_save_file = os.path.join(self.baker.get_abs_export_path(), 'bake.blend')
+        self.total_bakes = len(list(self.device.get_active_maps()))
+        self.current_bake = -1
+
+        orig_export_path = self.baker.path
+        blender_save_file = os.path.join(self.baker.get_abs_export_path(), '__temp_bake__.blend')
+        self.baker.real_path = self.baker.get_abs_export_path()  # to avoid relative paths or images wont be store where we want them
         bpy.ops.wm.save_as_mainfile(filepath=blender_save_file, copy=True, check_existing=False)
+        self.baker.path = orig_export_path
 
         path = os.path.join(os.path.split(__file__)[0], 'multithread.py')
 
@@ -79,7 +106,7 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
             bpy.app.binary_path,
             "--factory-startup",  # this disables the rest of the addons
             "--addons",
-            __package__.split('.')[0],
+            __package__.split('.')[0],  # this enables just this addon
             "--background",
             blender_save_file,
             "--python",
@@ -87,6 +114,30 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
         ]
 
         self.process = subprocess.Popen(blender_args)
+
+        address = ('localhost', 1605)     # family is deduced to be 'AF_INET'
+        listener = Listener(address, authkey=bytes('ezbaker', encoding='utf8'))
+        connection = listener.accept()
+        print(f'connection accepted from {listener.last_accepted}')
+
+        self.messages = queue.Queue()
+
+        def receive_messages(connection, messages):
+            print('STARTED RECEIVING MESSAGES')
+            while True:
+                try:
+                    msg = connection.recv()
+                    messages.put(msg)
+                except EOFError:
+                    break
+                except ConnectionResetError:
+                    print('connection reset?')
+                    break
+
+        self.server_thread = threading.Thread(target=receive_messages, args=(connection, self.messages))
+        self.server_thread.start()
+
+        listener.close()
 
         wm = context.window_manager
         self._timer = wm.event_timer_add(0.1, window=context.window)
@@ -167,10 +218,37 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         bpy.context.scene.render.image_settings.compression = 0
         bpy.context.scene.render.image_settings.tiff_codec = 'DEFLATE'
 
+    def update_baking_map(self, map_name):
+        if 'is_subprocess' in self.parent_baker and self.parent_baker['is_subprocess']:
+            connection.send(f'WORKING:::{map_name}')
+
+    def texture_baked(self, map_id, material_name, image_path):
+        if 'is_subprocess' in self.parent_baker and self.parent_baker['is_subprocess']:
+            connection.send(f'{map_id}:::{material_name}:::{image_path}')
+
+        map = next(x for x in self.get_all_maps() if x.id == map_id)
+
+        img = self.parent_baker.get_image(map, material_name)
+        img.image.source = 'FILE'
+        img.image.filepath = image_path
+        img.image.reload()
+
     def bake_local(self):
+        global connection
+
+        if 'is_subprocess' in self.parent_baker and self.parent_baker['is_subprocess']:
+            from multiprocessing.connection import Client
+
+            address = ('localhost', 1605)
+            connection = Client(address, authkey=bytes('ezbaker', encoding='utf8'))
+
+            time.sleep(0.5)
+            connection.send('FIRST MESSAGE')
+
         with Custom_Render_Settings():
             for map in self.get_bakeable_maps():
                 map.do_bake()
+
         self.bake_finish()
 
     def bake_multithread(self):

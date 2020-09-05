@@ -282,8 +282,11 @@ class EZB_Map_Blender(EZB_Map):
                 print('The image could not be saved to the path')
                 return False
 
+            self.parent_device.texture_baked(self.id, created_image.material.name, image.filepath)
+
     def do_bake(self):
         '''Starts the bake process'''
+        self.parent_device.update_baking_map(self.id)
         temp_materials.clear()
         self.created_images.clear()
 

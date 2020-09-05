@@ -105,7 +105,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
     is_baking: bpy.props.BoolProperty()
     cancel_current_bake: bpy.props.BoolProperty()
     baking_map_name: bpy.props.StringProperty()
-    baking_map_progress: bpy.props.FloatProperty(min=0, max=1)
+    current_baking_progress: bpy.props.FloatProperty(min=0, max=1)
 
     def get_abs_export_path(self):
         return os.path.abspath(bpy.path.abspath(self.path))
@@ -219,10 +219,12 @@ class EZB_Baker(bpy.types.PropertyGroup):
     def bake(self):
         log('BAKING: {}'.format(self.key))
 
+        os.makedirs(self.get_abs_export_path(), exist_ok=True)
+
         self.is_baking = True
         self.cancel_current_bake = False
         self.baking_map_name = ''
-        self.baking_map_progress = 0.0
+        self.current_baking_progress = 0.0
 
         bake_textures.clear()
         self.materials.clear()

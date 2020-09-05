@@ -36,8 +36,17 @@ class EZB_Device:
         parent_path = path.rsplit('.', 2)[0]
         return self.id_data.path_resolve(parent_path)
 
-    def bake(self):
+    def bake_local(self):
         pass
+
+    def bake_multithread(self):
+        pass
+
+    def bake_finish(self):
+        self.parent_baker.bake_cleanup()
+
+    def bake_cancelled(self):
+        self.parent_baker.bake_cleanup()
 
     def check_for_errors(self):
         if not any(True for x in self.get_bakeable_maps()):

@@ -113,14 +113,14 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
 
         objects = []
         if self.mode_group == 'COLLECTION':
-            for x in traverse_tree(bpy.context.scene.collection, exclude_parent=True):
+            for x in traverse_tree(self.id_data.collection, exclude_parent=True):
                 if self._remove_numbering(x.name.lower()) == self.key.lower() + suffix:
                     for y in traverse_tree(x):
                         objects.extend(y.objects[:])
                     break
 
         elif self.mode_group == 'NAME':
-            for x in bpy.context.scene.objects:
+            for x in self.id_data.objects:
                 if self._remove_numbering(x.name.lower()) == self.key.lower() + suffix:
                     objects.append(x)
 

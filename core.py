@@ -165,12 +165,20 @@ class EZB_PT_baker_panel(bpy.types.Panel):
         path = ''
         row = row.row(align=True)
         row.enabled = False
-        if (bpy.context.scene.EZB_Settings.baker_index < len(bpy.context.scene.EZB_Settings.bakers) and len(bpy.context.scene.EZB_Settings.bakers) > 0):
-            baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
+        if (context.scene.EZB_Settings.baker_index < len(context.scene.EZB_Settings.bakers) and len(context.scene.EZB_Settings.bakers) > 0):
+            baker = context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
             path = baker.path
             row.enabled = bool(baker.path)
 
         row.operator("wm.path_open", text="Open", icon=open_folder_icon).filepath = path
+
+        if baker.is_baking:
+            layout.label(text=baker.baking_map_name)
+
+            row = layout.row()
+            row.enabled = False
+
+            row.prop(baker, 'baking_map_progress', text='')
 
         if False:
             tooltip = operators.EZB_OT_bake.description(context, bake_op)

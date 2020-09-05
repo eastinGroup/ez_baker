@@ -102,6 +102,11 @@ class EZB_Baker(bpy.types.PropertyGroup):
 
     use_low_to_low: bpy.props.BoolProperty(default=False, name='Use Low as High', description='Uses the object with all modifiers applied as the "high" and the same object without modifiers as the "low"')
 
+    is_baking: bpy.props.BoolProperty()
+    cancel_current_bake: bpy.props.BoolProperty()
+    baking_map_name: bpy.props.StringProperty()
+    baking_map_progress: bpy.props.FloatProperty(min=0, max=1)
+
     def get_abs_export_path(self):
         return os.path.abspath(bpy.path.abspath(self.path))
 
@@ -186,6 +191,9 @@ class EZB_Baker(bpy.types.PropertyGroup):
         if not self.path:
             return 'No export path set in the Baker Settings panel'
 
+        if self.is_baking:
+            return 'Baking is currently in progress'
+
         for group in self.bake_groups:
             if group.key == '' or ' ' in group.key or ',' in group.key:
                 return 'Invalid bake group name {}'.format(group.key)
@@ -209,11 +217,23 @@ class EZB_Baker(bpy.types.PropertyGroup):
             return self.devices.handplane
 
     def bake(self):
+        log('BAKING: {}'.format(self.key))
+
+        self.is_baking = True
+        self.cancel_current_bake = False
+        self.baking_map_name = ''
+        self.baking_map_progress = 0.0
+
         bake_textures.clear()
         self.materials.clear()
 
-        log('BAKING: {}'.format(self.key))
-        self.child_device.bake()
+        if self.run_in_background:
+            self.child_device.bake_multithread()
+        else:
+            self.child_device.bake_local()
+
+    def bake_cleanup(self):
+        self.is_baking = False
 
     def draw_maps(self, layout, context):
         col = layout.column()

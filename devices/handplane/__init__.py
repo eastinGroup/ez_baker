@@ -32,41 +32,54 @@ class EZB_OT_run_handplane_background(bpy.types.Operator):
 
     command_argument: bpy.props.StringProperty()
 
+    baker_scene: bpy.props.StringProperty()
+    baker_datapath: bpy.props.StringProperty()
+    device_datapath: bpy.props.StringProperty()
+
     _timer = None
     th = None
     prog = 0
     stop_early = False
+
+    @property
+    def baker(self):
+        return bpy.data.scenes[self.baker_scene].path_resolve(self.baker_datapath)
+
+    @property
+    def device(self):
+        return bpy.data.scenes[self.baker_scene].path_resolve(self.device_datapath)
+
+    def redraw_region(self, context):
+        for region in context.area.regions:
+            if region.type == "UI":
+                region.tag_redraw()
 
     def modal(self, context, event):
         if event.type in {'RIGHTMOUSE', 'ESC'}:
             self.cancel(context)
 
             self.stop_early = True
-            self.th.join()
+            self.process.terminate()
+            self.device.bake_cancelled()
             print('MODAL CANCELLED')
+            self.redraw_region(context)
             return {'CANCELLED'}
 
         if event.type == 'TIMER':
             # update progress widget here
 
-            if not self.th.isAlive():
-                self.th.join()
+            if self.process.poll() != None:
                 print('MODAL FINISHED')
-                baker = bpy.context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
-
-                baker.child_device.bake_finished()
+                self.device.bake_finish()
+                self.redraw_region(context)
                 return {'FINISHED'}
+        self.redraw_region(context)
         return {'PASS_THROUGH'}
 
     def execute(self, context):
-        import threading
+        import subprocess
 
-        def long_task(self):
-            import subprocess
-            subprocess.run(self.command_argument, stdout=subprocess.PIPE)
-
-        self.th = threading.Thread(target=long_task, args=(self,))
-        self.th.start()
+        self.process = subprocess.Popen(self.command_argument)
 
         wm = context.window_manager
         self._timer = wm.event_timer_add(0.1, window=context.window)
@@ -217,7 +230,7 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
                                 models = bake_group.objects_low
                                 for model in models:
                                     with Write_Wrapper(file, '{', '}', 4):
-                                        cage = bpy.context.scene.objects.get(model.name + bpy.context.scene.EZB_Settings.suffix_cage)
+                                        cage = self.id_data.objects.get(model.name + self.id_data.EZB_Settings.suffix_cage)
                                         cage_path = '' if not cage else export_obj(meshes_folder, cage, cage.name, t_space=True, modifiers=True)
                                         write_value(file, 'Filename', 'model', export_obj(meshes_folder, model, model.name, t_space=True, modifiers=not baker.use_low_to_low), 4)
                                         write_value(file, 'Filename', 'cageModel', cage_path, 4)
@@ -309,9 +322,7 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
                 write_value(file, 'String', 'tangentSpace', tangent_space, 0)
         return project_file_path
 
-    def bake(self):
-        super().bake()
-
+    def get_commandline_argument(self):
         baker = self.parent_baker
 
         prefs = bpy.context.preferences.addons[__package__.split('.')[0]].preferences
@@ -323,13 +334,25 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
         project_file_path = project_file_path.replace('\\', '/')
         command_argument = handplane_cmd + ' "/project "' + project_file_path + '""'
 
-        if not self.parent_baker.run_in_background:
-            subprocess.run(command_argument)
-            self.bake_finished()
-        else:
-            bpy.ops.ezb.run_handplane_background(command_argument=command_argument)
+        return command_argument
 
-    def bake_finished(self):
+    def bake_local(self):
+        command_argument = self.get_commandline_argument()
+
+        subprocess.run(command_argument)
+        self.bake_finish()
+
+    def bake_multithread(self):
+        command_argument = self.get_commandline_argument()
+
+        bpy.ops.ezb.run_handplane_background(
+            command_argument=command_argument,
+            baker_scene=self.parent_baker.id_data.name,
+            baker_datapath=self.parent_baker.path_from_id(),
+            device_datapath=self.path_from_id()
+        )
+
+    def bake_finish(self):
         baker = self.parent_baker
         export_folder = baker.get_abs_export_path()
         # open explorer at baked textures
@@ -340,6 +363,8 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
             img.image.filepath = img_path
             img.image.reload()
             pass
+
+        super().bake_finish()
 
     def check_for_errors(self):
         ans = super().check_for_errors()

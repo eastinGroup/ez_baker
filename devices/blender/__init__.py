@@ -17,6 +17,10 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
     bl_idname = "ezb.run_blender_background"
     bl_label = "Updates UI with blender background information"
 
+    baker_scene: bpy.props.StringProperty()
+    baker_datapath: bpy.props.StringProperty()
+    device_datapath: bpy.props.StringProperty()
+
     _timer = None
     th = None
     prog = 0
@@ -24,47 +28,65 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
 
     export_path: bpy.props.StringProperty()
 
+    @property
+    def baker(self):
+        return bpy.data.scenes[self.baker_scene].path_resolve(self.baker_datapath)
+
+    @property
+    def device(self):
+        return bpy.data.scenes[self.baker_scene].path_resolve(self.device_datapath)
+
+    def redraw_region(self, context):
+        for region in context.area.regions:
+            if region.type == "UI":
+                region.tag_redraw()
+
     def modal(self, context, event):
         if event.type in {'RIGHTMOUSE', 'ESC'}:
             self.cancel(context)
 
             self.stop_early = True
-            self.th.join()
+            self.process.terminate()
             print('MODAL CANCELLED')
+            self.device.bake_cancelled()
+
+            self.redraw_region(context)
             return {'CANCELLED'}
 
         if event.type == 'TIMER':
             # update progress widget here
+            if self.process.poll() != None:
 
-            if not self.th.isAlive():
-                self.th.join()
                 print('MODAL FINISHED')
+                self.device.bake_finish()
+                self.redraw_region(context)
                 return {'FINISHED'}
+
+        self.redraw_region(context)
+        self.baker.baking_map_progress += 0.001
+
         return {'PASS_THROUGH'}
 
     def execute(self, context):
-        import threading
-        blender_save_file = os.path.join(self.export_path, 'bake.blend')
-        print(blender_save_file)
-        bpy.ops.wm.save_as_mainfile(filepath=blender_save_file)
+        import subprocess
 
-        def run_blender_background(self, blender_save_file):
-            import subprocess
+        blender_save_file = os.path.join(self.baker.get_abs_export_path(), 'bake.blend')
+        bpy.ops.wm.save_as_mainfile(filepath=blender_save_file, copy=True, check_existing=False)
 
-            path = os.path.join(os.path.split(__file__)[0], 'multithread.py')
+        path = os.path.join(os.path.split(__file__)[0], 'multithread.py')
 
-            blender_args = [
-                bpy.app.binary_path,
-                "--background",
-                blender_save_file,
-                "--python",
-                path
-            ]
+        blender_args = [
+            bpy.app.binary_path,
+            "--factory-startup",  # this disables the rest of the addons
+            "--addons",
+            __package__.split('.')[0],
+            "--background",
+            blender_save_file,
+            "--python",
+            path,
+        ]
 
-            subprocess.run(blender_args)
-
-        self.th = threading.Thread(target=run_blender_background, args=(self, blender_save_file))
-        self.th.start()
+        self.process = subprocess.Popen(blender_args)
 
         wm = context.window_manager
         self._timer = wm.event_timer_add(0.1, window=context.window)
@@ -146,21 +168,14 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         bpy.context.scene.render.image_settings.tiff_codec = 'DEFLATE'
 
     def bake_local(self):
-        super().bake()
         with Custom_Render_Settings():
             for map in self.get_bakeable_maps():
                 map.do_bake()
-        return True
+        self.bake_finish()
 
     def bake_multithread(self):
-        bpy.ops.ezb.run_blender_background(export_path=self.parent_baker.get_abs_export_path())
+        bpy.ops.ezb.run_blender_background(baker_scene=self.parent_baker.id_data.name, baker_datapath=self.parent_baker.path_from_id(), device_datapath=self.path_from_id())
         pass
-
-    def bake(self):
-        if self.parent_baker.run_in_background:
-            self.bake_multithread()
-        else:
-            self.bake_local()
 
 
 classes = [EZB_Device_Blender, EZB_OT_run_blender_background]

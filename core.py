@@ -216,6 +216,7 @@ class EZB_PT_baker_settings_panel(bpy.types.Panel):
             layout.label(text='Select or create a Baker in the "Bakers" panel')
             return
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
+        layout.enabled = not baker.is_baking
 
         col = layout.column(align=False)
 
@@ -280,6 +281,8 @@ class EZB_PT_bake_groups_panel(bpy.types.Panel):
             layout.label(text='Select or create a Baker in the "Bakers" panel')
             return
         baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
+
+        #layout.enabled = not baker.is_baking
 
         col = layout.column(align=True)
         col.template_list("EZB_UL_bake_groups", "", baker, "bake_groups", baker, "bake_group_index", rows=2)

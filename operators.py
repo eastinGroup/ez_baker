@@ -269,7 +269,7 @@ class EZB_OT_bake(bpy.types.Operator):
 
 
 class EZB_OT_cancel_bake(bpy.types.Operator):
-    """Bake"""
+    """Cancel Bake"""
     bl_idname = "ezb.cancel_bake"
     bl_label = "Cancel Bake"
 

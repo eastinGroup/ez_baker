@@ -194,6 +194,9 @@ class EZB_Baker(bpy.types.PropertyGroup):
         if self.is_baking:
             return 'Baking is currently in progress'
 
+        if any(x.is_baking for x in bpy.context.scene.EZB_Settings.bakers):
+            return 'Another Baker is already baking'
+
         for group in self.bake_groups:
             if group.key == '' or ' ' in group.key or ',' in group.key:
                 return 'Invalid bake group name {}'.format(group.key)

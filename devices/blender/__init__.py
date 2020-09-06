@@ -56,6 +56,7 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
 
             self.stop_early = True
             self.process.terminate()
+            os.remove(self.blender_save_file)
             print('MODAL CANCELLED')
             self.device.bake_cancelled()
 
@@ -76,12 +77,12 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
                 print(f'received: {msg}')
             except queue.Empty:
                 pass
-            # update progress widget here
             if self.process.poll() is not None and self.messages.empty():
 
                 print('MODAL FINISHED')
                 self.device.bake_finish()
                 self.redraw_region(context)
+                os.remove(self.blender_save_file)
                 return {'FINISHED'}
 
         self.redraw_region(context)
@@ -95,9 +96,9 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
         self.current_bake = -1
 
         orig_export_path = self.baker.path
-        blender_save_file = os.path.join(self.baker.get_abs_export_path(), '__temp_bake__.blend')
+        self.blender_save_file = os.path.join(self.baker.get_abs_export_path(), '__temp_bake__.blend')
         self.baker.real_path = self.baker.get_abs_export_path()  # to avoid relative paths or images wont be store where we want them
-        bpy.ops.wm.save_as_mainfile(filepath=blender_save_file, copy=True, check_existing=False)
+        bpy.ops.wm.save_as_mainfile(filepath=self.blender_save_file, copy=True, check_existing=False)
         self.baker.path = orig_export_path
 
         path = os.path.join(os.path.split(__file__)[0], 'multithread.py')
@@ -108,14 +109,14 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
             "--addons",
             __package__.split('.')[0],  # this enables just this addon
             "--background",
-            blender_save_file,
+            self.blender_save_file,
             "--python",
             path,
         ]
 
         self.process = subprocess.Popen(blender_args)
 
-        address = ('localhost', 1605)     # family is deduced to be 'AF_INET'
+        address = ('localhost', 1605)
         listener = Listener(address, authkey=bytes('ezbaker', encoding='utf8'))
         connection = listener.accept()
         print(f'connection accepted from {listener.last_accepted}')
@@ -123,7 +124,6 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
         self.messages = queue.Queue()
 
         def receive_messages(connection, messages):
-            print('STARTED RECEIVING MESSAGES')
             while True:
                 try:
                     msg = connection.recv()
@@ -132,7 +132,7 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
                 except EOFError:
                     break
                 except ConnectionResetError:
-                    print('connection reset?')
+                    print('Connection Ended')
                     break
 
         self.server_thread = threading.Thread(target=receive_messages, args=(connection, self.messages))

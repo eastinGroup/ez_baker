@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.0](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/0_2_0)
 ### Added
-- Handplane now bakes in another thread, making blender responsive in the meantime
+- Option to run the bake in the background, making blender resposive in the meantime
+- Button to cancel the current baking progress
 - Show image button in the outputs panel can now show the image in another window
 
 ### Changed

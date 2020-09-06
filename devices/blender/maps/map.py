@@ -216,14 +216,20 @@ class EZB_Map_Blender(EZB_Map):
         for mat_slot in object.material_slots:
             mat_slot.material = self.create_bake_material(mat_slot.material)
 
-    def postprocess_images(self):
-        bpy.context.scene.view_settings.view_transform = 'Standard'
-
+    @property
+    def file_format(self):
         file_format = 'PNG'
         if self.parent_baker.image_format == 'TGA':
             file_format = 'TARGA'
         elif self.parent_baker.image_format == 'TIF':
             file_format = 'TIFF'
+        return file_format
+
+    def get_export_path(self, image_name):
+        return os.path.normpath(os.path.join(bpy.path.abspath(self.parent_baker.path), image_name) + file_formats_enum[self.file_format])
+
+    def postprocess_images(self):
+        bpy.context.scene.view_settings.view_transform = 'Standard'
 
         for created_image in self.created_images:
             image = created_image.image
@@ -261,8 +267,8 @@ class EZB_Map_Blender(EZB_Map):
                     image.pixels = return_pixels
                     image.pack()
 
-            image.file_format = file_format
-            path_full = os.path.normpath(os.path.join(bpy.path.abspath(self.parent_baker.path), image.name) + file_formats_enum[file_format])
+            image.file_format = self.file_format
+            path_full = self.get_export_path(image.name)
             directory = os.path.dirname(path_full)
 
             try:

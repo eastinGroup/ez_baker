@@ -268,6 +268,24 @@ class EZB_OT_bake(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class EZB_OT_cancel_bake(bpy.types.Operator):
+    """Bake"""
+    bl_idname = "ezb.cancel_bake"
+    bl_label = "Cancel Bake"
+
+    @classmethod
+    def poll(cls, context):
+        if not (bpy.context.scene.EZB_Settings.baker_index >= 0 and len(bpy.context.scene.EZB_Settings.bakers) > bpy.context.scene.EZB_Settings.baker_index):
+            return False
+        return True
+
+    def execute(self, context):
+        baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
+        baker.cancel_current_bake = True
+        baker.is_baking = False
+        return {'FINISHED'}
+
+
 last_maps = None
 
 
@@ -454,6 +472,7 @@ classes = [
     EZB_OT_show_low_objects,
     EZB_OT_add_map,
     EZB_OT_bake,
+    EZB_OT_cancel_bake,
     EZB_OT_show_image,
     EZB_OT_select_texture_size,
     EZB_OT_select_object,

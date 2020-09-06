@@ -162,11 +162,12 @@ class EZB_PT_baker_panel(bpy.types.Panel):
 
         if (context.scene.EZB_Settings.baker_index < len(context.scene.EZB_Settings.bakers) and len(context.scene.EZB_Settings.bakers) > 0):
             baker = context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
-
+        rub_row = row.row(align=True)
         bake_button_text = 'Bake'
         if baker.is_baking:
+            rub_row.operator('ezb.cancel_bake', text='', icon='X')
             bake_button_text = f'Baking... {int(baker.current_baking_progress*100)}%'
-        bake_op = row.operator('ezb.bake', text=bake_button_text, icon='IMPORT')
+        bake_op = rub_row.operator('ezb.bake', text=bake_button_text, icon='IMPORT')
 
         path = ''
         row = row.row(align=True)
@@ -238,8 +239,9 @@ class EZB_PT_baker_settings_panel(bpy.types.Panel):
 
         row = col.row(align=True)
         row.prop(baker, 'padding', text='Padding', expand=True)
-        row = col.row(align=True)
-        row.prop(baker, 'run_in_background')
+        if bpy.app.debug:
+            row = col.row(align=True)
+            row.prop(baker, 'run_in_background')
         row = col.row(align=True)
         row.prop(baker, 'use_low_to_low', text='High to Low', expand=True, toggle=True, invert_checkbox=True)
         row.prop(baker, 'use_low_to_low', text='Low to Low', expand=True, toggle=True)

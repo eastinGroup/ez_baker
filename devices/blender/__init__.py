@@ -51,7 +51,7 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
                     region.tag_redraw()
 
     def modal(self, context, event):
-        if event.type in {'RIGHTMOUSE', 'ESC'}:
+        if self.baker.cancel_current_bake:
             self.cancel(context)
 
             self.stop_early = True
@@ -77,7 +77,7 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
             except queue.Empty:
                 pass
             # update progress widget here
-            if self.process.poll() is not None:
+            if self.process.poll() is not None and self.messages.empty():
 
                 print('MODAL FINISHED')
                 self.device.bake_finish()
@@ -127,6 +127,7 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
             while True:
                 try:
                     msg = connection.recv()
+                    print(msg)
                     messages.put(msg)
                 except EOFError:
                     break
@@ -249,6 +250,7 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
             for map in self.get_bakeable_maps():
                 map.do_bake()
 
+        connection.send('FINAL MESSAGE')
         self.bake_finish()
 
     def bake_multithread(self):

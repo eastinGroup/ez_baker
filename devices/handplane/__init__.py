@@ -55,7 +55,7 @@ class EZB_OT_run_handplane_background(bpy.types.Operator):
                 region.tag_redraw()
 
     def modal(self, context, event):
-        if event.type in {'RIGHTMOUSE', 'ESC'}:
+        if self.baker.cancel_current_bake:
             self.cancel(context)
 
             self.stop_early = True

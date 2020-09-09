@@ -227,7 +227,7 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         if self.parent_baker.load_images:
             map = next(x for x in self.get_all_maps() if x.id == map_id)
 
-            img = self.parent_baker.get_image(map, material_name, fill=False)
+            img = self.parent_baker.get_image(map, material_name)
             img.image.source = 'FILE'
             img.image.filepath = image_path
             img.image.reload()

@@ -31,9 +31,6 @@ def get_path(self):
     return self.real_path
 
 
-bake_textures = []
-
-
 class EZB_Baker(bpy.types.PropertyGroup):
     key: bpy.props.StringProperty(default='')
 
@@ -67,7 +64,8 @@ class EZB_Baker(bpy.types.PropertyGroup):
             ('x4', 'x4', 'x4'),
             ('x16', 'x16', 'x16'),
         ],
-        default='x1'
+        default='x1',
+        description='Anti-Aliasing done by supersampling\n(rendering at a higher resolution and then scaling it down)\nx4: image resolution is multiploed by 2\nx16:image resolution is multiplied by 4\n'
     )
     image_format: bpy.props.EnumProperty(
         items=[
@@ -112,7 +110,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
     def get_abs_export_path(self):
         return os.path.abspath(bpy.path.abspath(self.path))
 
-    def get_image(self, map, material_name, fill=True):
+    def get_image(self, map, material_name):
         found_material = None
         found_image = None
         for x in self.materials:
@@ -141,25 +139,10 @@ class EZB_Baker(bpy.types.PropertyGroup):
             else:
                 new_image = bpy.data.images.new(new_name, width=self.width * supersampling, height=self.height * supersampling)
                 new_image.colorspace_settings.name = map.color_space
+
+            new_image.name = new_name
             found_image.image = new_image
 
-        # TODO: this should go in the map class, bake_textures can be removed
-        if new_image not in bake_textures:
-            new_image.name = new_name
-            new_image.source = 'GENERATED'
-            new_image.pack()
-            new_image.use_generated_float = True
-
-            new_image.scale(self.width * supersampling, self.height * supersampling)
-            if fill:
-                pixels = [map.background_color for i in range(0, self.width * supersampling * self.height * supersampling)]
-                pixels = [chan for px in pixels for chan in px]
-                new_image.pixels = pixels
-
-            # new_image.source = 'GENERATED'
-            bake_textures.append(new_image)
-
-            return found_image
         return found_image
 
     def get_troublesome_objects(self):
@@ -233,7 +216,6 @@ class EZB_Baker(bpy.types.PropertyGroup):
         self.baked_maps = -1
         self.total_maps_to_bake = len(list(self.child_device.get_bakeable_maps()))
 
-        bake_textures.clear()
         self.materials.clear()
 
         if bpy.context.preferences.addons[__package__.split('.')[0]].preferences.run_in_background:

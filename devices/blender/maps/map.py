@@ -182,12 +182,25 @@ class EZB_Map_Blender(EZB_Map):
                 return created_image.image
 
         ans = self.parent_baker.get_image(self, material.name)
+        self.initialize_image(ans.image)
 
         found_material = self.created_images.add()
         found_material.material = material
         found_material.image = ans.image
 
         return ans.image
+
+    def initialize_image(self, image):
+        supersampling = self.parent_baker.get_supersampling
+
+        image.source = 'GENERATED'
+        image.pack()
+        image.use_generated_float = True
+        image.scale(self.parent_baker.width * supersampling, self.parent_baker.height * supersampling)
+
+        pixels = [self.background_color for i in range(0, self.parent_baker.width * supersampling * self.parent_baker.height * supersampling)]
+        pixels = [chan for px in pixels for chan in px]
+        image.pixels = pixels
 
     def create_bake_material(self, material):
         '''Creates a copy of the original "low" material with an image node to bake to'''

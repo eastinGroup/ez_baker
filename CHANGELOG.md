@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.0](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/0_2_0)
 ### Added
-- Option to run the bake in the background, making blender resposive in the meantime
+- Baking is now done in another process, making blender resposive in the meantime
 - Button to cancel the current baking progress
 - Option to not load images into blender after the bake
 

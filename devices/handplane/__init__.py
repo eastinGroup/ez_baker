@@ -359,7 +359,7 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
             # open explorer at baked textures
             for map in self.get_bakeable_maps():
                 img_path = os.path.join(export_folder, baker.key + map.suffix + file_formats_enum[baker.image_format])
-                img = baker.get_image(map, baker.key, fill=False)
+                img = baker.get_image(map, baker.key)
                 img.image.source = 'FILE'
                 img.image.filepath = img_path
                 img.image.reload()

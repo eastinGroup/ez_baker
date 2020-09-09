@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Option to run the bake in the background, making blender resposive in the meantime
 - Button to cancel the current baking progress
+- Option to not load images into blender after the bake
+
 ### Fixed
 - Show image button in the outputs panel can now show the image in another window
 

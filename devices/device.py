@@ -36,6 +36,9 @@ class EZB_Device:
         parent_path = path.rsplit('.', 2)[0]
         return self.id_data.path_resolve(parent_path)
 
+    def show_progress(self):
+        return f'Baking... {int(self.parent_baker.current_baking_progress*100)}%'
+
     def bake_local(self):
         pass
 

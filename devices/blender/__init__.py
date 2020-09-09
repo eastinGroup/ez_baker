@@ -21,7 +21,7 @@ connection = None
 
 
 class EZB_OT_run_blender_background(bpy.types.Operator):
-    """Updates UI based on blender progress"""
+    """Runs blender bake in another process"""
     bl_idname = "ezb.run_blender_background"
     bl_label = "Updates UI with blender background information"
 
@@ -30,9 +30,6 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
     device_datapath: bpy.props.StringProperty()
 
     _timer = None
-    th = None
-    prog = 0
-    stop_early = False
 
     export_path: bpy.props.StringProperty()
 
@@ -54,7 +51,6 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
         if self.baker.cancel_current_bake:
             self.cancel(context)
 
-            self.stop_early = True
             self.process.terminate()
             os.remove(self.blender_save_file)
             print('MODAL CANCELLED')
@@ -72,6 +68,7 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
                 if len(msg_split) == 2 and msg_split[0] == 'WORKING':
                     self.baker.baking_map_name = msg_split[1]
                     self.current_bake += 1
+                    self.baker.baked_maps += 1
                     self.baker.current_baking_progress = float(self.current_bake) / self.total_bakes
 
                 print(f'received: {msg}')
@@ -227,12 +224,13 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         if 'is_subprocess' in self.parent_baker and self.parent_baker['is_subprocess']:
             connection.send(f'{map_id}:::{material_name}:::{image_path}')
 
-        map = next(x for x in self.get_all_maps() if x.id == map_id)
+        if self.parent_baker.load_images:
+            map = next(x for x in self.get_all_maps() if x.id == map_id)
 
-        img = self.parent_baker.get_image(map, material_name)
-        img.image.source = 'FILE'
-        img.image.filepath = image_path
-        img.image.reload()
+            img = self.parent_baker.get_image(map, material_name, fill=False)
+            img.image.source = 'FILE'
+            img.image.filepath = image_path
+            img.image.reload()
 
     def bake_local(self):
         global connection
@@ -250,12 +248,14 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
             for map in self.get_bakeable_maps():
                 map.do_bake()
 
-        connection.send('FINAL MESSAGE')
         self.bake_finish()
 
     def bake_multithread(self):
         bpy.ops.ezb.run_blender_background(baker_scene=self.parent_baker.id_data.name, baker_datapath=self.parent_baker.path_from_id(), device_datapath=self.path_from_id())
         pass
+
+    def show_progress(self):
+        return f'Baking... {max(0, self.parent_baker.baked_maps)}/{self.parent_baker.total_maps_to_bake}'
 
 
 classes = [EZB_Device_Blender, EZB_OT_run_blender_background]

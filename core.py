@@ -166,7 +166,7 @@ class EZB_PT_baker_panel(bpy.types.Panel):
         bake_button_text = 'Bake'
         if baker.is_baking:
             rub_row.operator('ezb.cancel_bake', text='', icon='X')
-            bake_button_text = f'Baking... {int(baker.current_baking_progress*100)}%'
+            bake_button_text = baker.child_device.show_progress()
         bake_op = rub_row.operator('ezb.bake', text=bake_button_text, icon='IMPORT')
 
         path = ''
@@ -239,13 +239,12 @@ class EZB_PT_baker_settings_panel(bpy.types.Panel):
         split.prop(baker, 'supersampling', text='')
 
         row = col.row(align=True)
-        row.prop(baker, 'padding', text='Padding', expand=True)
-        if bpy.app.debug:
-            row = col.row(align=True)
-            row.prop(baker, 'run_in_background')
+        row.prop(baker, 'padding', text='Padding', expand=False)
         row = col.row(align=True)
         row.prop(baker, 'use_low_to_low', text='High to Low', expand=True, toggle=True, invert_checkbox=True)
         row.prop(baker, 'use_low_to_low', text='Low to Low', expand=True, toggle=True)
+
+        col.prop(baker, 'load_images', expand=True, toggle=True)
 
         col.prop(baker, 'image_format', text='Format', icon='IMAGE_DATA')
 

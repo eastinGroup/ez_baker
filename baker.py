@@ -96,8 +96,6 @@ class EZB_Baker(bpy.types.PropertyGroup):
         name='Depth'
     )
 
-    run_in_background: bpy.props.BoolProperty(default=True, name='Run in background')
-
     materials: bpy.props.CollectionProperty(type=EZB_Stored_Material)
 
     use_low_to_low: bpy.props.BoolProperty(default=False, name='Use Low as High', description='Uses the object with all modifiers applied as the "high" and the same object without modifiers as the "low"')
@@ -105,12 +103,16 @@ class EZB_Baker(bpy.types.PropertyGroup):
     is_baking: bpy.props.BoolProperty()
     cancel_current_bake: bpy.props.BoolProperty()
     baking_map_name: bpy.props.StringProperty()
+    baked_maps: bpy.props.IntProperty()
+    total_maps_to_bake: bpy.props.IntProperty()
     current_baking_progress: bpy.props.FloatProperty(min=0, max=1)
+
+    load_images: bpy.props.BoolProperty(default=True, name='Load images after baking', description='Loads images into blender after the baking is finished')
 
     def get_abs_export_path(self):
         return os.path.abspath(bpy.path.abspath(self.path))
 
-    def get_image(self, map, material_name):
+    def get_image(self, map, material_name, fill=True):
         found_material = None
         found_image = None
         for x in self.materials:
@@ -139,7 +141,9 @@ class EZB_Baker(bpy.types.PropertyGroup):
             else:
                 new_image = bpy.data.images.new(new_name, width=self.width * supersampling, height=self.height * supersampling)
                 new_image.colorspace_settings.name = map.color_space
+            found_image.image = new_image
 
+        # TODO: this should go in the map class, bake_textures can be removed
         if new_image not in bake_textures:
             new_image.name = new_name
             new_image.source = 'GENERATED'
@@ -147,12 +151,12 @@ class EZB_Baker(bpy.types.PropertyGroup):
             new_image.use_generated_float = True
 
             new_image.scale(self.width * supersampling, self.height * supersampling)
-            pixels = [map.background_color for i in range(0, self.width * supersampling * self.height * supersampling)]
-            pixels = [chan for px in pixels for chan in px]
-            new_image.pixels = pixels
+            if fill:
+                pixels = [map.background_color for i in range(0, self.width * supersampling * self.height * supersampling)]
+                pixels = [chan for px in pixels for chan in px]
+                new_image.pixels = pixels
 
             # new_image.source = 'GENERATED'
-            found_image.image = new_image
             bake_textures.append(new_image)
 
             return found_image
@@ -220,19 +224,19 @@ class EZB_Baker(bpy.types.PropertyGroup):
             return self.devices.handplane
 
     def bake(self):
-        log('BAKING: {}'.format(self.key))
-
         os.makedirs(self.get_abs_export_path(), exist_ok=True)
 
         self.is_baking = True
         self.cancel_current_bake = False
         self.baking_map_name = ''
         self.current_baking_progress = 0.0
+        self.baked_maps = -1
+        self.total_maps_to_bake = len(list(self.child_device.get_bakeable_maps()))
 
         bake_textures.clear()
         self.materials.clear()
 
-        if self.run_in_background:
+        if bpy.context.preferences.addons[__package__.split('.')[0]].preferences.run_in_background:
             self.child_device.bake_multithread()
         else:
             self.child_device.bake_local()

@@ -353,16 +353,17 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
         )
 
     def bake_finish(self):
-        baker = self.parent_baker
-        export_folder = baker.get_abs_export_path()
-        # open explorer at baked textures
-        for map in self.get_bakeable_maps():
-            img_path = os.path.join(export_folder, baker.key + map.suffix + file_formats_enum[baker.image_format])
-            img = baker.get_image(map, baker.key)
-            img.image.source = 'FILE'
-            img.image.filepath = img_path
-            img.image.reload()
-            pass
+        if self.parent_baker.load_images:
+            baker = self.parent_baker
+            export_folder = baker.get_abs_export_path()
+            # open explorer at baked textures
+            for map in self.get_bakeable_maps():
+                img_path = os.path.join(export_folder, baker.key + map.suffix + file_formats_enum[baker.image_format])
+                img = baker.get_image(map, baker.key, fill=False)
+                img.image.source = 'FILE'
+                img.image.filepath = img_path
+                img.image.reload()
+                pass
 
         super().bake_finish()
 
@@ -382,6 +383,9 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
             return 'Handplane path in the addon preferences is incorrect'
 
         return None
+
+    def show_progress(self):
+        return f'Baking...'
 
 
 classes = [EZB_OT_run_handplane_background, EZB_Device_Handplane]

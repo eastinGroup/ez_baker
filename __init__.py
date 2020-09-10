@@ -91,7 +91,7 @@ class EZB_preferences(bpy.types.AddonPreferences):
 
     def draw(self, context):
         layout = self.layout
-        #layout.prop(self, 'run_in_background')
+        layout.prop(self, 'run_in_background')
         layout.prop(self, 'handplane_path')
         #layout.prop(self, 'marmoset_path')
         ops.update_settings_ui(self, context)

@@ -76,8 +76,6 @@ class EZB_UL_preview_group_objects(bpy.types.UIList):
         sub_row = layout.row()
         sub_row.operator('ezb.select_object', text='', icon='RESTRICT_SELECT_OFF').name = item.name
         sub_row.label(text=item.name, icon='MESH_CUBE')
-        if item.cage:
-            sub_row.operator('ezb.select_object', text='', icon='SELECT_SET').name = item.cage
 
 
 class EZB_UL_preview_group_objects_low(bpy.types.UIList):
@@ -87,6 +85,8 @@ class EZB_UL_preview_group_objects_low(bpy.types.UIList):
         sub_row.label(text=item.name, icon='MESH_CUBE')
         if item.cage:
             sub_row.operator('ezb.select_object', text='', icon='SELECT_SET').name = item.cage
+        else:
+            sub_row.operator('ezb.create_custom_cage', text='', icon='ADD').name = item.name
 
 
 class EZB_UL_bakers(bpy.types.UIList):

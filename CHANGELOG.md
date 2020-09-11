@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/0_3_0)
+### Added
+- New operators:
+    - Create custom cage
+    - Preview image as material
+
 ## [0.2.0](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/0_2_0)
 ### Added
 - Baking is now done in another process, making blender resposive in the meantime

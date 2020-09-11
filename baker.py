@@ -216,6 +216,9 @@ class EZB_Baker(bpy.types.PropertyGroup):
         self.baked_maps = -1
         self.total_maps_to_bake = len(list(self.child_device.get_bakeable_maps()))
 
+        for mat in self.materials:
+            mat.clear_preview_material()
+
         self.materials.clear()
 
         if bpy.context.preferences.addons[__package__.split('.')[0]].preferences.run_in_background:

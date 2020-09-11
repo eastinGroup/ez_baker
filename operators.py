@@ -498,6 +498,38 @@ class EZB_OT_create_custom_cage(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class EZB_OT_preview_image(bpy.types.Operator):
+    """Preview image"""
+    bl_idname = "ezb.preview_image"
+    bl_label = "Preview Image"
+    bl_options = {'UNDO'}
+
+    scene: bpy.props.StringProperty()
+    datapath: bpy.props.StringProperty()
+
+    def execute(self, context):
+        bpy.data.scenes.get(self.scene).path_resolve(self.datapath).preview()
+        if bpy.context.space_data.shading.type == 'SOLID':
+            bpy.context.space_data.shading.color_type = 'TEXTURE'
+
+        return {'FINISHED'}
+
+
+class EZB_OT_clear_preview_image(bpy.types.Operator):
+    """Clear preview image"""
+    bl_idname = "ezb.clear_preview_image"
+    bl_label = "Clear Preview Image"
+    bl_options = {'UNDO'}
+
+    scene: bpy.props.StringProperty()
+    datapath: bpy.props.StringProperty()
+
+    def execute(self, context):
+        bpy.data.scenes.get(self.scene).path_resolve(self.datapath).clear_preview_material()
+
+        return {'FINISHED'}
+
+
 classes = [
     EZB_OT_new_baker,
     EZB_OT_remove_baker,
@@ -515,6 +547,8 @@ classes = [
     EZB_OT_show_cage,
     EZB_OT_edit_bake_groups,
     EZB_OT_create_custom_cage,
+    EZB_OT_preview_image,
+    EZB_OT_clear_preview_image,
 ]
 
 

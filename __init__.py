@@ -52,18 +52,13 @@ class EZB_OT_install_dependencies(bpy.types.Operator):
             windows_command = [f'"{bpy.app.binary_path_python}"', "-m", "pip", "install", f'--target="{os.path.join(bpy.utils.user_resource("SCRIPTS", "addons"), "modules")}"', 'Pillow']
 
             output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True, timeout=3, universal_newlines=True)
-        except subprocess.CalledProcessError as exc:
-            print("Status : FAIL", exc.returncode, exc.output)
-            if 'EnvironmentError: [Errno 2] No such file or directory' in exc.output:
-                command_line = " ".join(windows_command)
-                error_msg = f'An error occurred trying to install the required library\nA command has been copied to your clipboard\nTry running it in your OS command line\nThen restart blender'
-                bpy.context.window_manager.clipboard = command_line
-                self.report({'ERROR'}, error_msg)
+        except:
+            command_line = " ".join(windows_command)
+            error_msg = f'An error occurred trying to install the required library\nA command has been copied to your clipboard\nTry running it in your OS command line\nThen restart blender'
+            bpy.context.window_manager.clipboard = command_line
+            self.report({'ERROR'}, error_msg)
 
-                return {'CANCELLED'}
-        else:
-            print("Output: \n{}\n".format(output))
-
+            return {'CANCELLED'}
         # bpy.ops.preferences.addon_disable(module=__name__)
         # bpy.ops.preferences.addon_enable(module=__name__)
 

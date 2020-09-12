@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New operators:
     - Create custom cage
     - Preview image as material
+- New maps:
+    - UV Layout (Requires the Pillow python library to be installed, Install it in the addon preferences)
 
 ## [0.2.0](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/0_2_0)
 ### Added

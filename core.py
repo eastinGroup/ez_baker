@@ -160,11 +160,12 @@ class EZB_PT_baker_panel(bpy.types.Panel):
         #split=row.split(factor=0.75, align=True)
         row.scale_y = 1.5
 
+        baker = None
         if (context.scene.EZB_Settings.baker_index < len(context.scene.EZB_Settings.bakers) and len(context.scene.EZB_Settings.bakers) > 0):
             baker = context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
         rub_row = row.row(align=True)
         bake_button_text = 'Bake'
-        if baker.is_baking:
+        if baker and baker.is_baking:
             rub_row.operator('ezb.cancel_bake', text='', icon='X')
             bake_button_text = baker.child_device.show_progress()
         bake_op = rub_row.operator('ezb.bake', text=bake_button_text, icon='IMPORT')
@@ -178,7 +179,7 @@ class EZB_PT_baker_panel(bpy.types.Panel):
 
         row.operator("wm.path_open", text="Open", icon=open_folder_icon).filepath = path
 
-        if baker.is_baking:
+        if baker and baker.is_baking:
             layout.label(text=f'Baking: {baker.baking_map_name}...')
 
             row = layout.row()

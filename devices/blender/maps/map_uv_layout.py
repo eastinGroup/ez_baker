@@ -2,66 +2,90 @@ import bpy
 import os
 from .map import EZB_Map_Blender
 
+try:
+    import PIL
 
-# TODO: Blender Foundation\Blender 2.83\2.83\scripts\addons\io_mesh_uv_layout
-# not working in background mode
-"""
-class EZB_Map_Uv_Layout(bpy.types.PropertyGroup, EZB_Map_Blender):
-    id = 'UV_LAYOUT'
-    pass_name = 'EMIT'
-    label = 'UV Layout'
-    icon = 'GROUP_UVS'
-    category = 'Mesh'
-    suffix: bpy.props.StringProperty(default='_UVL')
+    from PIL import Image, ImageDraw
 
-    color_space = 'Non-Color'
+    class EZB_Map_Uv_Layout(bpy.types.PropertyGroup, EZB_Map_Blender):
+        id = 'UV_LAYOUT'
+        pass_name = 'EMIT'
+        label = 'UV Layout'
+        icon = 'GROUP_UVS'
+        category = 'Mesh'
+        suffix: bpy.props.StringProperty(default='_UVL')
 
-    def do_bake(self):
-        '''Starts the bake process'''
-        for group in self.parent_baker.bake_groups:
-            group.setup_settings()
-            low = group.objects_low
+        color_space = 'Non-Color'
 
+        def iter_polygon_data_to_draw(self, objects, material):
+            for obj in objects:
+                uv_layer = obj.data.uv_layers.active.data
+                for polygon in obj.data.polygons:
+                    if obj.material_slots[polygon.material_index].material == material:
+                        start = polygon.loop_start
+                        end = start + polygon.loop_total
+                        uvs = tuple(tuple(uv.uv) for uv in uv_layer[start:end])
+                        yield uvs
+
+        def draw_lines(self, image, imagedraw, poligon_uvs):
+            coords = []
+            width, height = image.size
+            for i in range(len(poligon_uvs)):
+                start = poligon_uvs[i]
+                end = poligon_uvs[(i + 1) % len(poligon_uvs)]
+                coords.append((start[0] * width, start[1] * height))
+                coords.append((end[0] * width, end[1] * height))
+
+            for i in range(0, len(coords)):
+                coord1 = coords[i]
+                coord2 = coords[(i + 1) % len(coords)]
+                imagedraw.line([coord1, coord2], width=1)
+
+            # PIL draw
+
+        def do_bake(self):
+            '''Starts the bake process'''
+            self.pre_bake()
             materials_dict = {}
 
-            for x in low:
-                bpy.context.view_layer.objects.active = x
-                bpy.ops.object.mode_set(mode="EDIT")
-                for i, mat_slot in enumerate(x.material_slots):
-                    if mat_slot.material not in materials_dict:
-                        materials_dict[mat_slot.material] = []
-                    file_path = self.get_export_path(x.name + '_' + mat_slot.material.name)
-                    materials_dict[mat_slot.material].append(file_path)
+            for group in self.parent_baker.bake_groups:
+                group.setup_settings()
+                low = group.objects_low
+
+                for x in low:
+                    bpy.context.view_layer.objects.active = x
+                    bpy.ops.object.mode_set(mode="EDIT")
+                    for mat_slot in x.material_slots:
+                        if mat_slot.material not in materials_dict:
+                            materials_dict[mat_slot.material] = []
+                        materials_dict[mat_slot.material].append(x)
+
                     bpy.ops.mesh.select_all(action='DESELECT')
-                    x.active_material_index = i
-                    bpy.ops.object.material_slot_select()
-                    bpy.ops.uv.export_layout(filepath=file_path, export_all=False, modified=False, mode='PNG', size=(self.parent_baker.width, self.parent_baker.height), opacity=0, check_existing=False)
+                    bpy.ops.object.mode_set(mode="OBJECT")
 
-                bpy.ops.mesh.select_all(action='DESELECT')
-                bpy.ops.object.mode_set(mode="OBJECT")
+            for mat, objects in materials_dict.items():
+                img = Image.new("RGB", (self.parent_baker.width * self.parent_baker.get_supersampling, self.parent_baker.height * self.parent_baker.get_supersampling))
+                imagedraw = ImageDraw.Draw(img)
+                pixels = []
 
-            temp_images = []
-            for mat, image_paths in materials_dict.items():
-                pixels = [0.0] * self.parent_baker.width * self.parent_baker.height * 4
-                for image_path in image_paths:
-                    temp_img = bpy.data.images.new('temp', width=self.parent_baker.width, height=self.parent_baker.height)
-                    temp_img.source = 'FILE'
-                    temp_img.filepath = image_path
-                    temp_img.reload()
+                for uvs in self.iter_polygon_data_to_draw(objects, mat):
+                    self.draw_lines(img, imagedraw, uvs)
 
-                    temp_pixels = list(temp_img.pixels)
-                    for i in range(0, len(pixels)):
-                        if (i + 1) % 4 == 0:
-                            pixels[i] = max(pixels[i], temp_pixels[i])
-                        else:
-                            pixels[i] = min(pixels[i], temp_pixels[i])
-                    temp_images.append(temp_img)
                 final_image = self.get_image(mat)
+
+                print('image done')
+                for pixel in iter(img.getdata()):
+                    pixels.append(float(pixel[0]) / 255)
+                    pixels.append(float(pixel[1]) / 255)
+                    pixels.append(float(pixel[2]) / 255)
+                    pixels.append(1.0)
+
+                print('pixels created')
+
                 final_image.pixels = pixels
+                print('pixels set')
+                final_image.pack()
 
-            for x in temp_images:
-                os.remove(x.filepath)
-                bpy.data.images.remove(x, do_unlink=True)
-
-        self.postprocess_images()
-"""
+            self.postprocess_images()
+except ModuleNotFoundError:
+    pass

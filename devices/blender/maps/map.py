@@ -183,6 +183,7 @@ class EZB_Map_Blender(EZB_Map):
 
         ans = self.parent_baker.get_image(self, material.name)
         self.initialize_image(ans.image)
+        print(ans.image.source)
 
         found_material = self.created_images.add()
         found_material.material = material
@@ -303,11 +304,14 @@ class EZB_Map_Blender(EZB_Map):
 
             self.parent_device.texture_baked(self.id, created_image.material.name, image.filepath)
 
-    def do_bake(self):
-        '''Starts the bake process'''
+    def pre_bake(self):
         self.parent_device.update_baking_map(self.id)
         temp_materials.clear()
         self.created_images.clear()
+
+    def do_bake(self):
+        '''Starts the bake process'''
+        self.pre_bake()
 
         self.parent_device.setup_settings()
         self.setup_settings()

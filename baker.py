@@ -185,7 +185,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
             return 'Another Baker is already baking'
 
         for group in self.bake_groups:
-            if group.key == '' or ' ' in group.key or ',' in group.key:
+            if group.key == '' or ',' in group.key:
                 return 'Invalid bake group name {}'.format(group.key)
 
     @property

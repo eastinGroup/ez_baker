@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Preview image as material
 - New maps:
     - UV Layout (Requires the Pillow python library to be installed, Install it in the addon preferences)
+- Image compression options
+
+### Changed
+- Removed requirement to not have spaces in the bake group names
 
 ## [0.2.0](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/0_2_0)
 ### Added

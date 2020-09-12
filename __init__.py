@@ -47,12 +47,14 @@ class EZB_OT_install_dependencies(bpy.types.Operator):
         import ensurepip
         ensurepip.bootstrap()
 
-        try:
-            command = [bpy.app.binary_path_python, "-m", "pip", "install", f'--target="{os.path.join(bpy.utils.user_resource("SCRIPTS", "addons"), "modules")}"', 'Pillow']
-            windows_command = [f'"{bpy.app.binary_path_python}"', "-m", "pip", "install", f'--target="{os.path.join(bpy.utils.user_resource("SCRIPTS", "addons"), "modules")}"', 'Pillow']
+        command = [bpy.app.binary_path_python, "-m", "pip", "install", f'--target="{os.path.join(bpy.utils.user_resource("SCRIPTS", "addons"), "modules")}"', 'Pillow']
+        windows_command = [f'"{bpy.app.binary_path_python}"', "-m", "pip", "install", f'--target="{os.path.join(bpy.utils.user_resource("SCRIPTS", "addons"), "modules")}"', 'Pillow']
 
-            output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True, timeout=3, universal_newlines=True)
-        except:
+        p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = p.communicate()
+
+        if p.returncode != 0:
+            print(stderr)
             command_line = " ".join(windows_command)
             error_msg = f'An error occurred trying to install the required library\nA command has been copied to your clipboard\nTry running it in your OS command line\nThen restart blender'
             bpy.context.window_manager.clipboard = command_line

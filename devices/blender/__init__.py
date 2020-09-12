@@ -168,9 +168,13 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         ]
     )
 
+    compression: bpy.props.IntProperty(default=15, min=0, max=100, subtype='PERCENTAGE')
+
     def draw(self, layout, context):
         col = layout.column(align=True)
 
+        row = col.row(align=True)
+        row.prop(self, 'compression', text='Compression', expand=True)
         row = col.row(align=True)
         row.prop(self, 'device', text='Render', expand=True)
         row = col.row(align=True)
@@ -213,7 +217,7 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         bpy.context.scene.render.image_settings.file_format = file_format
         bpy.context.scene.render.image_settings.color_mode = baker.color_mode
         bpy.context.scene.render.image_settings.color_depth = baker.color_depth
-        bpy.context.scene.render.image_settings.compression = 0
+        bpy.context.scene.render.image_settings.compression = self.compression
         bpy.context.scene.render.image_settings.tiff_codec = 'DEFLATE'
 
     def update_baking_map(self, map_name):

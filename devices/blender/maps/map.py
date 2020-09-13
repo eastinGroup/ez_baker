@@ -5,7 +5,7 @@ import os
 import pathlib
 from ...map import EZB_Map
 from ....utilities import log
-from ....settings import file_formats_enum
+from ....settings import file_formats_enum_blender
 
 
 postprocess_enum = [
@@ -240,7 +240,7 @@ class EZB_Map_Blender(EZB_Map):
         return file_format
 
     def get_export_path(self, image_name):
-        return os.path.normpath(os.path.join(bpy.path.abspath(self.parent_baker.path), image_name) + file_formats_enum[self.file_format])
+        return os.path.normpath(os.path.join(bpy.path.abspath(self.parent_baker.path), image_name) + file_formats_enum_blender[self.file_format])
 
     def postprocess_images(self):
         bpy.context.scene.view_settings.view_transform = 'Standard'

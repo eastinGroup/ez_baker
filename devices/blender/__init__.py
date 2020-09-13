@@ -12,7 +12,6 @@ from multiprocessing.connection import Listener
 
 from ..device import EZB_Device
 from ...contexts import Custom_Render_Settings
-from ...settings import file_formats_enum
 from ...utilities import log
 
 from . import maps
@@ -55,8 +54,6 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
             os.remove(self.blender_save_file)
             print('MODAL CANCELLED')
             self.device.bake_cancelled()
-
-            self.redraw_region(context)
             return {'CANCELLED'}
 
         if event.type == 'TIMER':
@@ -71,6 +68,8 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
                     self.baker.baked_maps += 1
                     self.baker.current_baking_progress = float(self.current_bake) / self.total_bakes
 
+                self.redraw_region(context)
+
                 print(f'received: {msg}')
             except queue.Empty:
                 pass
@@ -78,11 +77,8 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
 
                 print('MODAL FINISHED')
                 self.device.bake_finish()
-                self.redraw_region(context)
                 os.remove(self.blender_save_file)
                 return {'FINISHED'}
-
-        self.redraw_region(context)
 
         return {'PASS_THROUGH'}
 

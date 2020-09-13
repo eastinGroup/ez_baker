@@ -4,23 +4,14 @@ mode_group_types = [
     #('PARENT', 'Parent', 'Group low and high by their parent names')
 ]
 
-file_formats_enum = {
-    'BMP': '.bmp',
-    'IRIS': '.sgi',
+file_formats_enum_blender = {
     'PNG': '.png',
-    'JPEG': '.jpg',
-    'JPEG2000': '.jp2',
     'TARGA': '.tga',
-    'TGA': '.tga',
-    'TARGA_RAW': '.tga',
-    'CINEON': '.cin',
-    'DPX': '.dpx',
-    'OPEN_EXR_MULTILAYER': '.exr',
-    'OPEN_EXR': '.exr',
-    'HDR': '.hdr',
     'TIFF': '.tiff',
-    'TIF': '.tiff',
-    'AVI_JPEG': '.avi',  # why not
-    'AVI_RAW': '.avi',
-    'FFMPEG': '.mkv'
+}
+
+file_formats_enum_handplane = {
+    'PNG': '.png',
+    'TGA': '.tga',
+    'TIF': '.tif',
 }

@@ -3,7 +3,7 @@ import subprocess
 import bpy
 
 from ..device import EZB_Device
-from ...settings import file_formats_enum
+from ...settings import file_formats_enum_handplane
 from ...utilities import log
 from . import maps
 from .maps.map_normal import tangent_space_enum
@@ -358,7 +358,7 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
             export_folder = baker.get_abs_export_path()
             # open explorer at baked textures
             for map in self.get_bakeable_maps():
-                img_path = os.path.join(export_folder, baker.key + map.suffix + file_formats_enum[baker.image_format])
+                img_path = os.path.join(export_folder, baker.key + map.suffix + file_formats_enum_handplane[baker.image_format])
                 img = baker.get_image(map, baker.key)
                 img.image.source = 'FILE'
                 img.image.filepath = img_path

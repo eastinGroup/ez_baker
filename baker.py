@@ -229,19 +229,26 @@ class EZB_Baker(bpy.types.PropertyGroup):
         col = layout.column(align=True)
         row = col.row(align=True)
         row.operator_menu_enum('ezb.select_texture_size', 'size', text='', icon='DOWNARROW_HLT')
-        split = row.split(align=True, factor=0.85)
+        split = row.split(align=True, factor=0.75)
         row2 = split.row(align=True)
         row2.prop(self, 'width', text='Width')
         row2.prop(self, 'height', text='Height')
-        split.prop(self, 'supersampling', text='')
+
+        supersampling_icon = 'KEYTYPE_JITTER_VEC'
+        if self.supersampling == 'x4':
+            supersampling_icon = 'KEYTYPE_KEYFRAME_VEC'
+        elif self.supersampling == 'x16':
+            supersampling_icon = 'KEYTYPE_EXTREME_VEC'
+
+        split.prop(self, 'supersampling', text='', icon=supersampling_icon)
 
         row = col.row(align=True)
         row.prop(self, 'padding', text='Padding', expand=False)
 
     def draw_image_type_settings(self, layout, context):
         split = layout.split(factor=0.75)
-
-        split.prop(self.child_device, 'image_format', text='', icon='IMAGE_DATA')
+        row = split.row()
+        row.prop(self.child_device, 'image_format', icon='IMAGE_DATA', expand=True)
 
         row = split.row(align=True)
         row.enabled = self.child_device.image_format != 'TARGA' and self.child_device.image_format != 'TGA'

@@ -59,7 +59,7 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
                     x.objects.unlink(self.preview_cage_object)
 
     cage_displacement: bpy.props.FloatProperty(
-        name='Cage Displacement',
+        name='Projection Cage Displacement',
         default=0.05,
         update=update_cage,
         step=0.1,

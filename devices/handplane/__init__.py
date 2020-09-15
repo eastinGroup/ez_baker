@@ -180,7 +180,7 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
         items=[
             ('TGA', 'TGA', 'Export images as .tga'),
             ('PNG', 'PNG', 'Export images as .png'),
-            ('TIF', 'TIF', 'Export images as .tif'),
+            ('TIF', 'TIFF', 'Export images as .tif'),
         ],
         default='PNG',
         name='Format'

@@ -20,8 +20,8 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
                 bpy.data.meshes.remove(mesh, do_unlink=True)
 
                 del mesh
-            bpy.context.space_data.shading.type = 'SOLID'
-            bpy.context.space_data.shading.color_type = 'OBJECT'
+            context.space_data.shading.type = 'SOLID'
+            context.space_data.shading.color_type = 'OBJECT'
 
             copy_objects = [self.get_cage_copy(x, context) for x in self.objects_low]
             copy_objects_data = [x.data for x in copy_objects]
@@ -134,24 +134,24 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
         return cage
 
     def setup_settings(self):
-        bake_options = bpy.context.scene.render.bake
+        bake_options = self.id_data.render.bake
         bake_options.use_cage = True
         bake_options.cage_extrusion = self.cage_displacement
 
     @property
     def parent_baker(self):
-        return next(x for x in bpy.context.scene.EZB_Settings.bakers if self in x.bake_groups[:])
+        return next(x for x in self.id_data.EZB_Settings.bakers if self in x.bake_groups[:])
 
     @property
     def objects_high(self):
         if self.parent_baker.child_device.use_low_to_low:
             return []
-        return self._get_objects(bpy.context.scene.EZB_Settings.suffix_high)
+        return self._get_objects(self.id_data.EZB_Settings.suffix_high)
 
     @property
     def objects_low(self):
-        low = self._get_objects(bpy.context.scene.EZB_Settings.suffix_low)
-        return [x for x in low if not x.name.endswith(bpy.context.scene.EZB_Settings.suffix_cage)]
+        low = self._get_objects(self.id_data.EZB_Settings.suffix_low)
+        return [x for x in low if not x.name.endswith(self.id_data.EZB_Settings.suffix_cage)]
 
 
 classes = [EZB_Bake_Group]

@@ -57,7 +57,7 @@ class EZB_OT_install_dependencies(bpy.types.Operator):
             print(stderr)
             command_line = " ".join(windows_command)
             error_msg = f'An error occurred trying to install the required library\nA command has been copied to your clipboard\nTry running it in your OS command line\nThen restart blender'
-            bpy.context.window_manager.clipboard = command_line
+            context.window_manager.clipboard = command_line
             self.report({'ERROR'}, error_msg)
 
             return {'CANCELLED'}

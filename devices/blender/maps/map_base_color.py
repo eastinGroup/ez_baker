@@ -21,6 +21,7 @@ class EZB_Map_Base_Color(bpy.types.PropertyGroup, EZB_Map_Blender):
 
     def setup_settings(self):
         super().setup_settings()
-        bpy.context.scene.render.bake.use_pass_direct = False
-        bpy.context.scene.render.bake.use_pass_indirect = False
-        bpy.context.scene.render.bake.use_pass_color = True
+        scene = self.id_data
+        scene.render.bake.use_pass_direct = False
+        scene.render.bake.use_pass_indirect = False
+        scene.render.bake.use_pass_color = True

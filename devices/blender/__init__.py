@@ -203,11 +203,12 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
 
     def setup_settings(self):
         baker = self.parent_baker
+        scene = self.id_data
 
-        bake_options = bpy.context.scene.render.bake
-        bpy.context.scene.render.engine = 'CYCLES'
-        bpy.context.scene.cycles.device = self.device
-        bpy.context.scene.cycles.progressive = 'PATH'
+        bake_options = scene.render.bake
+        scene.render.engine = 'CYCLES'
+        scene.cycles.device = self.device
+        scene.cycles.progressive = 'PATH'
         bake_options.use_selected_to_active = not self.use_low_to_low
         tile_size_relative = 1
         if self.tile_size == '1/8':
@@ -221,17 +222,17 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
 
         supersampling = baker.get_supersampling
 
-        bpy.context.scene.render.tile_x = int(baker.width * tile_size_relative * supersampling)
-        bpy.context.scene.render.tile_y = int(baker.height * tile_size_relative * supersampling)
+        scene.render.tile_x = int(baker.width * tile_size_relative * supersampling)
+        scene.render.tile_y = int(baker.height * tile_size_relative * supersampling)
 
         bake_options.margin = baker.padding * supersampling
         bake_options.use_clear = False
 
-        bpy.context.scene.render.image_settings.file_format = self.image_format
-        bpy.context.scene.render.image_settings.color_mode = 'RGB'
-        bpy.context.scene.render.image_settings.color_depth = baker.color_depth
-        bpy.context.scene.render.image_settings.compression = self.compression
-        bpy.context.scene.render.image_settings.tiff_codec = 'DEFLATE'
+        scene.render.image_settings.file_format = self.image_format
+        scene.render.image_settings.color_mode = 'RGB'
+        scene.render.image_settings.color_depth = baker.color_depth
+        scene.render.image_settings.compression = self.compression
+        scene.render.image_settings.tiff_codec = 'DEFLATE'
 
     def update_baking_map(self, map_name):
         if 'is_subprocess' in self.parent_baker and self.parent_baker['is_subprocess']:
@@ -261,7 +262,7 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
             time.sleep(0.5)
             connection.send('FIRST MESSAGE')
 
-        with Custom_Render_Settings():
+        with Custom_Render_Settings(self.id_data):
             for map in self.get_bakeable_maps():
                 map.do_bake()
 

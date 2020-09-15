@@ -51,7 +51,7 @@ class EZB_Device:
     def bake_cancelled(self):
         self.parent_baker.bake_cleanup()
 
-    def check_for_errors(self):
+    def check_for_errors(self, context):
         if not any(True for x in self.get_bakeable_maps()):
             return 'No maps to bake. Add a map with the "add map" dropdown. And make sure at least one of the maps is marked to be baked (eye icon)'
         return None

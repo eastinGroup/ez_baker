@@ -186,8 +186,8 @@ In this specific case, increasing the value will produce less noisy bevels.
 
     def setup_settings(self):
         '''Sets up render settings for this map'''
-        bpy.context.scene.cycles.bake_type = self.pass_name
-        bpy.context.scene.cycles.samples = self.samples
+        self.id_data.cycles.bake_type = self.pass_name
+        self.id_data.cycles.samples = self.samples
 
     def get_image(self, material):
         '''Gets the image associated to the bake material from the parent baker'''
@@ -249,7 +249,7 @@ In this specific case, increasing the value will produce less noisy bevels.
         return os.path.normpath(os.path.join(bpy.path.abspath(self.parent_baker.path), image_name) + file_formats_enum_blender[self.parent_device.image_format])
 
     def postprocess_images(self):
-        bpy.context.scene.view_settings.view_transform = 'Standard'
+        self.id_data.view_settings.view_transform = 'Standard'
 
         for created_image in self.created_images:
             image = created_image.image
@@ -293,7 +293,7 @@ In this specific case, increasing the value will produce less noisy bevels.
 
             try:
                 pathlib.Path(directory).mkdir(parents=True, exist_ok=True)
-                image.save_render(path_full, scene=bpy.context.scene)
+                image.save_render(path_full, scene=self.id_data)
                 log(f'path: {path_full}')
                 image.filepath = path_full
                 log('saved externally')

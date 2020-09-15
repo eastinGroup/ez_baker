@@ -8,7 +8,6 @@ from . import handlers
 from . import devices
 
 from .bake_group import EZB_Bake_Group
-from .contexts import Custom_Render_Settings
 from .outputs import EZB_Stored_Material
 from .utilities import log
 from .settings import devices_enum
@@ -56,7 +55,13 @@ class EZB_Baker(bpy.types.PropertyGroup):
 
     height: bpy.props.IntProperty(default=512, description='The height of the baked image', subtype='PIXEL')
     width: bpy.props.IntProperty(default=512, description='The width of the baked image', subtype='PIXEL')
-    padding: bpy.props.IntProperty(default=16, description='Edge padding to apply to UV islands', subtype='PIXEL')
+    padding: bpy.props.IntProperty(
+        default=16,
+        description='Edge padding to apply to UV islands',
+        subtype='FACTOR',
+        soft_min=4,
+        soft_max=32
+    )
     supersampling: bpy.props.EnumProperty(
         items=[
             ('x1', '1x AA', 'x1'),
@@ -138,7 +143,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
                         continue
         return ans
 
-    def check_for_errors(self):
+    def check_for_errors(self, context):
         troublesome_objects = self.get_troublesome_objects()
         if troublesome_objects:
             ans = 'Some objects have incorrect or missing materials:\n'
@@ -161,7 +166,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
         if self.is_baking:
             return 'Baking is currently in progress'
 
-        if any(x.is_baking for x in bpy.context.scene.EZB_Settings.bakers):
+        if any(x.is_baking for x in context.scene.EZB_Settings.bakers):
             return 'Another Baker is already baking'
 
         for group in self.bake_groups:

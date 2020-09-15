@@ -18,9 +18,10 @@ class EZB_Map_Diffuse(bpy.types.PropertyGroup, EZB_Map_Blender):
 
     def setup_settings(self):
         super().setup_settings()
-        bpy.context.scene.render.bake.use_pass_direct = self.use_pass_direct
-        bpy.context.scene.render.bake.use_pass_indirect = self.use_pass_indirect
-        bpy.context.scene.render.bake.use_pass_color = self.use_pass_color
+        scene = self.id_data
+        scene.render.bake.use_pass_direct = self.use_pass_direct
+        scene.render.bake.use_pass_indirect = self.use_pass_indirect
+        scene.render.bake.use_pass_color = self.use_pass_color
 
     def _draw_info(self, layout):
         row = layout.row(align=True)

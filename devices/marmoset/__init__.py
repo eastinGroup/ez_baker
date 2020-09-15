@@ -311,8 +311,8 @@ class EZB_Device_Marmoset(bpy.types.PropertyGroup, EZB_Device):
             device_datapath=self.path_from_id()
         )
 
-    def check_for_errors(self):
-        ans = super().check_for_errors()
+    def check_for_errors(self, context):
+        ans = super().check_for_errors(context)
         if ans:
             return ans
 

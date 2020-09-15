@@ -53,15 +53,10 @@ try:
                 low = group.objects_low
 
                 for x in low:
-                    bpy.context.view_layer.objects.active = x
-                    bpy.ops.object.mode_set(mode="EDIT")
                     for mat_slot in x.material_slots:
                         if mat_slot.material not in materials_dict:
                             materials_dict[mat_slot.material] = []
                         materials_dict[mat_slot.material].append(x)
-
-                    bpy.ops.mesh.select_all(action='DESELECT')
-                    bpy.ops.object.mode_set(mode="OBJECT")
 
             for mat, objects in materials_dict.items():
                 img = Image.new("RGB", (self.parent_baker.width * self.parent_baker.get_supersampling, self.parent_baker.height * self.parent_baker.get_supersampling))

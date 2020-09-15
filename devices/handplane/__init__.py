@@ -380,8 +380,8 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
 
         super().bake_finish()
 
-    def check_for_errors(self):
-        ans = super().check_for_errors()
+    def check_for_errors(self, context):
+        ans = super().check_for_errors(context)
         if ans:
             return ans
 

@@ -144,7 +144,7 @@ class EZB_PT_baker_panel(bpy.types.Panel):
 
         layout = self.layout
 
-        ezb_settings = bpy.context.scene.EZB_Settings
+        ezb_settings = context.scene.EZB_Settings
 
         bakers = [x for x in ezb_settings.bakers]
 
@@ -209,14 +209,14 @@ class EZB_PT_baker_settings_panel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        ezb_settings = bpy.context.scene.EZB_Settings
+        ezb_settings = context.scene.EZB_Settings
         bakers = [x for x in ezb_settings.bakers]
-        baker_index = bpy.context.scene.EZB_Settings.baker_index
+        baker_index = context.scene.EZB_Settings.baker_index
 
-        if not(bpy.context.scene.EZB_Settings.baker_index < len(bakers) and len(bakers) > 0):
+        if not(context.scene.EZB_Settings.baker_index < len(bakers) and len(bakers) > 0):
             layout.label(text='Select or create a Baker in the "Bakers" panel')
             return
-        baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
+        baker = context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
         layout.enabled = not baker.is_baking
 
         col = layout.column(align=False)
@@ -234,11 +234,11 @@ class EZB_PT_bake_groups_panel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
 
-        ezb_settings = bpy.context.scene.EZB_Settings
-        if not(bpy.context.scene.EZB_Settings.baker_index < len(ezb_settings.bakers) and len(ezb_settings.bakers) > 0):
+        ezb_settings = context.scene.EZB_Settings
+        if not(context.scene.EZB_Settings.baker_index < len(ezb_settings.bakers) and len(ezb_settings.bakers) > 0):
             layout.label(text='Select or create a Baker in the "Bakers" panel')
             return
-        baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
+        baker = context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
 
         #layout.enabled = not baker.is_baking
 
@@ -296,11 +296,11 @@ class EZB_PT_maps_panel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
 
-        ezb_settings = bpy.context.scene.EZB_Settings
-        if not(bpy.context.scene.EZB_Settings.baker_index < len(ezb_settings.bakers) and len(ezb_settings.bakers) > 0):
+        ezb_settings = context.scene.EZB_Settings
+        if not(context.scene.EZB_Settings.baker_index < len(ezb_settings.bakers) and len(ezb_settings.bakers) > 0):
             layout.label(text='Select or create a Baker in the "Bakers" panel')
             return
-        baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
+        baker = context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
         col = layout.column(align=True)
         col.operator_menu_enum('ezb.add_map', 'map', text='Add Map', icon='ADD')
         baker.draw_maps(col, context)
@@ -317,12 +317,12 @@ class EZB_PT_output_panel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
 
-        ezb_settings = bpy.context.scene.EZB_Settings
-        if not(bpy.context.scene.EZB_Settings.baker_index < len(ezb_settings.bakers) and len(ezb_settings.bakers) > 0):
+        ezb_settings = context.scene.EZB_Settings
+        if not(context.scene.EZB_Settings.baker_index < len(ezb_settings.bakers) and len(ezb_settings.bakers) > 0):
             layout.label(text='Select or create a Baker in the "Bakers" panel')
             return
 
-        baker = bpy.context.scene.EZB_Settings.bakers[bpy.context.scene.EZB_Settings.baker_index]
+        baker = context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
 
         if not baker.materials:
             layout.label(text='Bake in the "Bakers" panel to see the output images in this panel')

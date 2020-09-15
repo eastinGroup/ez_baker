@@ -68,10 +68,11 @@ class EZB_Map_Normal(bpy.types.PropertyGroup, EZB_Map_Blender):
 
     def setup_settings(self):
         super().setup_settings()
-        bpy.context.scene.render.bake.normal_space = self.normal_space
-        bpy.context.scene.render.bake.normal_r = self.normal_r
-        bpy.context.scene.render.bake.normal_g = self.normal_g
-        bpy.context.scene.render.bake.normal_b = self.normal_b
+        scene = self.id_data
+        scene.render.bake.normal_space = self.normal_space
+        scene.render.bake.normal_r = self.normal_r
+        scene.render.bake.normal_g = self.normal_g
+        scene.render.bake.normal_b = self.normal_b
 
     def _draw_info(self, layout):
         if self.parent_baker.color_depth == '8':

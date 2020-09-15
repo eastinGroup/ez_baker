@@ -50,16 +50,16 @@ class EZB_OT_run_marmoset_background(bpy.types.Operator):
         if event.type == 'TIMER':
             try:
                 msg = self.messages.get_nowait()
-                msg_split = msg.split(':::')
-                if len(msg_split) == 3:
-                    self.device.texture_baked(msg_split[0], msg_split[1], msg_split[2])
-                if len(msg_split) == 2 and msg_split[0] == 'WORKING':
-                    self.baker.baking_map_name = msg_split[1]
+
+                if msg[0] == 'BAKED':
+                    self.device.texture_baked(msg[1][0], msg[1][1], msg[1][2])
+                if msg[0] == 'WORKING':
+                    self.baker.baking_map_name = msg[1]
                     self.current_bake += 1
                     self.baker.baked_maps += 1
                     self.baker.current_baking_progress = float(self.current_bake) / self.total_bakes
-                if len(msg_split) == 2 and msg_split[0] == 'INFO':
-                    self.baker.baking_map_name = msg_split[1]
+                if msg[0] == 'INFO':
+                    self.baker.baking_map_name = msg[1]
 
                 self.redraw_region(context)
 
@@ -302,14 +302,9 @@ class EZB_Device_Marmoset(bpy.types.PropertyGroup, EZB_Device):
             img.image.reload()
 
     def bake_local(self):
-        command_argument = self.get_commandline_argument()
-
-        subprocess.run(command_argument)
-        self.bake_finish()
+        self.bake_multithread()
 
     def bake_multithread(self):
-        command_argument = self.get_commandline_argument()
-
         bpy.ops.ezb.run_marmoset_background(
             baker_scene=self.parent_baker.id_data.name,
             baker_datapath=self.parent_baker.path_from_id(),

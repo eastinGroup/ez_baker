@@ -42,7 +42,7 @@ def custom_set_attribute(obj, key, value):
     setattr(obj, key, value)
 
     if not close_enough(getattr(obj, key), value):
-        error_msg = f'\n!!!!!{obj.__class__}__{key} not set correctly ({getattr(obj, key)}->{value})\n'
+        error_msg = f'\n!!!!!{obj.__class__} - {key} not set correctly ({getattr(obj, key)}->{value})\n'
         connection.send(error_msg)
         print(error_msg)
 
@@ -51,7 +51,7 @@ for key, value in baker_info.items():
     if key != 'tangentSpace':
         custom_set_attribute(baker, key, value)
 
-connection.send(f'INFO:::Loading models...')
+connection.send(('INFO', 'Loading models...'))
 for bake_group_name, bake_group_info in bake_groups.items():
     bake_group = baker.addGroup(bake_group_name)
     bake_group.collapsed = True
@@ -75,20 +75,15 @@ for bake_group_name, bake_group_info in bake_groups.items():
         low_group.maxOffset = bake_group_info['cage_displacement'] * 100
         low_group.minOffset = bake_group_info['cage_displacement'] * 100
 
-# IF MULTIPLE TEXTURE SETS
-# baker.multipleTextureSets = True
-# print(baker.multipleTextureSets)
-# print(baker.getTextureSetCount())
 if baker.multipleTextureSets:
     for i in range(0, baker.getTextureSetCount()):
         baker.setTextureSetHeight(i, baker_info['outputHeight'])
         baker.setTextureSetWidth(i, baker_info['outputWidth'])
 
 for map_name, map_info in maps.items():
-    connection.send(f'WORKING:::{map_name}')
+    connection.send(('WORKING', map_name))
     for map in baker.getAllMaps():
         map.enabled = False
-    # print(map.__class__.__dict__.keys())
     map = baker.getMap(map_name)
     map.enabled = True
     for setting, value in map_info.items():
@@ -102,13 +97,13 @@ for map_name, map_info in maps.items():
             image_path_split = os.path.splitext(baker.outputPath)
             image_path = image_path_split[0] + '_' + name + '_' + map_info['suffix'] + image_path_split[1]
 
-            connection.send(f'{map_name}:::{name}:::{image_path}')
+            connection.send(('BAKED', (map_name, name, image_path)))
     else:
         image_path_split = os.path.splitext(baker.outputPath)
         image_path = image_path_split[0] + '_' + map_info['suffix'] + image_path_split[1]
 
-        connection.send(f'{map_name}:::{baker_info["name"]}:::{image_path}')
+        connection.send(('BAKED', (map_name, baker_info["name"], image_path)))
 
 
-connection.send('INFO:::Finished')
+connection.send(('INFO', 'Finished'))
 exit()

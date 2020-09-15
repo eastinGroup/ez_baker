@@ -44,7 +44,6 @@ class EZB_Map_Normal(bpy.types.PropertyGroup, EZB_Map_Blender):
         default='BEAUTY'
     )
     keep_custom_normals: bpy.props.BoolProperty(default=False, name='Keep Normals')
-    # TODO: add triangulation options (beauty or whatever)
 
     background_color = [0.5, 0.5, 1.0, 1.0]
 

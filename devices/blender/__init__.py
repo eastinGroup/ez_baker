@@ -201,8 +201,6 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         row = layout.row(align=True)
         row.prop(self, 'tile_size', text='Tile Size', expand=True)
 
-    # TODO: remove baker from all the function properties, get it with parent_baker property
-
     def setup_settings(self):
         baker = self.parent_baker
 

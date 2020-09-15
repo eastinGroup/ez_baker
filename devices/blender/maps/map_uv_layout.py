@@ -49,7 +49,6 @@ try:
             materials_dict = {}
 
             for group in self.parent_baker.bake_groups:
-                group.setup_settings()
                 low = group.objects_low
 
                 for x in low:

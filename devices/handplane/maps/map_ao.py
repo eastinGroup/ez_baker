@@ -9,7 +9,8 @@ class EZB_Map_AO(bpy.types.PropertyGroup, EZB_Map_Handplane):
     icon = 'SHADING_RENDERED'
 
     suffix: bpy.props.StringProperty(default='_AO')
-    active: bpy.props.BoolProperty(default=False)
+    active: bpy.props.BoolProperty(default=True)
+    bake: bpy.props.BoolProperty(default=False)
 
     sample_radius: bpy.props.FloatProperty(name='Sample Radius', default=1.0)
     sample_count: bpy.props.IntProperty(name='Sample Count', default=20)

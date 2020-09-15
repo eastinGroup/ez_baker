@@ -9,7 +9,8 @@ class EZB_Map_Curvature(bpy.types.PropertyGroup, EZB_Map_Marmoset):
     category = 'Surface'
 
     suffix: bpy.props.StringProperty(default='_curve')
-    active: bpy.props.BoolProperty(default=False)
+    active: bpy.props.BoolProperty(default=True)
+    bake: bpy.props.BoolProperty(default=False)
 
     dither: bpy.props.BoolProperty(default=True, name='Dither')
     normalize: bpy.props.BoolProperty(default=True, name='Normalize')

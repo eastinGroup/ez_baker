@@ -111,15 +111,7 @@ class EZB_UL_bake_groups(bpy.types.UIList):
         if not data.child_device.use_low_to_low:
             row.operator('ezb.show_high_objects', text='High: {}'.format(len(high_objs)), emboss=False).index = index
         row.operator('ezb.show_low_objects', text='Low: {}'.format(len(low_objs)), emboss=False).index = index
-        '''
-        # for not storing the undo step, but it can crash blender
-        row.operator(
-                'ezb.show_cage', 
-                text='cage',
-                icon="HIDE_OFF" if item.preview_cage else "HIDE_ON",
-                emboss=False
-                )
-        '''
+
         if not data.child_device.use_low_to_low:
             row.prop(
                 item,

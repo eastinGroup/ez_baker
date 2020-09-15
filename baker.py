@@ -12,23 +12,6 @@ from .outputs import EZB_Stored_Material
 from .utilities import log
 from .settings import devices_enum
 
-print('baker')
-
-
-def set_path(self, value):
-    # checks if the provided path is inside a subdirectory of the current file to save it as a relative path
-    if bpy.data.is_saved:
-        value = os.path.realpath(bpy.path.abspath(value))
-        file_path = os.path.dirname(os.path.realpath(bpy.path.abspath(bpy.data.filepath)))
-        if os.path.commonprefix([os.path.realpath(bpy.path.abspath(value)), file_path]) == file_path:
-            value = bpy.path.relpath(value)
-
-    self.real_path = value
-
-
-def get_path(self):
-    return self.real_path
-
 
 class EZB_Baker(bpy.types.PropertyGroup):
     key: bpy.props.StringProperty(default='')
@@ -43,6 +26,19 @@ class EZB_Baker(bpy.types.PropertyGroup):
     )
     devices: bpy.props.PointerProperty(type=devices.EZB_Devices)
 
+    def set_path(self, value):
+        # checks if the provided path is inside a subdirectory of the current file to save it as a relative path
+        if bpy.data.is_saved:
+            value = os.path.realpath(bpy.path.abspath(value))
+            file_path = os.path.dirname(os.path.realpath(bpy.path.abspath(bpy.data.filepath)))
+            if os.path.commonprefix([os.path.realpath(bpy.path.abspath(value)), file_path]) == file_path:
+                value = bpy.path.relpath(value)
+
+        self.real_path = value
+
+    def get_path(self):
+        return self.real_path
+
     real_path: bpy.props.StringProperty(default="")
     path: bpy.props.StringProperty(
         name="Output Path",
@@ -56,7 +52,7 @@ class EZB_Baker(bpy.types.PropertyGroup):
     height: bpy.props.IntProperty(default=512, description='The height of the baked image', subtype='PIXEL')
     width: bpy.props.IntProperty(default=512, description='The width of the baked image', subtype='PIXEL')
     padding: bpy.props.IntProperty(
-        default=16,
+        default=8,
         description='Edge padding to apply to UV islands',
         subtype='FACTOR',
         soft_min=4,

@@ -44,10 +44,12 @@ class EZB_Map_Curvature(bpy.types.PropertyGroup, EZB_Map_Blender):
     id = 'CURVATURE'
     pass_name = 'EMIT'
     label = 'Curvature'
-    icon = 'SPHERECURVE'
+    icon = 'IPO_EASE_IN_OUT'
     category = 'Mesh'
 
     suffix: bpy.props.StringProperty(default='_CURV')
+    active: bpy.props.BoolProperty(default=True)
+    bake: bpy.props.BoolProperty(default=False)
 
     background_color = [0.5, 0.5, 0.5, 1.0]
 

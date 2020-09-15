@@ -84,11 +84,13 @@ class Map_Context_ID(Map_Context):
 class EZB_Map_ID(bpy.types.PropertyGroup, EZB_Map_Blender):
     id = 'ID'
     pass_name = 'EMIT'
-    label = 'ID'
+    label = 'Material ID'
     icon = 'RNA'
     category = 'Mesh'
 
     suffix: bpy.props.StringProperty(default='_ID')
+    active: bpy.props.BoolProperty(default=True)
+    bake: bpy.props.BoolProperty(default=False)
 
     background_color = [0.0, 0.0, 0.0, 1.0]
 

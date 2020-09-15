@@ -232,14 +232,16 @@ class EZB_Device_Marmoset(bpy.types.PropertyGroup, EZB_Device):
     ignoreTransforms: bpy.props.BoolProperty(default=False, name='Ignore Transforms', description='Mesh transforms, such as rotation and position will be ignored for the purpose of baking')
     ignoreBackfaces: bpy.props.BoolProperty(default=True, name='Ignore Back Faces', description='Ignores the back sides if triangles on the high-poly mesh when baking')
     fixMirroredTangents: bpy.props.BoolProperty(default=False, name='Fix Mirrored Tangents', description='Attempts to fix any issues arising from mirrored tangents in low poly meshes')
-    tangentSpace: bpy.props.EnumProperty(items=[
-        ('Mikk', 'Mikk / xNormal', ''),
-        ('Marmoset', 'Marmoset', ''),
-        ('Maya', 'Maya', ''),
-        ('3D Studio Max', '3D Studio Max', ''),
-        ('Unity', 'Unity 4.x', ''),
-    ],
-        name='Tangent Space'
+    tangentSpace: bpy.props.EnumProperty(
+        items=[
+            ('Mikk', 'Mikk / xNormal', ''),
+            ('Marmoset', 'Marmoset', ''),
+            ('Maya', 'Maya', ''),
+            ('3D Studio Max', '3D Studio Max', ''),
+            ('Unity', 'Unity 4.x', ''),
+        ],
+        name='Tangent Space',
+        description='Selects a tangent-space convention for all low-poly meshes'
     )
     outputSoften: bpy.props.FloatProperty(
         default=0.0,

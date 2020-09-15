@@ -9,7 +9,8 @@ class EZB_Map_Ambient_Occlusion(bpy.types.PropertyGroup, EZB_Map_Marmoset):
     category = 'Lighting'
 
     suffix: bpy.props.StringProperty(default='_ao')
-    active: bpy.props.BoolProperty(default=False)
+    active: bpy.props.BoolProperty(default=True)
+    bake: bpy.props.BoolProperty(default=False)
 
     dither: bpy.props.BoolProperty(default=True, name='Dither')
     addCavity: bpy.props.BoolProperty(default=False, name='Add Cavity')

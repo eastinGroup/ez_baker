@@ -12,6 +12,9 @@ class EZB_Map_AO(bpy.types.PropertyGroup, EZB_Map_Blender):
     suffix: bpy.props.StringProperty(default='_AO')
     samples: bpy.props.IntProperty(name='Samples', default=128)
 
+    active: bpy.props.BoolProperty(default=True)
+    bake: bpy.props.BoolProperty(default=False)
+
     background_color = [0.5, 0.5, 0.5, 1.0]
 
     def _draw_info(self, layout):

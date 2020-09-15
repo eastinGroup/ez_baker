@@ -10,11 +10,8 @@ from bpy.props import (
 )
 
 import bpy
-import bpy.utils.previews
 import os
-from .addon_updater import ops
-from .addon_updater.core import Updater as updater
-
+from .addon_updater import ops as updater_ops
 
 bl_info = {
     "name": "EZ Baker",
@@ -157,7 +154,7 @@ class EZB_preferences(bpy.types.AddonPreferences):
         row.alert = not(self.marmoset_path and os.path.isfile(os.path.join(self.marmoset_path, 'toolbag.exe')))
         row.prop(self, 'marmoset_path')
         #layout.prop(self, 'marmoset_path')
-        ops.update_settings_ui(self, context)
+        updater_ops.update_settings_ui(self, context)
 
 
 classes = [EZB_OT_install_dependencies, EZB_preferences]
@@ -166,7 +163,7 @@ classes = [EZB_OT_install_dependencies, EZB_preferences]
 def register():
     from bpy.utils import register_class
 
-    ops.register(bl_info)
+    updater_ops.register(bl_info)
 
     for cls in classes:
         register_class(cls)
@@ -187,4 +184,4 @@ def unregister():
     for cls in reversed(classes):
         unregister_class(cls)
 
-    ops.unregister()
+    updater_ops.unregister()

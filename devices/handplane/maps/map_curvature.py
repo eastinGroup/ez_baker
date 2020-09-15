@@ -9,7 +9,8 @@ class EZB_Map_Curvature(bpy.types.PropertyGroup, EZB_Map_Handplane):
     icon = 'SPHERECURVE'
 
     suffix: bpy.props.StringProperty(default='_CURV')
-    active: bpy.props.BoolProperty(default=False)
+    active: bpy.props.BoolProperty(default=True)
+    bake: bpy.props.BoolProperty(default=False)
 
     use_ray_sampling: bpy.props.BoolProperty(name='Use Ray Sampling', default=False)
     sample_radius: bpy.props.FloatProperty(name='Sample Radius', default=0.05)

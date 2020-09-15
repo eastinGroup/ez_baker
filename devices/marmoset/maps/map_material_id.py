@@ -9,7 +9,8 @@ class EZB_Map_Material_ID(bpy.types.PropertyGroup, EZB_Map_Marmoset):
     category = 'IDs & Masks'
 
     suffix: bpy.props.StringProperty(default='_matid')
-    active: bpy.props.BoolProperty(default=False)
+    active: bpy.props.BoolProperty(default=True)
+    bake: bpy.props.BoolProperty(default=False)
 
     def _draw_info(self, layout):
         pass

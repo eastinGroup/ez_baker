@@ -78,6 +78,7 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
                 print('MODAL FINISHED')
                 self.device.bake_finish()
                 os.remove(self.blender_save_file)
+                self.redraw_region(context)
                 return {'FINISHED'}
 
         return {'PASS_THROUGH'}
@@ -123,6 +124,7 @@ class EZB_OT_run_blender_background(bpy.types.Operator):
                     print(msg)
                     messages.put(msg)
                 except EOFError:
+                    print('Connection Ended')
                     break
                 except ConnectionResetError:
                     print('Connection Ended')
@@ -164,16 +166,39 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         ]
     )
 
-    compression: bpy.props.IntProperty(default=15, min=0, max=100, subtype='PERCENTAGE')
+    image_format: bpy.props.EnumProperty(
+        items=[
+            ('TARGA', 'TGA', 'Export images as .tga'),
+            ('PNG', 'PNG', 'Export images as .png'),
+            ('TIFF', 'TIFF', 'Export images as .tiff'),
+        ],
+        default='PNG',
+        name='Format'
+    )
+
+    bake_type: bpy.props.EnumProperty(items=[
+        ('H2L', 'High to Low', ''),
+        ('L2L', 'Low to Low', '')
+    ],
+        name='Bake Type'
+    )
+
+    compression: bpy.props.IntProperty(default=15, min=0, max=100, name='Image Compression', subtype='PERCENTAGE')
+
+    @property
+    def use_low_to_low(self):
+        return self.bake_type == 'L2L'
 
     def draw(self, layout, context):
-        col = layout.column(align=True)
 
-        row = col.row(align=True)
-        row.prop(self, 'compression', text='Compression', expand=True)
-        row = col.row(align=True)
+        row = layout.row(align=True)
+        row.prop(self, 'bake_type', expand=True)
+
+        row = layout.row(align=True)
+        row.prop(self, 'compression', expand=True)
+        row = layout.row(align=True)
         row.prop(self, 'device', text='Render', expand=True)
-        row = col.row(align=True)
+        row = layout.row(align=True)
         row.prop(self, 'tile_size', text='Tile Size', expand=True)
 
     # TODO: remove baker from all the function properties, get it with parent_baker property
@@ -185,7 +210,7 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         bpy.context.scene.render.engine = 'CYCLES'
         bpy.context.scene.cycles.device = self.device
         bpy.context.scene.cycles.progressive = 'PATH'
-        bake_options.use_selected_to_active = not baker.use_low_to_low
+        bake_options.use_selected_to_active = not self.use_low_to_low
         tile_size_relative = 1
         if self.tile_size == '1/8':
             tile_size_relative = 0.125
@@ -204,14 +229,8 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         bake_options.margin = baker.padding * supersampling
         bake_options.use_clear = False
 
-        file_format = 'PNG'
-        if baker.image_format == 'TGA':
-            file_format = 'TARGA'
-        elif baker.image_format == 'TIF':
-            file_format = 'TIFF'
-
-        bpy.context.scene.render.image_settings.file_format = file_format
-        bpy.context.scene.render.image_settings.color_mode = baker.color_mode
+        bpy.context.scene.render.image_settings.file_format = self.image_format
+        bpy.context.scene.render.image_settings.color_mode = 'RGB'
         bpy.context.scene.render.image_settings.color_depth = baker.color_depth
         bpy.context.scene.render.image_settings.compression = self.compression
         bpy.context.scene.render.image_settings.tiff_codec = 'DEFLATE'

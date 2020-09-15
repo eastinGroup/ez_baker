@@ -9,7 +9,7 @@ from ....settings import file_formats_enum_blender
 
 
 postprocess_enum = [
-    ('NONE', 'None', ''),
+    ('NONE', 'None (Round)', 'Default'),
     ('DITHER', 'Dither (x100 SLOWER!)', 'Dither (EXPERIMENTAL 100x SLOWER, VERY SLOW)'),
     ('TRUNCATE', 'Truncate', 'Custom Truncate (EXPERIMENTAL)')
 ]
@@ -89,6 +89,7 @@ class Dither:
 class Map_Context():
     def __init__(self, map, high, low):
         self.baker = map.parent_baker
+        self.device = map.parent_baker.child_device
         self.map = map
         self.high = high
         self.low = low
@@ -161,13 +162,27 @@ temp_materials = {}
 class EZB_Map_Blender(EZB_Map):
     pass_name = 'TEST'
 
-    samples: bpy.props.IntProperty(default=1, min=1)
+    samples: bpy.props.IntProperty(
+        default=1,
+        min=1,
+        name='Samples',
+        description='''It determines how many rays will be cast for each pixel, higher values will reduce noise.
+For the normal map usually only one sample is needed. 
+The only reason you’d want to increase it is if you want to bake a bevel shader. 
+In this specific case, increasing the value will produce less noisy bevels.
+        '''
+    )
 
     context = Map_Context
 
     created_images: bpy.props.CollectionProperty(type=EZB_Created_Image)
 
-    postprocess: bpy.props.EnumProperty(items=postprocess_enum, default='NONE')
+    postprocess: bpy.props.EnumProperty(
+        items=postprocess_enum,
+        default='NONE',
+        name='Postprocess',
+        description='This option lets you determine how the precission error is resolved when converting the image to 8-bit'
+    )
 
     def setup_settings(self):
         '''Sets up render settings for this map'''
@@ -230,17 +245,8 @@ class EZB_Map_Blender(EZB_Map):
         for mat_slot in object.material_slots:
             mat_slot.material = self.create_bake_material(mat_slot.material)
 
-    @property
-    def file_format(self):
-        file_format = 'PNG'
-        if self.parent_baker.image_format == 'TGA':
-            file_format = 'TARGA'
-        elif self.parent_baker.image_format == 'TIF':
-            file_format = 'TIFF'
-        return file_format
-
     def get_export_path(self, image_name):
-        return os.path.normpath(os.path.join(bpy.path.abspath(self.parent_baker.path), image_name) + file_formats_enum_blender[self.file_format])
+        return os.path.normpath(os.path.join(bpy.path.abspath(self.parent_baker.path), image_name) + file_formats_enum_blender[self.parent_device.image_format])
 
     def postprocess_images(self):
         bpy.context.scene.view_settings.view_transform = 'Standard'
@@ -281,7 +287,7 @@ class EZB_Map_Blender(EZB_Map):
                     image.pixels = return_pixels
                     image.pack()
 
-            image.file_format = self.file_format
+            image.file_format = self.parent_device.image_format
             path_full = self.get_export_path(image.name)
             directory = os.path.dirname(path_full)
 

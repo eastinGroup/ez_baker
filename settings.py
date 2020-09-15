@@ -4,6 +4,12 @@ mode_group_types = [
     #('PARENT', 'Parent', 'Group low and high by their parent names')
 ]
 
+devices_enum = [
+    ('BLENDER', 'Blender', 'Blender', 'BLENDER', 0),
+    ('HANDPLANE', 'Handplane', 'Handplane', 'AXIS_TOP', 1),
+    ('MARMOSET', 'Marmoset Toolbag', 'Marmoset Toolbag', 'MESH_MONKEY', 2),
+]
+
 file_formats_enum_blender = {
     'PNG': '.png',
     'TARGA': '.tga',
@@ -14,4 +20,9 @@ file_formats_enum_handplane = {
     'PNG': '.png',
     'TGA': '.tga',
     'TIF': '.tif',
+}
+
+file_formats_enum_marmoset = {
+    'PNG': '.png',
+    'TGA': '.tga',
 }

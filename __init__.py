@@ -21,7 +21,7 @@ bl_info = {
     "description": "Bake textures by grouping objects",
     "author": "AquaticNightmare",
     "blender": (2, 83, 0),
-    "version": (0, 3, 0),
+    "version": (1, 0, 0),
     "category": "3D View",
     "location": "3D View > Tools Panel > EZ Baker",
     "warning": "",
@@ -115,7 +115,12 @@ class EZB_preferences(bpy.types.AddonPreferences):
         return self.abs_handplane_path
 
     abs_handplane_path: StringProperty(default='C:\\Program Files\\Handplane3D LLC\\Handplane Baker\\')
-    handplane_path: bpy.props.StringProperty(subtype='DIR_PATH', set=set_abs_handplane_path, get=get_abs_handplane_path)
+    handplane_path: bpy.props.StringProperty(
+        subtype='DIR_PATH',
+        name='Handplane Path',
+        set=set_abs_handplane_path,
+        get=get_abs_handplane_path,
+    )
 
     def set_abs_marmoset_path(self, value):
         new_path = os.path.abspath(bpy.path.abspath(value))
@@ -125,19 +130,32 @@ class EZB_preferences(bpy.types.AddonPreferences):
         return self.abs_marmoset_path
 
     abs_marmoset_path: StringProperty(default='C:\\Program Files\\Marmoset\\Toolbag 3\\')
-    marmoset_path: bpy.props.StringProperty(subtype='DIR_PATH', set=set_abs_marmoset_path, get=get_abs_marmoset_path)
+    marmoset_path: bpy.props.StringProperty(
+        subtype='DIR_PATH',
+        name='Marmoset Toolbag Path',
+        set=set_abs_marmoset_path,
+        get=get_abs_marmoset_path,
+    )
 
     def draw(self, context):
         layout = self.layout
 
         if not module_dependencies_installed:
             layout.label(text='This addon requires to have the Pillow library installed for the Uvlayout map to be available')
+            layout.label(text='This is completely optional and does not affect any other aspect of the addon')
             layout.label(text='You can install this library with the button below')
             row = layout.row()
             row.scale_y = 2
             row.operator('ezb.install_dependencies')
         layout.prop(self, 'run_in_background')
-        layout.prop(self, 'handplane_path')
+
+        row = layout.row()
+        row.alert = not(self.handplane_path and os.path.isfile(os.path.join(self.handplane_path, 'handplaneCmd.exe')))
+        row.prop(self, 'handplane_path')
+
+        row = layout.row()
+        row.alert = not(self.marmoset_path and os.path.isfile(os.path.join(self.marmoset_path, 'toolbag.exe')))
+        row.prop(self, 'marmoset_path')
         #layout.prop(self, 'marmoset_path')
         ops.update_settings_ui(self, context)
 

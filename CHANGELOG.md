@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/0_3_0)
+### Added
+- Baking with marmoset
+    - Ambient Occlusion
+    - Bent Normals
+    - Bent Normals (Object)
+    - Concavity
+    - Convexity
+    - Curvature
+    - Group ID
+    - Height
+    - Material ID
+    - Normals (Object)
+    - Normals
+    - Object ID
+    - Position
+    - Thickness
+    - UV island
+    - Wireframe
+
+- Descriptions to more UI properties
+
+### Changed
+- Improved UI layout
+- Maps in the map selection dropdown are now sorted by name
+
+### Fixed
+- Handplane baker was not baking if the export path had spaces in it
+- Baking with tiff format with handplane was not loading back the textures into blender
+- Sluggish user interface while baking
+
 ## [0.3.0](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/0_3_0)
 ### Added
 - New operators:

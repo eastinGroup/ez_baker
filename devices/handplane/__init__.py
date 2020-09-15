@@ -1,6 +1,7 @@
 import os
 import subprocess
 import bpy
+import tempfile
 
 from ..device import EZB_Device
 from ...settings import file_formats_enum_handplane
@@ -29,8 +30,6 @@ class EZB_OT_run_handplane_background(bpy.types.Operator):
     """Updates UI based on handplane progress"""
     bl_idname = "ezb.run_handplane_background"
     bl_label = "Updates UI with handplane information"
-
-    command_argument: bpy.props.StringProperty()
 
     baker_scene: bpy.props.StringProperty()
     baker_datapath: bpy.props.StringProperty()
@@ -78,8 +77,8 @@ class EZB_OT_run_handplane_background(bpy.types.Operator):
 
     def execute(self, context):
         import subprocess
-
-        self.process = subprocess.Popen(self.command_argument)
+        path, command_argument = self.device.get_commandline_argument()
+        self.process = subprocess.Popen(command_argument, cwd=path)
 
         wm = context.window_manager
         self._timer = wm.event_timer_add(0.1, window=context.window)
@@ -177,6 +176,18 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
     maps: bpy.props.PointerProperty(type=maps.EZB_Maps_Handplane)
     use_dither: bpy.props.BoolProperty(default=True)
 
+    image_format: bpy.props.EnumProperty(
+        items=[
+            ('TGA', 'TGA', 'Export images as .tga'),
+            ('PNG', 'PNG', 'Export images as .png'),
+            ('TIF', 'TIF', 'Export images as .tif'),
+        ],
+        default='PNG',
+        name='Format'
+    )
+
+    use_low_to_low = False
+
     def draw(self, layout, context):
         col = layout.column(align=True)
         row = col.row(align=True)
@@ -191,13 +202,18 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
         root_folder = os.path.join(baker.get_abs_export_path(), file_name)
         os.makedirs(root_folder, exist_ok=True)
 
-        project_file_path = os.path.join(root_folder, file_name + '.HPB')
+        temp_folder = root_folder
+        if ' ' in temp_folder:
+            temp_folder = tempfile.gettempdir()
+        if ' ' in temp_folder:
+            temp_folder = tempfile.mkdtemp(dir="c:/ezbaker_temp")
+        project_file_path = os.path.join(temp_folder, '__temp_baker__.HPB')
 
         meshes_folder = os.path.join(root_folder, 'meshes')
         os.makedirs(meshes_folder, exist_ok=True)
 
         # set extention and bit depth
-        texture_format = baker.image_format.lower()
+        texture_format = self.image_format.lower()
 
         bit_depth = int(baker.color_depth)
         if texture_format == 'tga':
@@ -215,10 +231,10 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
                             custom_write(file, 'String name = "{}";'.format(bake_group.key), 3)
                             custom_write(file, 'HighPolyModelConfiguration highModels', 3)
                             with Write_Wrapper(file, '[', ']', 3):
-                                models = bake_group.objects_high if not baker.use_low_to_low else bake_group.objects_low
+                                models = bake_group.objects_high
                                 for model in models:
                                     with Write_Wrapper(file, '{', '}', 4):
-                                        name = model.name if not baker.use_low_to_low else '__' + model.name + '__'
+                                        name = model.name
                                         write_value(file, 'Filename', 'model', export_obj(meshes_folder, model, name, t_space=False, modifiers=True), 4)
                                         write_value(file, 'bool', 'overrideMaterial', False, 4)
                                         write_value(file, 'int32', 'material', 0, 4)
@@ -232,7 +248,7 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
                                     with Write_Wrapper(file, '{', '}', 4):
                                         cage = self.id_data.objects.get(model.name + self.id_data.EZB_Settings.suffix_cage)
                                         cage_path = '' if not cage else export_obj(meshes_folder, cage, cage.name, t_space=True, modifiers=True)
-                                        write_value(file, 'Filename', 'model', export_obj(meshes_folder, model, model.name, t_space=True, modifiers=not baker.use_low_to_low), 4)
+                                        write_value(file, 'Filename', 'model', export_obj(meshes_folder, model, model.name, t_space=True, modifiers=True), 4)
                                         write_value(file, 'Filename', 'cageModel', cage_path, 4)
                                         write_value(file, 'bool', 'overrideCageOffset', False, 4)
                                         write_value(file, 'float', 'autoCageOffset', bake_group.cage_displacement, 4)
@@ -334,19 +350,16 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
         project_file_path = project_file_path.replace('\\', '/')
         command_argument = handplane_cmd + ' "/project "' + project_file_path + '""'
 
-        return command_argument
+        return os.path.split(project_file_path)[0], command_argument
 
     def bake_local(self):
-        command_argument = self.get_commandline_argument()
+        path, command_argument = self.get_commandline_argument()
 
-        subprocess.run(command_argument)
+        subprocess.run(command_argument, cwd=path)
         self.bake_finish()
 
     def bake_multithread(self):
-        command_argument = self.get_commandline_argument()
-
         bpy.ops.ezb.run_handplane_background(
-            command_argument=command_argument,
             baker_scene=self.parent_baker.id_data.name,
             baker_datapath=self.parent_baker.path_from_id(),
             device_datapath=self.path_from_id()
@@ -358,7 +371,7 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
             export_folder = baker.get_abs_export_path()
             # open explorer at baked textures
             for map in self.get_bakeable_maps():
-                img_path = os.path.join(export_folder, baker.key + map.suffix + file_formats_enum_handplane[baker.image_format])
+                img_path = os.path.join(export_folder, baker.key + map.suffix + file_formats_enum_handplane[self.image_format])
                 img = baker.get_image(map, baker.key)
                 img.image.source = 'FILE'
                 img.image.filepath = img_path

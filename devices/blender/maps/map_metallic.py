@@ -35,10 +35,8 @@ class Map_Context_Property_Switcher(Map_Context):
     def __init__(self, map, high, low):
         super().__init__(map, high, low)
 
-        baker = map.parent_baker
-
         self.materials = dict()
-        if baker.use_low_to_low:
+        if self.device.use_low_to_low:
             for mat_slot in low.material_slots:
                 mat_slot.material = self.create_material(mat_slot.material, self.from_socket, self.to_socket)
         else:

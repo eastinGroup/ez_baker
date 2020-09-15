@@ -58,8 +58,15 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
                 for x in collections:
                     x.objects.unlink(self.preview_cage_object)
 
-    cage_displacement: bpy.props.FloatProperty(name='Cage Displacement', default=0.05, update=update_cage, step=0.1, precision=3)
-    preview_cage: bpy.props.BoolProperty(update=update_cage)
+    cage_displacement: bpy.props.FloatProperty(
+        name='Cage Displacement',
+        default=0.05,
+        update=update_cage,
+        step=0.1,
+        precision=3,
+        description='Cage extrusion value. It represents the distance from which the rays will be cast for the purpose of baking'
+    )
+    preview_cage: bpy.props.BoolProperty(update=update_cage, name='Preview Cage', description='Creates a temporary object representing the cage used to project the rays')
     preview_cage_object: bpy.props.PointerProperty(type=bpy.types.Object)
 
     def _remove_numbering(self, name):
@@ -137,7 +144,7 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
 
     @property
     def objects_high(self):
-        if self.parent_baker.use_low_to_low:
+        if self.parent_baker.child_device.use_low_to_low:
             return []
         return self._get_objects(bpy.context.scene.EZB_Settings.suffix_high)
 

@@ -1,9 +1,10 @@
 from . import handplane
 from . import blender
+from . import marmoset
 import bpy
 
 
-devices = [blender.EZB_Device_Blender, handplane.EZB_Device_Handplane]
+devices = [blender.EZB_Device_Blender, handplane.EZB_Device_Handplane, marmoset.EZB_Device_Marmoset]
 
 device_annotations = {}
 for x in devices:
@@ -19,6 +20,7 @@ def register():
 
     blender.register()
     handplane.register()
+    marmoset.register()
 
     for cls in classes:
         register_class(cls)
@@ -29,6 +31,7 @@ def unregister():
 
     blender.unregister()
     handplane.unregister()
+    marmoset.unregister()
 
     for cls in reversed(classes):
         unregister_class(cls)

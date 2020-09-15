@@ -12,7 +12,7 @@ class Map_Context_Custom_Material(Map_Context):
 
         self.mat = self.create_mat()
 
-        objects = self.high if not self.baker.use_low_to_low else [self.low]
+        objects = self.high if not self.device.use_low_to_low else [self.low]
 
         for obj in objects:
             for mat_slot in obj.material_slots:

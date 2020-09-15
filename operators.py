@@ -303,7 +303,10 @@ def get_possible_maps(self, context):
     for category in sorted([x for x in ordered_maps.keys()]):
         maps = ordered_maps[category]
         last_maps.append(("", category, "description", "NONE", 0))
-        for map in maps:
+
+        def sort_key(val):
+            return val[1]
+        for map in sorted(list(maps), key=sort_key):
             last_maps.append(map)
 
     return last_maps

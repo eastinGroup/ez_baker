@@ -11,7 +11,7 @@ from bpy.props import (
     PointerProperty,
 )
 
-from .settings import mode_group_types
+from .settings import mode_group_types, devices_enum
 from . import outputs
 from . import baker
 from . import bake_group
@@ -92,7 +92,7 @@ class EZB_UL_preview_group_objects_low(bpy.types.UIList):
 class EZB_UL_bakers(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         row = layout.row()
-        row.prop(item, 'key', text='', icon="RENDERLAYERS", emboss=False)
+        row.prop(item, 'key', text='', icon=next(x[3] for x in devices_enum if x[0] == item.device_type), emboss=False)
 
 
 class EZB_UL_bake_groups(bpy.types.UIList):
@@ -108,7 +108,7 @@ class EZB_UL_bake_groups(bpy.types.UIList):
 
         high_objs = item.objects_high
         low_objs = item.objects_low
-        if not data.use_low_to_low:
+        if not data.child_device.use_low_to_low:
             row.operator('ezb.show_high_objects', text='High: {}'.format(len(high_objs)), emboss=False).index = index
         row.operator('ezb.show_low_objects', text='Low: {}'.format(len(low_objs)), emboss=False).index = index
         '''
@@ -120,7 +120,7 @@ class EZB_UL_bake_groups(bpy.types.UIList):
                 emboss=False
                 )
         '''
-        if not data.use_low_to_low:
+        if not data.child_device.use_low_to_low:
             row.prop(
                 item,
                 'preview_cage',
@@ -221,49 +221,7 @@ class EZB_PT_baker_settings_panel(bpy.types.Panel):
 
         col = layout.column(align=False)
 
-        # Path settings
-        row = col.row(align=True)
-        if baker.path == "":
-            row.alert = True
-        row.prop(baker, "path", text="")
-        if baker.path != "":
-            row = row.row(align=True)
-            row.operator("wm.path_open", text="", icon=open_folder_icon).filepath = baker.path
-
-        # texture size
-        row = col.row(align=True)
-        row.operator_menu_enum('ezb.select_texture_size', 'size', text='', icon='DOWNARROW_HLT')
-        split = row.split(align=True, factor=0.85)
-        row2 = split.row(align=True)
-        row2.prop(baker, 'width', text='Width')
-        row2.prop(baker, 'height', text='Height')
-        split.prop(baker, 'supersampling', text='')
-
-        row = col.row(align=True)
-        row.prop(baker, 'padding', text='Padding', expand=False)
-        row = col.row(align=True)
-        row.prop(baker, 'use_low_to_low', text='High to Low', expand=True, toggle=True, invert_checkbox=True)
-        row.prop(baker, 'use_low_to_low', text='Low to Low', expand=True, toggle=True)
-
-        col.prop(baker, 'load_images', expand=True, toggle=True)
-
-        col.prop(baker, 'image_format', text='Format', icon='IMAGE_DATA')
-
-        col2 = layout.column(align=True)
-        col2.use_property_split = True
-        col2.use_property_decorate = False
-        row = col2.row(align=True)
-        row.prop(baker, 'color_mode', expand=True,)
-        if not baker.image_format == 'TARGA':
-            row = col2.row(align=True)
-            row.prop(baker, 'color_depth', expand=True)
-
-        layout.prop(baker, 'device_type', text='Bake with')
-
-        col = layout.column(align=False)
-        col.use_property_split = True
-        col.use_property_decorate = False
-        baker.child_device.draw(col, context)
+        baker.draw(col, context)
 
 
 class EZB_PT_bake_groups_panel(bpy.types.Panel):
@@ -293,7 +251,7 @@ class EZB_PT_bake_groups_panel(bpy.types.Panel):
 
         if len(baker.bake_groups) > baker.bake_group_index and baker.bake_group_index >= 0:
             bake_group = baker.bake_groups[baker.bake_group_index]
-            if not baker.use_low_to_low:
+            if not baker.child_device.use_low_to_low:
                 col = layout.column(align=True)
                 row = col.row(align=True)
                 row.prop(

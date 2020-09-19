@@ -95,9 +95,9 @@ class EZB_OT_create_possible_bake_groups(bpy.types.Operator):
     def execute(self, context):
         baker = context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
         if self.gather_from == 'SELECTION':
-            possible_bake_groups = get_possible_bake_groups([x for x in context.scene.objects if x.select_get()])
+            possible_bake_groups = get_possible_bake_groups([x for x in context.scene.objects if x.select_get()], context)
         elif self.gather_from == 'SCENE':
-            possible_bake_groups = get_possible_bake_groups(context.scene.objects)
+            possible_bake_groups = get_possible_bake_groups(context.scene.objects, context)
         for name, group, icon in possible_bake_groups:
             new_bake_group = baker.bake_groups.add()
             new_bake_group.key = name

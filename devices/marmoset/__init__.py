@@ -288,7 +288,7 @@ class EZB_Device_Marmoset(bpy.types.PropertyGroup, EZB_Device):
         prefs = bpy.context.preferences.addons[__package__.split('.')[0]].preferences
 
         # bake with handplane
-        marmoset_cmd = os.path.join(prefs.marmoset_path, 'toolbag.exe')
+        marmoset_cmd = prefs.get_full_marmoset_path()
         communication_scripts = os.path.join(os.path.split(__file__)[0], 'marmoset_comm.py')
         commands = [marmoset_cmd, '-hide', communication_scripts]
 
@@ -323,9 +323,7 @@ class EZB_Device_Marmoset(bpy.types.PropertyGroup, EZB_Device):
         if not prefs.marmoset_path:
             return 'No Marmoset path set in the addon preferences'
 
-        marmoset_path = os.path.join(prefs.marmoset_path, 'toolbag.exe')
-
-        if not os.path.isfile(marmoset_path):
+        if not os.path.isfile(prefs.get_full_marmoset_path()):
             return 'Marmoset path in the addon preferences is incorrect'
 
         return None

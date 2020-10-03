@@ -26,6 +26,30 @@ class EZB_Baker(bpy.types.PropertyGroup):
     )
     devices: bpy.props.PointerProperty(type=devices.EZB_Devices)
 
+    original_shading_type: bpy.props.StringProperty()
+    original_color_type: bpy.props.StringProperty()
+    is_previewing: bpy.props.BoolProperty()
+
+    def start_previewing_cage(self, context):
+        if not self.is_previewing:
+            self.original_shading_type = context.space_data.shading.type
+            self.original_color_type = context.space_data.shading.color_type
+
+            context.space_data.shading.type = 'SOLID'
+            context.space_data.shading.color_type = 'OBJECT'
+
+            self.is_previewing = True
+
+    def stop_previewing_cage(self, context):
+        if self.is_previewing:
+            for x in self.bake_groups:
+                if x.preview_cage:
+                    return
+            context.space_data.shading.type = self.original_shading_type
+            context.space_data.shading.color_type = self.original_color_type
+
+            self.is_previewing = False
+
     def set_path(self, value):
         # checks if the provided path is inside a subdirectory of the current file to save it as a relative path
         if bpy.data.is_saved:

@@ -63,8 +63,8 @@ class Map_Context():
         log('Setting bake material...')
         self.map.setup_bake_material(self.low)
         log('Material Set')
-        cage = bpy.context.scene.objects.get(self.low.name + bpy.context.scene.EZB_Settings.suffix_cage)
-        bpy.context.scene.render.bake.cage_object = cage
+        cage = bpy.data.objects.get(self.low.name + self.scene.EZB_Settings.suffix_cage)
+        self.scene.render.bake.cage_object = cage
 
         context['scene'] = self.scene
 

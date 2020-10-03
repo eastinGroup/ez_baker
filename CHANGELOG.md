@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/1_0_1)
+### Added
+- The steam version of marmoset toolbag is now supported by enabling it in the preferences
+
+### Fixed
+- Baking in blender now takes into account custom cages
+- Error enabling the addon when an invalid version of the PIL library is installed in blender
+
+### Changed
+- Settings panels renamed to "General Settings" and "Baker Settings"
+- Viewport display mode is restored after disabling the cage previews
+
+## Removed
+- Viewport disaply mode is not changed when previewing textures
+
 ## [1.0.0](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/1_0_0)
 ### Added
 - Baking with marmoset

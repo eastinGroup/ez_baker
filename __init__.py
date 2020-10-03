@@ -18,7 +18,7 @@ bl_info = {
     "description": "Bake textures by grouping objects",
     "author": "AquaticNightmare",
     "blender": (2, 83, 0),
-    "version": (1, 0, 0),
+    "version": (1, 0, 1),
     "category": "3D View",
     "location": "3D View > Tools Panel > EZ Baker",
     "warning": "",
@@ -134,6 +134,15 @@ class EZB_preferences(bpy.types.AddonPreferences):
         get=get_abs_marmoset_path,
     )
 
+    use_steam_toolbag: BoolProperty(
+        default=False,
+        name='Use Marmoset Steam version'
+    )
+
+    def get_full_marmoset_path(self):
+        exe_name = 'toolbag.exe' if not self.use_steam_toolbag else 'toolbag_steam.exe'
+        return os.path.join(self.marmoset_path, exe_name)
+
     def draw(self, context):
         layout = self.layout
 
@@ -151,8 +160,9 @@ class EZB_preferences(bpy.types.AddonPreferences):
         row.prop(self, 'handplane_path')
 
         row = layout.row()
-        row.alert = not(self.marmoset_path and os.path.isfile(os.path.join(self.marmoset_path, 'toolbag.exe')))
+        row.alert = not(self.marmoset_path and os.path.isfile(self.get_full_marmoset_path()))
         row.prop(self, 'marmoset_path')
+        layout.prop(self, 'use_steam_toolbag')
         #layout.prop(self, 'marmoset_path')
         updater_ops.update_settings_ui(self, context)
 

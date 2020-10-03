@@ -9,6 +9,14 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
     key: bpy.props.StringProperty()
     mode_group: bpy.props.EnumProperty(items=mode_group_types, name="Group By")
 
+    def preview_cage_clicked(self, context):
+        if self.preview_cage:
+            self.parent_baker.start_previewing_cage(context)
+        else:
+            self.parent_baker.stop_previewing_cage(context)
+
+        self.update_cage(context)
+
     def update_cage(self, context):
 
         new_context = context.copy()
@@ -20,8 +28,6 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
                 bpy.data.meshes.remove(mesh, do_unlink=True)
 
                 del mesh
-            context.space_data.shading.type = 'SOLID'
-            context.space_data.shading.color_type = 'OBJECT'
 
             copy_objects = [self.get_cage_copy(x, context) for x in self.objects_low]
             copy_objects_data = [x.data for x in copy_objects]
@@ -66,7 +72,7 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
         precision=3,
         description='Cage extrusion value. It represents the distance from which the rays will be cast for the purpose of baking'
     )
-    preview_cage: bpy.props.BoolProperty(update=update_cage, name='Preview Cage', description='Creates a temporary object representing the cage used to project the rays')
+    preview_cage: bpy.props.BoolProperty(update=preview_cage_clicked, name='Preview Cage', description='Creates a temporary object representing the cage used to project the rays')
     preview_cage_object: bpy.props.PointerProperty(type=bpy.types.Object)
 
     def _remove_numbering(self, name):

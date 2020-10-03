@@ -54,7 +54,7 @@ class EZB_Settings(bpy.types.PropertyGroup):
 
 class EZB_PT_core_panel(bpy.types.Panel):
     bl_idname = "EZB_PT_core_panel"
-    bl_label = "Settings"
+    bl_label = "General Settings"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "EZ Baker"
@@ -192,7 +192,7 @@ class EZB_PT_baker_panel(bpy.types.Panel):
 
 class EZB_PT_baker_settings_panel(bpy.types.Panel):
     bl_idname = "EZB_PT_baker_settings_panel"
-    bl_label = "Settings"
+    bl_label = "Baker Settings"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "EZ Baker"

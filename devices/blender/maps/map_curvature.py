@@ -10,18 +10,37 @@ class Map_Context_Custom_Material(Map_Context):
     def __init__(self, map, high, low):
         super().__init__(map, high, low)
 
-        self.mat = self.create_mat()
+        if not self.device.use_low_to_low:
+            self.mat = self.create_mat()
 
-        objects = self.high if not self.device.use_low_to_low else [self.low]
+            objects = self.high
 
-        for obj in objects:
-            for mat_slot in obj.material_slots:
-                mat_slot.material = self.mat
+            for obj in objects:
+                for mat_slot in obj.material_slots:
+                    mat_slot.material = self.mat
+        else:
+            self.materials_map = {}
+
+            for mat_slot in self.low.material_slots:
+                if mat_slot.material in self.materials_map:
+                    mat_slot.material = self.materials_map[mat_slot.material]
+                else:
+                    orig_name = mat_slot.material.name
+                    mat_slot.material.name = f'{orig_name}__old'
+                    mat = self.create_mat()
+                    mat.name = orig_name
+                    self.materials_map[mat_slot.material] = mat
+                    mat_slot.material = mat
 
     def __exit__(self, type, value, traceback):
         super().__exit__(type, value, traceback)
-
-        bpy.data.materials.remove(self.mat, do_unlink=True)
+        if not self.device.use_low_to_low:
+            bpy.data.materials.remove(self.mat, do_unlink=True)
+        else:
+            for orig, new in self.materials_map.items():
+                name = new.name
+                new.name = 'ASDF'
+                orig.name = name
 
 
 class Map_Context_Curvature(Map_Context_Custom_Material):

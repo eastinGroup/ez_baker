@@ -81,7 +81,7 @@ class Map_Context():
 
 
 class EZB_Created_Image(bpy.types.PropertyGroup):
-    material: bpy.props.PointerProperty(type=bpy.types.Material)
+    material: bpy.props.StringProperty()
     image: bpy.props.PointerProperty(type=bpy.types.Image)
 
 
@@ -122,7 +122,7 @@ In this specific case, increasing the value will produce less noisy bevels.
         '''Gets the image associated to the bake material from the parent baker'''
 
         for created_image in self.created_images:
-            if created_image.material == material:
+            if created_image.material == material.name:
                 return created_image.image
 
         ans = self.parent_baker.get_image(self, material.name)
@@ -130,7 +130,7 @@ In this specific case, increasing the value will produce less noisy bevels.
         print(ans.image.source)
 
         found_material = self.created_images.add()
-        found_material.material = material
+        found_material.material = material.name
         found_material.image = ans.image
 
         return ans.image
@@ -237,7 +237,7 @@ In this specific case, increasing the value will produce less noisy bevels.
                 print('The image could not be saved to the path')
                 return False
 
-            self.parent_device.texture_baked(self.id, created_image.material.name, image.filepath)
+            self.parent_device.texture_baked(self.id, created_image.material, image.filepath)
 
     def pre_bake(self):
         self.parent_device.update_baking_map(self.id)

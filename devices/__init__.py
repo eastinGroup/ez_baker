@@ -8,7 +8,8 @@ devices = [blender.EZB_Device_Blender, handplane.EZB_Device_Handplane, marmoset.
 
 device_annotations = {}
 for x in devices:
-    device_annotations[x.name] = (bpy.props.PointerProperty, {'type': x})
+    annotation_prop = (bpy.props.PointerProperty, {'type': x}) if bpy.app.version < (2, 93, 0) else bpy.props.PointerProperty(type=x)
+    device_annotations[x.name] = annotation_prop
 
 EZB_Devices = type("EZB_Devices", (bpy.types.PropertyGroup,), {'__annotations__': device_annotations})
 

@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/1_0_2)
+### Fixed
+- Fixed maps not showing on blender 2.93 and up
+
+### Added
+- New map: Position
+
 ## [1.0.1](https://gitlab.com/AquaticNightmare/ez_baker/-/releases/1_0_1)
 ### Added
 - The steam version of marmoset toolbag is now supported by enabling it in the preferences

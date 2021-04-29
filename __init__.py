@@ -18,7 +18,7 @@ bl_info = {
     "description": "Bake textures by grouping objects",
     "author": "AquaticNightmare",
     "blender": (2, 83, 0),
-    "version": (1, 0, 1),
+    "version": (1, 0, 2),
     "category": "3D View",
     "location": "3D View > Tools Panel > EZ Baker",
     "warning": "",

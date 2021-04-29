@@ -17,7 +17,8 @@ for num_id, x in enumerate([x for x in __globals if x.startswith('map_')]):
 
 map_annotations = {}
 for x in maps:
-    map_annotations[x.id] = (bpy.props.PointerProperty, {'type': x})
+    annotation_prop = (bpy.props.PointerProperty, {'type': x}) if bpy.app.version < (2, 93, 0) else bpy.props.PointerProperty(type=x)
+    map_annotations[x.id] = annotation_prop
 
 EZB_Maps_Marmoset = type("EZB_maps_Marmoset", (bpy.types.PropertyGroup,), {'maps': maps, '__annotations__': map_annotations})
 

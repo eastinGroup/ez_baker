@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 import bpy
 import tempfile
@@ -167,6 +168,8 @@ def export_obj(meshes_folder, obj, name, t_space, modifiers):
         bake_anim_step=1,
         bake_anim_simplify_factor=1
     )
+    if sys.platform == 'linux':
+        mesh_filepath = 'z:'+mesh_filepath
 
     return mesh_filepath
 
@@ -198,6 +201,8 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
 
         file_name = baker.key
         export_folder = baker.get_abs_export_path()
+        if sys.platform == 'linux':
+            export_folder = 'z:'+export_folder
 
         root_folder = os.path.join(baker.get_abs_export_path(), file_name)
         os.makedirs(root_folder, exist_ok=True)
@@ -348,8 +353,9 @@ class EZB_Device_Handplane(bpy.types.PropertyGroup, EZB_Device):
         # bake with handplane
         handplane_cmd = os.path.join(prefs.handplane_path, 'handplaneCmd.exe')
         project_file_path = project_file_path.replace('\\', '/')
-        command_argument = handplane_cmd + ' "/project "' + project_file_path + '""'
-
+        command_argument = [ handplane_cmd , "/project", project_file_path ]
+        if sys.platform == 'linux':
+            command_argument.insert(0, "wine")
         return os.path.split(project_file_path)[0], command_argument
 
     def bake_local(self):

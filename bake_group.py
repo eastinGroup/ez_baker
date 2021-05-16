@@ -76,7 +76,7 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
     preview_cage_object: bpy.props.PointerProperty(type=bpy.types.Object)
 
     def _remove_numbering(self, name):
-        if name[-3:].isdigit() and name[-4] == '.':
+        if len(name) > 4 and name[-3:].isdigit() and name[-4] == '.':
             name = name[:-4]
         return name
 

@@ -12,7 +12,7 @@ def get_possible_bake_groups(objects, context):
 
     def is_group_valid(orig_name, type):
         name = orig_name.lower()
-        if name[-3:].isdigit() and name[-4] == '.':
+        if len(name) > 4 and name[-3:].isdigit() and name[-4] == '.':
             name = name[:-4]
 
         suffix_high = ezb_settings.suffix_high.lower()

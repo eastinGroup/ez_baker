@@ -147,9 +147,15 @@ class EZB_OT_run_marmoset_background(bpy.types.Operator):
             'outputSoften': self.device.outputSoften,
         }
 
+        connection.send(self.device.standalone)
         connection.send(baker_info)
         connection.send(bake_groups)
         connection.send(maps)
+
+        if self.device.standalone:
+            self.device.bake_finish()
+            self.redraw_region(context)
+            return {'CANCELLED'}
 
         self.messages = queue.Queue()
 
@@ -227,7 +233,7 @@ def export_obj(meshes_folder, obj, name, t_space, modifiers):
 class EZB_Device_Marmoset(bpy.types.PropertyGroup, EZB_Device):
     name = "marmoset"
     maps: bpy.props.PointerProperty(type=maps.EZB_Maps_Marmoset)
-
+    standalone: bpy.props.BoolProperty(default=False, name='Standalone', description='The marmoset scene will be setup, but the maps will not be automatically saved.')
     smoothCage: bpy.props.BoolProperty(default=True, name='Smooth Cage', description='Smooths low poly cage normals for baking purposes')
     ignoreTransforms: bpy.props.BoolProperty(default=False, name='Ignore Transforms', description='Mesh transforms, such as rotation and position will be ignored for the purpose of baking')
     ignoreBackfaces: bpy.props.BoolProperty(default=True, name='Ignore Back Faces', description='Ignores the back sides if triangles on the high-poly mesh when baking')
@@ -274,6 +280,7 @@ class EZB_Device_Marmoset(bpy.types.PropertyGroup, EZB_Device):
         row = layout.row()
         row.prop(self, 'multipleTextureSets')
         row.enabled = False
+        layout.prop(self, 'standalone')
         layout.prop(self, 'smoothCage')
         layout.prop(self, 'ignoreTransforms')
         layout.prop(self, 'ignoreBackfaces')
@@ -290,7 +297,10 @@ class EZB_Device_Marmoset(bpy.types.PropertyGroup, EZB_Device):
         # bake with handplane
         marmoset_cmd = prefs.get_full_marmoset_path()
         communication_scripts = os.path.join(os.path.split(__file__)[0], 'marmoset_comm.py')
-        commands = [marmoset_cmd, '-hide', communication_scripts]
+        if not self.standalone:
+            commands = [marmoset_cmd, '-hide', communication_scripts]
+        else:
+            commands = [marmoset_cmd, communication_scripts]
 
         return commands
 

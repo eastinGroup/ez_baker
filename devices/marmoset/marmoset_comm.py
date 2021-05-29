@@ -14,6 +14,7 @@ baker = mset.BakerObject()
 
 baker.edgePadding = 'Custom'
 
+standalone = connection.recv()
 baker_info = connection.recv()
 bake_groups = connection.recv()
 maps = connection.recv()
@@ -80,30 +81,55 @@ if baker.multipleTextureSets:
         baker.setTextureSetHeight(i, baker_info['outputHeight'])
         baker.setTextureSetWidth(i, baker_info['outputWidth'])
 
+for map in baker.getAllMaps():
+    map.enabled = False
+
 for map_name, map_info in maps.items():
-    connection.send(('WORKING', map_name))
-    for map in baker.getAllMaps():
-        map.enabled = False
     map = baker.getMap(map_name)
     map.enabled = True
     for setting, value in map_info.items():
         custom_set_attribute(map, setting, value)
 
-    baker.bake()
-    if baker.multipleTextureSets:
-        for i in range(0, baker.getTextureSetCount()):
-            name = baker.getTextureSetName(i)
 
+def start_bake():
+    for map_name, map_info in maps.items():
+        connection.send(('WORKING', map_name))
+        for map in baker.getAllMaps():
+            map.enabled = False
+        map = baker.getMap(map_name)
+        map.enabled = True
+        for setting, value in map_info.items():
+            custom_set_attribute(map, setting, value)
+
+        baker.bake()
+        if baker.multipleTextureSets:
+            for i in range(0, baker.getTextureSetCount()):
+                name = baker.getTextureSetName(i)
+
+                image_path_split = os.path.splitext(baker.outputPath)
+                image_path = image_path_split[0] + '_' + name + '_' + map_info['suffix'] + image_path_split[1]
+
+                connection.send(('BAKED', (map_name, name, image_path)))
+        else:
             image_path_split = os.path.splitext(baker.outputPath)
-            image_path = image_path_split[0] + '_' + name + '_' + map_info['suffix'] + image_path_split[1]
+            image_path = image_path_split[0] + '_' + map_info['suffix'] + image_path_split[1]
 
-            connection.send(('BAKED', (map_name, name, image_path)))
-    else:
-        image_path_split = os.path.splitext(baker.outputPath)
-        image_path = image_path_split[0] + '_' + map_info['suffix'] + image_path_split[1]
-
-        connection.send(('BAKED', (map_name, baker_info["name"], image_path)))
+            connection.send(('BAKED', (map_name, baker_info["name"], image_path)))
+    connection.send(('INFO', 'Finished'))
+    exit()
 
 
-connection.send(('INFO', 'Finished'))
-exit()
+def draw_ui():
+    print('drawing UI')
+    window = mset.UIWindow("EZ Baker")
+
+    button = mset.UIButton("BAKE")
+
+    # Render
+    window.addElement(button)
+
+
+if not standalone:
+    start_bake()
+else:
+    draw_ui()

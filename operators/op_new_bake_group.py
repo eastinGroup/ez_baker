@@ -1,4 +1,5 @@
 import bpy
+from ..settings import mode_group_types
 from ..utilities import traverse_tree
 
 last_bake_groups = None
@@ -48,6 +49,7 @@ def get_possible_bake_groups_enums(self, context):
     global last_bake_groups
     ans = list(get_possible_bake_groups(context.scene.objects, context))
     last_bake_groups = [(x[1] + '___' + x[0], x[0], x[0], x[2], i) for i, x in enumerate(ans)]
+    last_bake_groups.append((mode_group_types[2][0] + '___' + 'Custom', mode_group_types[2][1], mode_group_types[2][2], mode_group_types[2][3], len(last_bake_groups)))
     return last_bake_groups
 
 

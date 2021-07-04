@@ -3,11 +3,48 @@ from .settings import mode_group_types
 from .utilities import traverse_tree
 
 
+class EZB_Object_Reference(bpy.types.PropertyGroup):
+    object: bpy.props.PointerProperty(type=bpy.types.Object)
+
+
+class EZB_Bake_Group_Custom_Objects(bpy.types.PropertyGroup):
+    objects: bpy.props.CollectionProperty(type=EZB_Object_Reference)
+
+
 class EZB_Bake_Group(bpy.types.PropertyGroup):
     # group name
     # default cage info (displacement)
     key: bpy.props.StringProperty()
     mode_group: bpy.props.EnumProperty(items=mode_group_types, name="Group By")
+
+    custom_low: bpy.props.PointerProperty(type=EZB_Bake_Group_Custom_Objects)
+    custom_high: bpy.props.PointerProperty(type=EZB_Bake_Group_Custom_Objects)
+
+    def low_added(self, context):
+        if not self.object_low:
+            return
+        if self.object_low.type != 'MESH':
+            self.object_low = None
+            return
+        collection = self.custom_low.objects.add()
+        collection.object = self.object_low
+        self.object_low = None
+
+    def high_added(self, context):
+        if not self.object_high:
+            return
+        if self.object_high.type != 'MESH':
+            self.object_high = None
+            return
+        collection = self.custom_high.objects.add()
+        collection.object = self.object_high
+        self.object_high = None
+
+    def get_override(self):
+        return None
+
+    object_low: bpy.props.PointerProperty(type=bpy.types.Object, update=low_added)
+    object_high: bpy.props.PointerProperty(type=bpy.types.Object, update=high_added)
 
     def preview_cage_clicked(self, context):
         if self.preview_cage:
@@ -80,7 +117,11 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
             name = name[:-4]
         return name
 
-    def _get_objects(self, suffix):
+    def _get_objects(self, obj_type):
+        if obj_type == 'HIGH':
+            suffix = self.id_data.EZB_Settings.suffix_high
+        elif obj_type == 'LOW':
+            suffix = self.id_data.EZB_Settings.suffix_low
         suffix = suffix.lower()
 
         objects = []
@@ -95,6 +136,14 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
             for x in self.id_data.objects:
                 if self._remove_numbering(x.name.lower()) == self.key.lower() + suffix:
                     objects.append(x)
+
+        elif self.mode_group == 'CUSTOM':
+            if obj_type == 'HIGH':
+                for x in self.custom_high.objects:
+                    objects.append(x.object)
+            elif obj_type == 'LOW':
+                for x in self.custom_low.objects:
+                    objects.append(x.object)
 
         return objects
 
@@ -152,15 +201,15 @@ class EZB_Bake_Group(bpy.types.PropertyGroup):
     def objects_high(self):
         if self.parent_baker.child_device.use_low_to_low:
             return []
-        return self._get_objects(self.id_data.EZB_Settings.suffix_high)
+        return self._get_objects('HIGH')
 
     @property
     def objects_low(self):
-        low = self._get_objects(self.id_data.EZB_Settings.suffix_low)
+        low = self._get_objects('LOW')
         return [x for x in low if not x.name.endswith(self.id_data.EZB_Settings.suffix_cage)]
 
 
-classes = [EZB_Bake_Group]
+classes = [EZB_Object_Reference, EZB_Bake_Group_Custom_Objects, EZB_Bake_Group]
 
 
 def register():

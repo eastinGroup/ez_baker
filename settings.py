@@ -1,6 +1,7 @@
 mode_group_types = [
     ('NAME', 'Name', 'Group low and high by object names', 'OUTLINER_OB_MESH', 0),
     ('COLLECTION', 'Collection', 'Group low and high by their collection names', 'GROUP', 1),
+    ('CUSTOM', 'Custom', 'Manually add high and low objects', 'MODIFIER_DATA', 2),
 ]
 
 devices_enum = [

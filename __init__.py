@@ -1,4 +1,3 @@
-from .settings import mode_group_types
 from bpy.props import (
     StringProperty,
     BoolProperty,

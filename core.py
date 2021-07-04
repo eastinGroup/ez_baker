@@ -77,6 +77,17 @@ class EZB_UL_preview_group_objects(bpy.types.UIList):
         sub_row.operator('ezb.select_object', text='', icon='RESTRICT_SELECT_OFF').name = item.name
         sub_row.label(text=item.name, icon='MESH_CUBE')
 
+        baker = context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
+        bake_group = baker.bake_groups[baker.bake_group_index]
+
+        if bake_group.mode_group == 'CUSTOM':
+            op = sub_row.operator('ezb.remove_custom_object', text='', icon='REMOVE')
+
+            op.scene = context.scene.name
+            op.datapath = bake_group.path_from_id()
+            op.is_high = True
+            op.index = index
+
 
 class EZB_UL_preview_group_objects_low(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
@@ -87,6 +98,17 @@ class EZB_UL_preview_group_objects_low(bpy.types.UIList):
             sub_row.operator('ezb.select_object', text='', icon='SELECT_SET').name = item.cage
         else:
             sub_row.operator('ezb.create_custom_cage', text='', icon='ADD').name = item.name
+
+        baker = context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
+        bake_group = baker.bake_groups[baker.bake_group_index]
+
+        if bake_group.mode_group == 'CUSTOM':
+            op = sub_row.operator('ezb.remove_custom_object', text='', icon='REMOVE')
+
+            op.scene = context.scene.name
+            op.datapath = bake_group.path_from_id()
+            op.is_high = False
+            op.index = index
 
 
 class EZB_UL_bakers(bpy.types.UIList):
@@ -149,7 +171,7 @@ class EZB_PT_baker_panel(bpy.types.Panel):
         col.operator('ezb.remove_baker', text='', icon='REMOVE')
 
         row = main_col.split(factor=0.8, align=True)
-        #split=row.split(factor=0.75, align=True)
+        # split=row.split(factor=0.75, align=True)
         row.scale_y = 1.5
 
         baker = None
@@ -232,7 +254,7 @@ class EZB_PT_bake_groups_panel(bpy.types.Panel):
             return
         baker = context.scene.EZB_Settings.bakers[context.scene.EZB_Settings.baker_index]
 
-        #layout.enabled = not baker.is_baking
+        # layout.enabled = not baker.is_baking
 
         col = layout.column(align=True)
         col.template_list("EZB_UL_bake_groups", "", baker, "bake_groups", baker, "bake_group_index", rows=2)
@@ -258,7 +280,10 @@ class EZB_PT_bake_groups_panel(bpy.types.Panel):
                 row.operator('ezb.edit_bake_groups', text='', icon='SHADERFX')
 
                 layout = layout.split(factor=0.5, align=True)
-                layout.template_list(
+                column = layout.column()
+                if bake_group.mode_group == 'CUSTOM':
+                    column.prop(bake_group, 'object_high', text='High')
+                column.template_list(
                     "EZB_UL_preview_group_objects",
                     "",
                     ezb_settings,
@@ -267,7 +292,10 @@ class EZB_PT_bake_groups_panel(bpy.types.Panel):
                     "preview_group_objects_high_index",
                     rows=2,
                 )
-            layout.template_list(
+            column = layout.column()
+            if bake_group.mode_group == 'CUSTOM':
+                column.prop(bake_group, 'object_low', text='Low')
+            column.template_list(
                 "EZB_UL_preview_group_objects_low",
                 "",
                 ezb_settings,

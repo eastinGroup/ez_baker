@@ -9,7 +9,7 @@ class EZB_OT_remove_baker(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         ezb_settings = context.scene.EZB_Settings
-        return len(ezb_settings.bakers) > ezb_settings.baker_index
+        return ezb_settings.bakers and len(ezb_settings.bakers) > ezb_settings.baker_index
 
     def execute(self, context):
         ezb_settings = context.scene.EZB_Settings

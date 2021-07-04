@@ -218,7 +218,7 @@ class EZB_PT_baker_settings_panel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "EZ Baker"
-    bl_options = {'DEFAULT_CLOSED'}
+    #bl_options = {'DEFAULT_CLOSED'}
     bl_parent_id = "EZB_PT_baker_panel"
 
     def draw(self, context):

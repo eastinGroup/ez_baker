@@ -10,7 +10,7 @@ from ..dither import Dither
 
 postprocess_enum = [
     ('NONE', 'None (Round)', 'Default'),
-    ('DITHER', 'Dither (x100 SLOWER!)', 'Dither (EXPERIMENTAL 100x SLOWER, VERY SLOW)'),
+    #('DITHER', 'Dither (x100 SLOWER!)', 'Dither (EXPERIMENTAL 100x SLOWER, VERY SLOW)'),
     ('TRUNCATE', 'Truncate', 'Custom Truncate (EXPERIMENTAL)')
 ]
 

@@ -198,8 +198,10 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
         row.prop(self, 'compression', expand=True)
         row = layout.row(align=True)
         row.prop(self, 'device', text='Render', expand=True)
-        row = layout.row(align=True)
-        row.prop(self, 'tile_size', text='Tile Size', expand=True)
+
+        if bpy.app.version < (3, 0, 0):
+            row = layout.row(align=True)
+            row.prop(self, 'tile_size', text='Tile Size', expand=True)
 
     def setup_settings(self):
         baker = self.parent_baker
@@ -222,8 +224,9 @@ class EZB_Device_Blender(bpy.types.PropertyGroup, EZB_Device):
 
         supersampling = baker.get_supersampling
 
-        scene.render.tile_x = int(baker.width * tile_size_relative * supersampling)
-        scene.render.tile_y = int(baker.height * tile_size_relative * supersampling)
+        if bpy.app.version < (3, 0, 0):
+            scene.render.tile_x = int(baker.width * tile_size_relative * supersampling)
+            scene.render.tile_y = int(baker.height * tile_size_relative * supersampling)
 
         bake_options.margin = baker.padding * supersampling
         bake_options.use_clear = False

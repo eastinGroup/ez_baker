@@ -4,6 +4,16 @@ from .map import EZB_Map_Blender, Map_Context, postprocess_enum
 
 class Map_Context_Normal(Map_Context):
     def __init__(self, map, high, low):
+        self.old_low = None
+        if map.triangulate_low:
+            self.old_low = low
+
+            low_copy = low.copy()
+            low_data_copy = low.data.copy()
+            low_copy.data = low_data_copy
+
+            bpy.context.scene.collection.objects.link(low_copy)
+            low = low_copy
         super().__init__(map, high, low)
 
     def __enter__(self):
@@ -14,13 +24,22 @@ class Map_Context_Normal(Map_Context):
             self.mod.ngon_method = self.map.ngon_method
             self.mod.keep_custom_normals = self.map.keep_custom_normals
 
+            # this is so dumb, why use overrides then? if half the time they dont work
+            # https://blender.stackexchange.com/questions/235009/overriding-convert-object-operator-issue
+            self.low.select_set(True)
+            bpy.context.view_layer.objects.active = self.low
+            override = {'selected_editable_objects': [self.low]}
+            bpy.ops.object.convert(override, target='MESH')
+
         return super().__enter__()
 
     def __exit__(self, type, value, traceback):
         super().__exit__(type, value, traceback)
 
-        if self.map.triangulate_low:
-            self.low.modifiers.remove(self.mod)
+        if self.old_low:
+            mesh = self.low.data
+            bpy.data.objects.remove(self.low, do_unlink=True)
+            bpy.data.meshes.remove(mesh, do_unlink=True)
 
 
 class EZB_Map_Normal(bpy.types.PropertyGroup, EZB_Map_Blender):

@@ -11,6 +11,7 @@ class Map_Context_Thickness(Map_Context_Custom_Material):
         ao_node.inside = True
         ao_node.only_local = True
         ao_node.samples = self.map.samples
+        ao_node.inputs["Distance"].default_value = self.map.thickness_extent
 
         bsdf = thickness_mat.node_tree.nodes['Material Output']
         thickness_mat.node_tree.links.new(ao_node.outputs['AO'], bsdf.inputs['Surface'])
@@ -32,8 +33,10 @@ class EZB_Map_Thickness(bpy.types.PropertyGroup, EZB_Map_Blender):
     context = Map_Context_Thickness
 
     samples: bpy.props.IntProperty(name='Samples', default=6)
+    thickness_extent: bpy.props.FloatProperty(default=1.0)
 
     color_space = 'Non-Color'
 
     def _draw_info(self, layout):
+        layout.prop(self, 'thickness_extent')
         self.draw_prop_with_warning(layout, self, 'samples', 16)
